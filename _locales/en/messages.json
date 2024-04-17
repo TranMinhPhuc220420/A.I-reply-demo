@@ -1,0 +1,11 @@
+{
+  "extension_name": {
+    "message": "Sateraito Extension AI"
+  },
+  "extension_description": {
+    "message": "Extension AI development by Sateraito Office"
+  },
+  "txt_ai_reply_button": {
+    "message": "AI Reply"
+  }
+}
