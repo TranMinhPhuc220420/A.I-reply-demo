@@ -248,74 +248,29 @@ document.addEventListener('RW759_connectExtension', function (e) {
   }
 
   const _SendMessageManager = {
-    getDataToShowPopup: function (contentMail, callback) {
-      let summaryMail, langContent, keyPointsList, suggestionList;
-      let totalNeedResult = 4;
-      let countRequest = 0;
-
-      function count() {
-        countRequest++;
-        if (countRequest >= totalNeedResult) {
-          let params = {
-            summary: summaryMail,
-            suggestion_list: suggestionList,
-            lang_content: langContent,
-            key_points_list: keyPointsList
-          }
-          callback(params);
-        }
-      }
-
-      // Get text summary content mail
+    getDataToShowPopup: function (titleMail, contentMail, callback) {
       chrome.runtime.sendMessage({
-        method: 'summary_content_mail',
-        data: contentMail
+        method: 'get_data_to_show_popup',
+        data: {
+          title_mail: titleMail,
+          content_mail: contentMail,
+        }
       },
         function (response) {
-          summaryMail = response;
-          count();
+          callback({
+            summary: response.detailed_summary,
+            key_points_list: response.key_points,
+            lang_content: response.language,
+            suggestion_list: response.reply_suggestions,
+          });
         }
-      );
-
-      // Get suggestion list to reply content mail
-      chrome.runtime.sendMessage({
-        method: 'suggestion_list_reply_content_mail',
-        data: contentMail
-      },
-        function (response) {
-          suggestionList = response;
-          count();
-        }
-      );
-
-      // Get language of content mail
-      chrome.runtime.sendMessage({
-        method: 'get_language_content_mail',
-        data: contentMail
-      },
-        function (response) {
-          langContent = response;
-          count();
-        }
-      );
-
-      // Get key points of content mail
-      chrome.runtime.sendMessage({
-        method: 'get_key_points_content_mail',
-        data: contentMail
-      },
-        function (response) {
-          keyPointsList = response;
-          count();
-        }
-      );
-
+      )
     },
 
-    generateContentReplyMail: function (contentMail, suggestionReply, voiceConfig, callback) {
+    generateContentReplyMail: function (params, callback) {
       chrome.runtime.sendMessage({
         method: 'generate_content_reply_mail',
-        data: { content_mail: contentMail, suggestion_reply: suggestionReply, voice_config: voiceConfig }
+        data: params
       },
         function (response) {
           callback(response);
@@ -343,6 +298,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       let transformX = window.innerWidth - 606;
       let transformY = window.innerHeight - 602;
 
+      let reloadIconUrl = chrome.runtime.getURL("icons/refresh-icon.png");
       let closeIconUrl = chrome.runtime.getURL("icons/close-icon.png");
       let sendIconUrl = chrome.runtime.getURL("icons/send-icon.png")
       let voidConfigIconUrl = chrome.runtime.getURL("icons/graphic-eq.svg");
@@ -359,6 +315,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
               <span class="name">AI Reply</span>
             </div>
             <div class="right">
+              <button class="reload">
+                <img src="${reloadIconUrl}" alt="">
+              </button>
               <button class="close">
                 <img src="${closeIconUrl}" alt="">
               </button>
@@ -380,10 +339,10 @@ document.addEventListener('RW759_connectExtension', function (e) {
               </div>
 
               <div class="body-tab">
-                <div id="tab1" class="tab-item active">
+                <div id="tab1" class="tab-item loading active">
                   <p id="summary"></p>
                 </div>
-                <div id="tab2" class="tab-item">
+                <div id="tab2" class="tab-item loading">
                   <ul id="key_points"></ul>
                 </div>
               </div>
@@ -416,6 +375,16 @@ document.addEventListener('RW759_connectExtension', function (e) {
                 </div>
                 <div class="body">
                 </div>
+              </div>
+
+              <div class="option loading">
+                <p></p>
+              </div>
+              <div class="option loading">
+                <p></p>
+              </div>
+              <div class="option loading">
+                <p></p>
               </div>
             </div>
 
@@ -648,11 +617,12 @@ document.addEventListener('RW759_connectExtension', function (e) {
           let contentMail = _MailAIGenerate.getContentBodyMail();
           let suggestionReply = event.target.getAttribute('data-sugg');
 
+          event.target.classList.add('selected');
+
           find('form#form_tell_sider input', (findEl) => {
             findEl.value = suggestionReply;
+            self.processAddGenerateReplyMail(contentMail, suggestionReply);
           })
-
-          self.processAddGenerateReplyMail(contentMail, suggestionReply);
         })
       });
 
@@ -686,6 +656,14 @@ document.addEventListener('RW759_connectExtension', function (e) {
       $('.action-btn button.insert-btn').click((event) => {
         _MailAIGenerate.setMailReply(self.generate_result_list[self.result_active]);
         self.closePopup(idPopup);
+      });
+
+      // Close popup event
+      find('#ai_reply_popup .reload', (elFind) => {
+        elFind.addEventListener('click', () => {
+          self.closePopup(idPopup);
+          _MailAIGenerate.handlerReplyBtnClick();
+        })
       });
     },
 
@@ -873,16 +851,19 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       // Show suggestion list to reply content mail
       find('#ai_reply_popup .reply-suggestions', (elFind) => {
-        // elFind.innerHTML = '';
+        $('#ai_reply_popup .reply-suggestions .option').remove();
+
         let suggestionList = data.suggestion_list;
         for (let i = 0; i < suggestionList.length; i++) {
           let itemSugg = suggestionList[i];
+
           let optionEl = document.createElement('div');
+          optionEl.setAttribute('data-sugg', itemSugg)
           optionEl.className = 'option'
+
           let pEl = document.createElement('p');
-          pEl.setAttribute('data-sugg', itemSugg)
-          // optionEl.innerHTML = `<p data-sugg="${itemSugg}">${itemSugg} <span>&rarr;</span></p>`;
           renderTextStyleChatGPT(pEl, itemSugg);
+
           optionEl.append(pEl);
           elFind.append(optionEl);
         }
@@ -924,6 +905,12 @@ document.addEventListener('RW759_connectExtension', function (e) {
         }
 
       });
+
+      $('.summary-content-mail .body-tab .tab-item').removeClass('loading');
+
+      // add event
+      self.addEventForUI(idPopup);
+      self.addEventForAction(idPopup);
     },
 
     // Handler func
@@ -958,15 +945,29 @@ document.addEventListener('RW759_connectExtension', function (e) {
      */
     processAddGenerateReplyMail: function (contentMail, suggestionReply) {
       const self = _MyPopup;
+      $('.result-generate .title-email').addClass('loading');
+      $('.result-generate .body-mail').addClass('loading');
+      $('#form_tell_sider').addClass('loading');
 
       let voiceConfig = self.formData.voice_setting;
       self.formData.content_mail = contentMail;
       self.formData.suggestion_old = suggestionReply;
 
-      _SendMessageManager.generateContentReplyMail(contentMail, suggestionReply, voiceConfig, (replyContent) => {
+      const params = {
+        title_mail: _MailAIGenerate.getTitleMail(),
+        content_mail: contentMail,
+        voice_config: JSON.stringify(voiceConfig),
+        reply_suggested: suggestionReply,
+      }
+
+      _SendMessageManager.generateContentReplyMail(params, (replyContent) => {
         self.generate_result_list.push(replyContent);
 
         self.handlerShowGenerateResult();
+
+        $('.result-generate .title-email').removeClass('loading');
+        $('.result-generate .body-mail').removeClass('loading');
+        $('#form_tell_sider').removeClass('loading');
       });
     },
   };
@@ -1057,6 +1058,16 @@ document.addEventListener('RW759_connectExtension', function (e) {
       return contentMail;
     },
 
+
+    /**
+     * Get title mail
+     * 
+     * @returns {string}
+     */
+    getTitleMail: function () {
+      return FoDoc.body.querySelector('.V8djrc .hP').innerHTML;
+    },
+
     // Process func
 
     /**
@@ -1120,7 +1131,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       }
     },
 
-    processRequestToShowPopup: function (contentMail) {
+    processRequestToShowPopup: function (titleMail, contentMail) {
       let btnReplyMailEl = FoDoc.body.querySelector('.ams.bkH');
       if (btnReplyMailEl) {
         btnReplyMailEl.click();
@@ -1130,7 +1141,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       find('.LW-avf.tS-tW', (elFind) => {
         _MyPopup.showPopup(idPopup);
 
-        _SendMessageManager.getDataToShowPopup(contentMail, (data) => {
+        _SendMessageManager.getDataToShowPopup(titleMail, contentMail, (data) => {
           _MyPopup.loadData(idPopup, data);
         });
 
@@ -1170,8 +1181,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
     handlerReplyBtnClick: function (event) {
       const self = _MailAIGenerate;
 
+      let titleMail = _MailAIGenerate.getTitleMail();
       let contentMail = _MailAIGenerate.getContentBodyMail();
-      self.processRequestToShowPopup(contentMail);
+      self.processRequestToShowPopup(titleMail, contentMail);
     },
 
     handlerReplyBoxBtnClick: function (event) {
@@ -1183,8 +1195,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
       if (idPopup && _MyPopup._list_popup_el[idPopup]) {
         _MyPopup.focusInput(idPopup);
       } else {
+        let titleMail = _MailAIGenerate.getTitleMail();
         let contentMail = _MailAIGenerate.getContentBodyMail();
-        self.processRequestToShowPopup(contentMail);
+        self.processRequestToShowPopup(titleMail, contentMail);
       }
     },
   };
@@ -1217,7 +1230,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
     debugLog('▲▲▲ initilize ended ! ');
   }
-  
+
   // __main__
   initialize();
 }());

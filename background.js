@@ -57,6 +57,39 @@ let DEBUG_MODE = true;
   }
 
   const GptRequest = {
+    getDataToShowPopup: async function (params, callback, retry) {
+      if (typeof retry == 'undefined') retry = 0;
+      if (retry > 5) {
+        callback({
+          summary: '',
+          reply_suggestions: [],
+          language: '',
+          key_points: [],
+        })
+        return false;
+      }
+
+      const data = new URLSearchParams();
+      for (const key in params) {
+        if (Object.hasOwnProperty.call(params, key)) {
+          data.append(key, params[key]);
+        }
+      }
+
+      const response = await fetch('http://localhost:8083/get-json-summary', {
+        method: "POST",
+        body: data,
+      });
+
+      try {
+        const dataRes = await response.json();
+        callback(dataRes);
+      } catch (error) {
+        retry++;
+        GptRequest.getDataToShowPopup(params, callback, retry);
+      }
+    },
+
     summaryContent: function (content, callback) {
       callback(summary_test);
     },
@@ -73,17 +106,46 @@ let DEBUG_MODE = true;
       callback(recommend_test);
     },
 
-    generateContentReplyMail: function (content, callback) {
-      const data = {
-        title: title_test[randomIntFromInterval(0, title_test.length - 1)],
-        body: content_reply_test[randomIntFromInterval(0, content_reply_test.length - 1)]
+    generateContentReplyMail: async function (params, callback, retry) {
+      if (typeof retry == 'undefined') retry = 0;
+      if (retry > 5) {
+        callback({
+          title: '',
+          body: '',
+        })
+        return false;
       }
-      callback(data);
+
+      const data = new URLSearchParams();
+      for (const key in params) {
+        if (Object.hasOwnProperty.call(params, key)) {
+          data.append(key, params[key]);
+        }
+      }
+
+      const response = await fetch('http://localhost:8083/generate-content-reply-mail', {
+        method: "POST",
+        body: data,
+      });
+
+      try {
+        const dataRes = await response.json();
+        callback(dataRes);
+      } catch (error) {
+        retry++;
+        GptRequest.generateContentReplyMail(params, callback, retry);
+      }
     },
   }
 
   function onRequest(request, sender, sendResponse) {
     switch (request.method) {
+      case 'get_data_to_show_popup':
+        GptRequest.getDataToShowPopup(request.data, function (summary) {
+          sendResponse(summary);
+        })
+        return true;
+
       case 'summary_content_mail':
         GptRequest.summaryContent(request.data, function (summary) {
           sendResponse(summary);
@@ -95,7 +157,7 @@ let DEBUG_MODE = true;
           sendResponse(summary);
         })
         break;
-      
+
       case 'get_key_points_content_mail':
         GptRequest.getKeyPoints(request.data, function (summary) {
           sendResponse(summary);
@@ -112,7 +174,7 @@ let DEBUG_MODE = true;
         GptRequest.generateContentReplyMail(request.data, function (recommendList) {
           sendResponse(recommendList);
         })
-        break;
+        return true;
     }
   }
 

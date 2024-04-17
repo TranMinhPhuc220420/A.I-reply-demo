@@ -50,13 +50,13 @@
 }
 
 #ai_reply_popup {
+  font-size: 14px;
   position: absolute;
   z-index: 99999;
   background-color: #fff;
   width: 450px;
-  height: 0px;
-  min-height: 555px;
-  font-size: 14px;
+  /* height: 0px;
+  min-height: 555px; */
   border-radius: 15px;
   box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;
   display: flex;
@@ -157,7 +157,13 @@
   font-weight: 600;
   font-family: "Google Sans", Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
 }
-#ai_reply_popup .title .wrap-title .right button.close {
+#ai_reply_popup .title .wrap-title .right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#ai_reply_popup .title .wrap-title .right button.close, #ai_reply_popup .title .wrap-title .right button.reload {
+  margin-left: 5px;
   border: none;
   cursor: pointer;
   border-radius: 50%;
@@ -167,10 +173,10 @@
   justify-content: center;
   align-items: center;
 }
-#ai_reply_popup .title .wrap-title .right button.close:hover {
+#ai_reply_popup .title .wrap-title .right button.close:hover, #ai_reply_popup .title .wrap-title .right button.reload:hover {
   background-color: #f8f8f8;
 }
-#ai_reply_popup .title .wrap-title .right button.close img {
+#ai_reply_popup .title .wrap-title .right button.close img, #ai_reply_popup .title .wrap-title .right button.reload img {
   width: 15px;
 }
 #ai_reply_popup .body {
@@ -199,6 +205,7 @@
 }
 #ai_reply_popup .body .main .summary-content-mail {
   height: 100%;
+  min-height: 200px;
   border-bottom: 1px solid #eaeaea;
 }
 #ai_reply_popup .body .main .summary-content-mail .top {
@@ -241,12 +248,16 @@
 #ai_reply_popup .body .main .summary-content-mail .body-tab .tab-item {
   display: none;
 }
+#ai_reply_popup .body .main .summary-content-mail .body-tab .tab-item.loading {
+  min-height: 150px;
+}
 #ai_reply_popup .body .main .summary-content-mail .body-tab .tab-item.active {
-  display: inline;
+  display: block;
 }
 #ai_reply_popup .body .main .reply-suggestions {
   padding-top: 10px;
   padding-bottom: 10px;
+  min-height: 50%;
 }
 #ai_reply_popup .body .main .reply-suggestions.active {
   display: inline;
@@ -292,19 +303,45 @@
 #ai_reply_popup .body .main .reply-suggestions .option:hover {
   background-color: #f8f8f8;
 }
+#ai_reply_popup .body .main .reply-suggestions .option.selected {
+  background-color: rgb(167 134 233);
+  transform: scale(1.02);
+  padding: 5px 0;
+  margin-bottom: 10px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+#ai_reply_popup .body .main .reply-suggestions .option.selected p {
+  color: #fff;
+}
 #ai_reply_popup .body .main .reply-suggestions .option p {
   padding: 10px 5px;
+  pointer-events: none;
 }
 #ai_reply_popup .body .main .reply-suggestions .option p span {
   margin-left: 5px;
   color: #471aa1;
+}
+#ai_reply_popup .body .main .reply-suggestions .option:nth-child(3) {
+  min-height: 30px;
+}
+#ai_reply_popup .body .main .reply-suggestions .option:nth-child(4) {
+  min-height: 50px;
+}
+#ai_reply_popup .body .main .reply-suggestions .option:nth-child(4)::before {
+  animation-delay: 0.2s;
+}
+#ai_reply_popup .body .main .reply-suggestions .option:nth-child(5) {
+  min-height: 45px;
+}
+#ai_reply_popup .body .main .reply-suggestions .option:nth-child(5)::before {
+  animation-delay: 0.4s;
 }
 #ai_reply_popup .body .main .result-generate {
   padding-top: 10px;
   padding-bottom: 10px;
 }
 #ai_reply_popup .body .main .result-generate .top {
-  margin-bottom: 5px;
+  margin-bottom: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -331,6 +368,9 @@
 }
 #ai_reply_popup .body .main .result-generate .top .right .paging .icon.disable {
   fill: #9c9c9c;
+}
+#ai_reply_popup .body .main .result-generate .title-email {
+  margin-bottom: 10px;
 }
 #ai_reply_popup .body .main .result-generate .title-email p {
   font-size: 13px;
@@ -437,6 +477,9 @@
   margin: 0;
   position: relative;
 }
+#ai_reply_popup .body #form_tell_sider.loading input, #ai_reply_popup .body #form_tell_sider.loading button {
+  display: none !important;
+}
 #ai_reply_popup .body #form_tell_sider input {
   height: 35px;
   width: 100%;
@@ -526,6 +569,31 @@
 }
 #ai_reply_popup .body .action-btn .right button:hover img {
   transform: scale(1.2);
+}
+
+.loading {
+  position: relative;
+  overflow: hidden;
+  border-radius: 5px !important;
+}
+.loading::before {
+  content: "";
+  position: absolute;
+  border-radius: 5px;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, #ffffff, #f2ecff, #ffffff);
+  background-size: 200% 100%;
+  animation: slide 1.5s linear infinite;
+}
+
+@keyframes slide {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
 }
 
 /* End Popup */
