@@ -16,6 +16,69 @@ s.onload = function () {
   s.remove();
 };
 
+const LOCALE_CODES = {
+  "ar": "Arabic",
+  "am": "Amharic",
+  "bg": "Bulgarian",
+  "bn": "Bengali",
+  "ca": "Catalan",
+  "cs": "Czech",
+  "da": "Danish",
+  "de": "German",
+  "el": "Greek",
+  "en": "English",
+  "en_AU": "English (Australia)",
+  "en_GB": "English (Great Britain)",
+  "en_US": "English (USA)",
+  "es": "Spanish",
+  "es_419": "Spanish (Latin America and Caribbean)",
+  "et": "Estonian",
+  "fa": "Persian",
+  "fi": "Finnish",
+  "fil": "Filipino",
+  "fr": "French",
+  "gu": "Gujarati",
+  "he": "Hebrew",
+  "hi": "Hindi",
+  "hr": "Croatian",
+  "hu": "Hungarian",
+  "id": "Indonesian",
+  "it": "Italian",
+  "ja": "Japanese",
+  "kn": "Kannada",
+  "ko": "Korean",
+  "lt": "Lithuanian",
+  "lv": "Latvian",
+  "ml": "Malayalam",
+  "mr": "Marathi",
+  "ms": "Malay",
+  "nl": "Dutch",
+  "no": "Norwegian",
+  "pl": "Polish",
+  "pt_BR": "Portuguese (Brazil)",
+  "pt_PT": "Portuguese (Portugal)",
+  "ro": "Romanian",
+  "ru": "Russian",
+  "sk": "Slovak",
+  "sl": "Slovenian",
+  "sr": "Serbian",
+  "sv": "Swedish",
+  "sw": "Swahili",
+  "ta": "Tamil",
+  "te": "Telugu",
+  "th": "Thai",
+  "tr": "Turkish",
+  "uk": "Ukrainian",
+  "vi": "Vietnamese",
+  "zh_CN": "Chinese (China)",
+  "zh_TW": "Chinese (Taiwan)",
+
+  getNameLocale: () => {
+    return 'Vietnamese'
+    return LOCALE_CODES[chrome.i18n.getUILanguage().replaceAll('-', '_')] || 'Japanese';
+  }
+}
+
 // Event listener
 document.addEventListener('RW759_connectExtension', function (e) {
   // e.detail contains the transferred data (can be anything, ranging
@@ -199,13 +262,17 @@ document.addEventListener('RW759_connectExtension', function (e) {
     return getNewIdPopup();
   }
 
-  const renderTextStyleChatGPT = (elToRender, stringRender) => {
+  const renderTextStyleChatGPT = (elToRender, stringRender, callback) => {
     let indexText = 0;
     let timeT = setInterval(() => {
       elToRender.innerHTML += stringRender[indexText];
       indexText++;
       if (indexText >= stringRender.length) {
         clearInterval(timeT);
+
+        if (callback) {
+          callback(elToRender);
+        }
       }
     }, 5);
   }
@@ -254,14 +321,15 @@ document.addEventListener('RW759_connectExtension', function (e) {
         data: {
           title_mail: titleMail,
           content_mail: contentMail,
+          lang: LOCALE_CODES.getNameLocale()
         }
       },
         function (response) {
           callback({
-            summary: response.detailed_summary,
+            summary: response.summarize,
             key_points_list: response.key_points,
             lang_content: response.language,
-            suggestion_list: response.reply_suggestions,
+            suggestion_list: response.answer_suggest,
           });
         }
       )
@@ -282,6 +350,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
   const _MyPopup = {
     _list_popup_el: {},
     stillBoxReplyIntervalRealtime: null,
+
+    is_loading: false,
 
     formData: {
       voice_setting: {},
@@ -307,7 +377,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       let backIconUrl = chrome.runtime.getURL("icons/black-icon.png");
 
       return `
-      <div id="ai_reply_popup" class="show-form" style="transform:translateX(${transformX}px) translateY(${transformY}px) translateZ(0px)">
+      <div id="ai_reply_popup" class="show-form form-loading" style="transform:translateX(${transformX}px) translateY(${transformY}px) translateZ(0px)">
         <div class="title">
           <div class="wrap-title">
             <div class="left">
@@ -524,6 +594,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       });
 
       self.handlerUpdatePaging();
+      self.is_loading = false;
     },
 
     /**
@@ -582,10 +653,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
       self._list_popup_el[idPopup] = root;
 
       self.reLoadVoiceConfig();
-
-      // add event
-      self.addEventForUI(idPopup);
-      self.addEventForAction(idPopup);
     },
 
     /**
@@ -595,12 +662,15 @@ document.addEventListener('RW759_connectExtension', function (e) {
      */
     closePopup: function (idPopup) {
       const self = _MyPopup;
+      if (self.is_loading) return;
 
       clearInterval(self.stillBoxReplyIntervalRealtime);
       self.stillBoxReplyIntervalRealtime = null;
 
-      self._list_popup_el[idPopup].remove();
-      delete self._list_popup_el[idPopup];
+      if (self._list_popup_el[idPopup]) {
+        self._list_popup_el[idPopup].remove();
+        delete self._list_popup_el[idPopup];
+      }
     },
 
     /**
@@ -614,6 +684,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       find(clsFind, (elFind) => {
         $(clsFind).click((event) => {
+          if (self.is_loading) return;
+
           let contentMail = _MailAIGenerate.getContentBodyMail();
           let suggestionReply = event.target.getAttribute('data-sugg');
 
@@ -629,6 +701,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
       find('form#form_tell_sider', (elFind) => {
         elFind.addEventListener('submit', (event) => {
           event.preventDefault();
+
+          if (self.is_loading) return;
+
           self.handlerSubmitForm(idPopup);
         })
       });
@@ -646,14 +721,20 @@ document.addEventListener('RW759_connectExtension', function (e) {
       }, 200)
 
       $('.action-btn button.re-generate').click((event) => {
+        if (self.is_loading) return;
+
         self.handlerReloadGenerateReplyAgain();
       });
 
       $('.action-btn button.copy-cotnent').click((event) => {
+        if (self.is_loading) return;
+
         navigator.clipboard.writeText(self.generate_result_list[self.result_active].body);
       });
 
       $('.action-btn button.insert-btn').click((event) => {
+        if (self.is_loading) return;
+
         _MailAIGenerate.setMailReply(self.generate_result_list[self.result_active]);
         self.closePopup(idPopup);
       });
@@ -661,6 +742,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
       // Close popup event
       find('#ai_reply_popup .reload', (elFind) => {
         elFind.addEventListener('click', () => {
+          if (self.is_loading) return;
+
           self.closePopup(idPopup);
           _MailAIGenerate.handlerReplyBtnClick();
         })
@@ -778,6 +861,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
       // Close popup event
       find('#ai_reply_popup .close', (elFind) => {
         elFind.addEventListener('click', () => {
+          if (self.is_loading) return;
+
           self.closePopup(idPopup);
         })
       });
@@ -862,7 +947,11 @@ document.addEventListener('RW759_connectExtension', function (e) {
           optionEl.className = 'option'
 
           let pEl = document.createElement('p');
-          renderTextStyleChatGPT(pEl, itemSugg);
+          renderTextStyleChatGPT(pEl, itemSugg, (elRendered) => {
+            let spanEl = document.createElement('span');
+            spanEl.innerHTML = '→'
+            elRendered.append(spanEl);
+          });
 
           optionEl.append(pEl);
           elFind.append(optionEl);
@@ -906,11 +995,14 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       });
 
+      $('#ai_reply_popup').removeClass('form-loading');
       $('.summary-content-mail .body-tab .tab-item').removeClass('loading');
 
       // add event
       self.addEventForUI(idPopup);
       self.addEventForAction(idPopup);
+
+      _MyPopup.is_loading = false;
     },
 
     // Handler func
@@ -922,6 +1014,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
      */
     handlerSubmitForm: function (idPopup) {
       const self = _MyPopup;
+      if (self.is_loading) return;
+
       let contentMail = _MailAIGenerate.getContentBodyMail();
       let suggestionReply = FoDoc.body.querySelector('form#form_tell_sider input').value;
       self.processAddGenerateReplyMail(contentMail, suggestionReply);
@@ -934,6 +1028,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
      */
     handlerReloadGenerateReplyAgain: function (idPopup) {
       const self = _MyPopup;
+      if (self.is_loading) return;
+
       self.processAddGenerateReplyMail(self.formData.content_mail, self.formData.suggestion_old);
     },
 
@@ -945,6 +1041,11 @@ document.addEventListener('RW759_connectExtension', function (e) {
      */
     processAddGenerateReplyMail: function (contentMail, suggestionReply) {
       const self = _MyPopup;
+      if (self.is_loading) return;
+
+      self.is_loading = true;
+      $('#ai_reply_popup').addClass('form-loading');
+
       $('.result-generate .title-email').addClass('loading');
       $('.result-generate .body-mail').addClass('loading');
       $('#form_tell_sider').addClass('loading');
@@ -958,6 +1059,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
         content_mail: contentMail,
         voice_config: JSON.stringify(voiceConfig),
         reply_suggested: suggestionReply,
+        lang: LOCALE_CODES.getNameLocale(),
       }
 
       _SendMessageManager.generateContentReplyMail(params, (replyContent) => {
@@ -968,6 +1070,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
         $('.result-generate .title-email').removeClass('loading');
         $('.result-generate .body-mail').removeClass('loading');
         $('#form_tell_sider').removeClass('loading');
+        $('#ai_reply_popup').removeClass('form-loading');
       });
     },
   };
@@ -1139,6 +1242,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       const idPopup = getNewIdPopup();
       find('.LW-avf.tS-tW', (elFind) => {
+        _MyPopup.is_loading = true;
         _MyPopup.showPopup(idPopup);
 
         _SendMessageManager.getDataToShowPopup(titleMail, contentMail, (data) => {

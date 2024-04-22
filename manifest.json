@@ -8,6 +8,7 @@
         "activeTab",
         "sidePanel",
         "storage",
+        "identity",
         "scripting"
     ],
     "content_security_policy": {
@@ -19,7 +20,7 @@
                 "*://mail.google.com/*"
             ],
             "css": [
-                "styles/styles.css"
+                "styles/style.css"
             ],
             "js": [
                 "jquery-1.10.2.min.js",
@@ -53,7 +54,7 @@
             "resources": [
                 "bootstrap.bundle.min.js",
                 "script.js",
-                "styles/styles.css",
+                "styles/style.css",
                 "images/sateraito_logo.png",
                 "images/favicon.png",
                 "icons/close-icon.png",

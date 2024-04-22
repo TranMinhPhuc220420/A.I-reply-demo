@@ -16,7 +16,7 @@
 }
 
 .sateraito-ai-reply:hover {
-  background-color: #2021240f;
+  background-color: rgba(32, 33, 36, 0.0588235294);
 }
 
 .sateraito-ai-reply img,
@@ -26,7 +26,7 @@
 
 .sateraito-ai-reply span {
   font-weight: 500;
-  font-size: .875rem;
+  font-size: 0.875rem;
 }
 
 .bbar-sateraito-ai-reply {
@@ -38,8 +38,6 @@
   margin: 4px 12px 4px 0;
 }
 
-
-/* Start Popup */
 #root_ai_reply_popup {
   width: 0;
   height: 0;
@@ -55,8 +53,6 @@
   z-index: 99999;
   background-color: #fff;
   width: 450px;
-  /* height: 0px;
-  min-height: 555px; */
   border-radius: 15px;
   box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;
   display: flex;
@@ -133,6 +129,16 @@
   transform: translateX(0px);
   opacity: 1;
 }
+#ai_reply_popup.form-loading .title .wrap-title .right button.close,
+#ai_reply_popup.form-loading .title .wrap-title .right button.reload {
+  cursor: no-drop !important;
+}
+#ai_reply_popup.form-loading .body .main .reply-suggestions .option {
+  cursor: wait;
+}
+#ai_reply_popup.form-loading .body #form_tell_sider input, #ai_reply_popup.form-loading .body #form_tell_sider button {
+  cursor: no-drop !important;
+}
 #ai_reply_popup .title {
   cursor: pointer;
   border-bottom: 1px solid #eaeaea;
@@ -162,7 +168,8 @@
   justify-content: center;
   align-items: center;
 }
-#ai_reply_popup .title .wrap-title .right button.close, #ai_reply_popup .title .wrap-title .right button.reload {
+#ai_reply_popup .title .wrap-title .right button.close,
+#ai_reply_popup .title .wrap-title .right button.reload {
   margin-left: 5px;
   border: none;
   cursor: pointer;
@@ -173,10 +180,12 @@
   justify-content: center;
   align-items: center;
 }
-#ai_reply_popup .title .wrap-title .right button.close:hover, #ai_reply_popup .title .wrap-title .right button.reload:hover {
+#ai_reply_popup .title .wrap-title .right button.close:hover,
+#ai_reply_popup .title .wrap-title .right button.reload:hover {
   background-color: #f8f8f8;
 }
-#ai_reply_popup .title .wrap-title .right button.close img, #ai_reply_popup .title .wrap-title .right button.reload img {
+#ai_reply_popup .title .wrap-title .right button.close img,
+#ai_reply_popup .title .wrap-title .right button.reload img {
   width: 15px;
 }
 #ai_reply_popup .body {
@@ -248,11 +257,11 @@
 #ai_reply_popup .body .main .summary-content-mail .body-tab .tab-item {
   display: none;
 }
-#ai_reply_popup .body .main .summary-content-mail .body-tab .tab-item.loading {
-  min-height: 150px;
-}
 #ai_reply_popup .body .main .summary-content-mail .body-tab .tab-item.active {
   display: block;
+}
+#ai_reply_popup .body .main .summary-content-mail .body-tab .tab-item.loading {
+  min-height: 150px;
 }
 #ai_reply_popup .body .main .reply-suggestions {
   padding-top: 10px;
@@ -304,7 +313,7 @@
   background-color: #f8f8f8;
 }
 #ai_reply_popup .body .main .reply-suggestions .option.selected {
-  background-color: rgb(167 134 233);
+  background-color: #e1d2ff;
   transform: scale(1.02);
   padding: 5px 0;
   margin-bottom: 10px;
@@ -341,7 +350,7 @@
   padding-bottom: 10px;
 }
 #ai_reply_popup .body .main .result-generate .top {
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -375,7 +384,6 @@
 #ai_reply_popup .body .main .result-generate .title-email p {
   font-size: 13px;
   color: #9c9c9c;
-  margin-bottom: 10px;
   display: none;
 }
 #ai_reply_popup .body .main .result-generate .title-email p.active {
@@ -477,13 +485,14 @@
   margin: 0;
   position: relative;
 }
-#ai_reply_popup .body #form_tell_sider.loading input, #ai_reply_popup .body #form_tell_sider.loading button {
+#ai_reply_popup .body #form_tell_sider.loading input,
+#ai_reply_popup .body #form_tell_sider.loading button {
   display: none !important;
 }
 #ai_reply_popup .body #form_tell_sider input {
   height: 35px;
   width: 100%;
-  padding: 0 5px;
+  padding: 0 40px 0 5px;
   border-radius: 8px;
   border: 1px solid #ddd;
   transition: 0.25s all;
@@ -594,6 +603,4 @@
   100% {
     background-position: -100% 0;
   }
-}
-
-/* End Popup */
+}/*# sourceMappingURL=style.css.map */
