@@ -72,7 +72,7 @@
   font-size: 14px;
 
   position: absolute;
-  z-index: 99999;
+  z-index: 2147483647;
   background-color: #fff;
 
   width: 450px;
@@ -168,7 +168,7 @@
     .body {
       .main {
         .popup-voice-config {
-          z-index: 999999;
+          z-index: 2147483647;
           transform: translateX(0px);
           opacity: 1;
         }
@@ -433,25 +433,29 @@
             }
           }
 
-          &:nth-child(3) {
-            min-height: 30px;
+          &.loading {
+            &:nth-child(3) {
+              min-height: 30px;
 
-            &::after {}
-          }
-
-          &:nth-child(4) {
-            min-height: 50px;
-
-            &::before {
-              animation-delay: 0.2s;
+              &::before {
+                animation: slide 1s linear infinite;
+              }
             }
-          }
-
-          &:nth-child(5) {
-            min-height: 45px;
-
-            &::before {
-              animation-delay: 0.4s;
+  
+            &:nth-child(4) {
+              min-height: 50px;
+  
+              &::before {
+                animation: slide 1.25s linear infinite;
+              }
+            }
+  
+            &:nth-child(5) {
+              min-height: 45px;
+  
+              &::before {
+                animation: slide 1.5s linear infinite;
+              }
             }
           }
         }
@@ -762,6 +766,20 @@
     }
   }
 
+}
+
+.quick-selection {
+  position: absolute;
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 4px 12px 0px;
+  background-color: #fff;
+  padding: 10px 20px;
+}
+
+.quick-action-container {
+  z-index: 2147483647;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .loading {

@@ -164,6 +164,10 @@ document.addEventListener('RW759_connectExtension', function (e) {
           value: 'empathetic',
           display: `🥺 Empathetic`
         },
+        {
+          value: 'funny',
+          display: `😂 Funny`
+        },
       ],
     },
     {
@@ -172,12 +176,12 @@ document.addEventListener('RW759_connectExtension', function (e) {
       icon: formatAlignIconUrl,
       options: [
         {
-          value: 'short',
-          display: `Short`
-        },
-        {
           value: 'medium',
           display: `Medium`
+        },
+        {
+          value: 'short',
+          display: `Short`
         },
         {
           value: 'long',
@@ -1017,7 +1021,10 @@ document.addEventListener('RW759_connectExtension', function (e) {
       if (self.is_loading) return;
 
       let contentMail = _MailAIGenerate.getContentBodyMail();
-      let suggestionReply = FoDoc.body.querySelector('form#form_tell_sider input').value;
+
+      let suggestionReply = FoDoc.body.querySelector('form#form_tell_sider input').value.trim();
+      if (suggestionReply == '') return;
+
       self.processAddGenerateReplyMail(contentMail, suggestionReply);
     },
 
@@ -1074,6 +1081,34 @@ document.addEventListener('RW759_connectExtension', function (e) {
       });
     },
   };
+
+  const _QuickActionPopup = {
+    is_show: false,
+
+    showPopup: (value, posX, posY) => {
+      const self = _QuickActionPopup;
+      
+      let containerQuickEl = document.querySelector('.chat-gpt-quick-query-container .quick-action-container');
+      let quickEl = document.querySelector('.chat-gpt-quick-query-container .quick-action-container .quick-selection');
+
+      if (value != '') {
+        self.is_show = true;
+        if (!quickEl) {
+          quickEl = document.createElement('div');
+          quickEl.className = "quick-selection";
+        }
+        quickEl.innerHTML = value;
+        quickEl.style.top = posY + 'px';
+        quickEl.style.left = posX + 'px';
+
+        containerQuickEl.append(quickEl);
+      } else {
+        if (quickEl && !self.is_show) {
+          quickEl.remove();
+        }
+      }
+    }
+  }
 
   /**
    * Mail Add-on
@@ -1327,9 +1362,26 @@ document.addEventListener('RW759_connectExtension', function (e) {
       // TODO::
     }, false);
 
+    let quickRoot = document.createElement('div');
+    quickRoot.className = 'chat-gpt-quick-query-container';
+    quickRoot.innerHTML = `
+      <div class="ant-app">
+        <div class="quick-action-container">
+        </div>
+      </div>
+    `;
+    document.body.append(quickRoot);
+
     document.addEventListener("mouseup", (event) => {
-      let text_selected = document.getSelection().toString();
-      chrome.storage.sync.set({ text_selected: text_selected });
+      let clientY = event.clientY + 15;
+      let clientX = event.clientX + 10;
+
+      // setTimeout(() => {
+      //   let text_selected = document.getSelection().toString().trim();
+      //   chrome.storage.sync.set({ text_selected: text_selected });
+
+      //   _QuickActionPopup.showPopup(text_selected, clientX, clientY);
+      // }, 100)
     });
 
     debugLog('▲▲▲ initilize ended ! ');

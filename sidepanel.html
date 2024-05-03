@@ -5,24 +5,232 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>My Sidepanel</title>
 
-    <link rel="stylesheet" href="bootstrap.min.css">
     <link rel="stylesheet" href="styles/sidepanel.css">
 </head>
 
 <body>
-    <div class="container">
-        <h1>Write</h1>
+    <div id="root_gpt" class="gpt-layout ui-001">
 
-        <div class="mb-1">
-            <textarea id="original_text" rows="3" class="form-control" placeholder="The original text to which you want to reply"></textarea>
-        </div>
-        <div class="mb-1">
-            <textarea id="content_of_reply" rows="5" class="form-control" placeholder="The general content of your reply to the above text Press Enter to generate draft"></textarea>
+        <main>
+            <div class="title">
+                <div class="left">
+                    <!-- WrapperManager.addTabToTitleMain: func -->
+                </div>
+                <div class="right">
+                    <div class="btn collapse-navbar">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M0 0h24v24H0z" fill="none" />
+                            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab_container" class="tab body">
+
+                <!-- <div id="write_tab" class="tab-item active">
+                    <div class="tab">
+                        <div class="tab-title">
+                            <div class="item active" key_tab="compose_tab">
+                                <span>Compose</span>
+                            </div>
+                            <div class="item" key_tab="reply_tab">
+                                <span>Reply</span>
+                            </div>
+                        </div>
+                        <div class="tab-body">
+                            <span id="compose_tab" class="tab-item active">
+                                <textarea
+                                    placeholder="The topic you want to compose. Press Enter to generate draft">Lỗi hệ thống, không thể upload files lên server. Mong được hướng dẫn nếu chưa đúng cách upload, yêu cầu sửa lỗi gắp nếu lỗi từ hệ thống server</textarea>
+                            </span>
+                            <span id="reply_tab" class="tab-item ">
+                                <textarea placeholder="The original text to which you want to reply"></textarea>
+                                <textarea
+                                    placeholder="The general content of your reply to the above text. Press Enter to generate draft"></textarea>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="voice-config">
+
+                        <div class="formality config">
+                            <div class="title">
+                                <img class="icon" src="./icons/description-icon.svg" alt="description-icon">
+                                <span class="text">Formality:</span>
+                            </div>
+                            <div class="options">
+                                <button value="casual" class="item active">📝 Casual</button>
+                                <button value="neutral" class="item">📑 Neutral</button>
+                                <button value="formal" class="item">✉️ Formal</button>
+                            </div>
+                        </div>
+
+                        <div class="tone config">
+                            <div class="title">
+                                <img class="icon" src="./icons/emoji-emotions-icon.svg" alt="emoji-emotions-icon">
+                                <span class="text">Tone:</span>
+                            </div>
+                            <div class="options">
+                                <button value="friendly" class="item">😀 Friendly</button>
+                                <button value="personable" class="item active">🧐 Personable</button>
+                                <button value="informational" class="item">🤓 Informational</button>
+                                <button value="witty" class="item">😉 Witty</button>
+                                <button value="confident" class="item">😎 Confident</button>
+                                <button value="direct" class="item">😲 Direct</button>
+                                <button value="enthusiastic" class="item">🥰 Enthusiastic</button>
+                                <button value="empathetic" class="item">🥺 Empathetic</button>
+                            </div>
+                        </div>
+
+                        <div class="email-length config">
+                            <div class="title">
+                                <img class="icon" src="./icons/format-align-icon.svg" alt="format-align-icon">
+                                <span class="text">Email length:</span>
+                            </div>
+                            <div class="options">
+                                <button value="short" class="item text active">Short</button>
+                                <button value="medium" class="item text">Medium</button>
+                                <button value="long" class="item text">Long</button>
+                            </div>
+                        </div>
+
+                        <div class="your-language config">
+                            <div class="title">
+                                <img class="icon" src="./icons/translate.svg" alt="account-circle-icon">
+                                <span class="text">Language:</span>
+                            </div>
+                            <div class="options">
+                                <button value="english" class="item text active">English</button>
+                                <button class="item text combobox" id="language_cbx">
+                                    <span>...</span>
+                                    <ul class="popover-cbx wrap-item">
+                                        <li class="combobox-item" value="vietnamese">
+                                            <div class="name">Tiếng Việt</div>
+                                            <div class="sub">Vietnamese</div>
+                                        </li>
+                                        <li class="combobox-item" value="japanese">
+                                            <div class="name">日本語</div>
+                                            <div class="sub">Japanese</div>
+                                        </li>
+                                        <li class="combobox-item" value="korean">
+                                            <div class="name">한국어</div>
+                                            <div class="sub">Korean</div>
+                                        </li>
+                                    </ul>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="version config">
+                            <div class="options">
+                                <button class="item text version-gpt combobox" id="version_gpt">
+                                    <div class="content">
+                                        <img src="./icons/chatgpt-icon.svg" alt="" srcset="">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                                            <path d="M0 0h24v24H0z" fill="none" />
+                                            <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" />
+                                        </svg>
+                                    </div>
+                                    <ul class="popover-cbx wrap-item type-icon">
+                                        <li class="combobox-item" value="gpt-3.5-turbo">
+                                            <div class="icon">
+                                                <img src="./icons/chatgpt-icon.svg" alt="" srcset="">
+                                            </div>
+                                            <div class="name">GPT-3.5 Turbo</div>
+                                        </li>
+                                        <li class="combobox-item" value="gpt-4-turbo">
+                                            <div class="icon">
+                                                <img src="./icons/chatgpt-4-icon.svg" alt="" srcset="">
+                                            </div>
+                                            <div class="name">GPT-4 Turbo</div>
+                                        </li>
+                                        <li class="combobox-item" value="gemini">
+                                            <div class="icon">
+                                                <img src="./icons/google-gemini-icon.svg" alt="" srcset="">
+                                            </div>
+                                            <div class="name">Gemini 1.0 Pro</div>
+                                        </li>
+                                    </ul>
+                                </button>
+                            </div>
+
+                            <button class="submit-generate">Generate draft</button>
+                        </div>
+
+                    </div>
+
+                    <div id="result">
+                        <div class="title">
+                            <span class="text">Result:</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="ocr_tab" class="tab-item">
+                    OCR
+                </div>
+
+                <div id="translate_tab" class="tab-item">
+                    Translate
+                </div>
+
+                <div id="grammar_tab" class="tab-item">
+                    Grammar
+                </div> -->
+
+            </div>
+        </main>
+
+        <div class="sidebar">
+
+            <div class="body">
+                <div class="action">
+                    <div class="btn collapse" tooltip="Collapse Navbar">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="rgba(0, 0, 0, .82)">
+                            <path d="M0 0h24v24H0V0z" fill="none" />
+                            <path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z" />
+                        </svg>
+                    </div>
+                    <div class="btn full-page" tooltip="Full page chat">
+                        <svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24"
+                            fill="rgba(0, 0, 0, .82)">
+                            <rect fill="none" height="24" width="24" />
+                            <polygon
+                                points="21,11 21,3 13,3 16.29,6.29 6.29,16.29 3,13 3,21 11,21 7.71,17.71 17.71,7.71" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="menu">
+                    <!-- WrapperManager.addTabToSidebar: func -->
+                </div>
+            </div>
+
+            <div class="footer">
+                <div class="left">
+                    <div class="item setting">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <g>
+                                <path d="M0,0h24v24H0V0z" fill="none" />
+                                <path
+                                    d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z" />
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+                <div class="right">
+                    <div class="avatar">
+                        <img src="./avatar.jpg" alt="">
+                    </div>
+                </div>
+
+            </div>
+
         </div>
     </div>
 </body>
 
-<script src="./bootstrap.bundle.min.js"></script>
+<script src="./jquery-1.10.2.min.js"></script>
 <script src="./scripts/sidepanel.js"></script>
 
 </html>
