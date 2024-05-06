@@ -461,43 +461,46 @@ const TabWriteManager = {
     let reloadIconUrl = chrome.runtime.getURL("icons/refresh-icon.png");
     let copyIconUrl = chrome.runtime.getURL("icons/content-copy-icon.png");
 
-    return `<div class="tab">
-              <div class="tab-title">
-                <div class="item" key_tab="compose_tab">
-                  <span>Compose</span>
+    return `
+            <div class="form-config">
+              <div class="tab">
+                <div class="tab-title">
+                  <div class="item" key_tab="compose_tab">
+                    <span>Compose</span>
+                  </div>
+                  <div class="item" key_tab="reply_tab">
+                    <span>Reply</span>
+                  </div>
                 </div>
-                <div class="item" key_tab="reply_tab">
-                  <span>Reply</span>
+                <div class="tab-body">
+                  <span id="compose_tab" class="tab-item">
+                    <textarea placeholder="The topic you want to compose. Press Enter to generate draft"></textarea>
+                  </span>
+                  <span id="reply_tab" class="tab-item ">
+                    <textarea class="original_text_reply" placeholder="The original text to which you want to reply"></textarea>
+                    <textarea class="general_content_reply" placeholder="The general content of your reply to the above text. Press Enter to generate draft"></textarea>
+                  </span>
                 </div>
               </div>
-              <div class="tab-body">
-                <span id="compose_tab" class="tab-item">
-                  <textarea placeholder="The topic you want to compose. Press Enter to generate draft"></textarea>
-                </span>
-                <span id="reply_tab" class="tab-item ">
-                  <textarea class="original_text_reply" placeholder="The original text to which you want to reply"></textarea>
-                  <textarea class="general_content_reply" placeholder="The general content of your reply to the above text. Press Enter to generate draft"></textarea>
-                </span>
-              </div>
-            </div>
 
-            <div class="voice-config">
-            </div>
-
-            <div class="your-language config">
-              <div class="title">
-                <img class="icon" src="./icons/translate.svg" alt="account-circle-icon">
-                <span class="text">Language:</span>
-              </div>
-              <div class="options">
-              </div>
-            </div>
-
-            <div class="version config">
-              <div class="options">
+              <div class="voice-config">
               </div>
 
-              <button class="submit-generate">Generate draft</button>
+              <div class="your-language config">
+                <div class="title">
+                  <img class="icon" src="./icons/translate.svg" alt="account-circle-icon">
+                  <span class="text">Language:</span>
+                </div>
+                <div class="options">
+                </div>
+              </div>
+
+              <div class="version config">
+                <div class="options">
+                </div>
+
+                <button class="submit-generate">Generate draft</button>
+              </div>
             </div>
 
             <div id="result" class="hidden">
@@ -774,24 +777,29 @@ const TabWriteManager = {
 
     $(`#${self.idTab} #result .result-generate`).html('');
 
+    let resultActiveEl = null;
     for (let i = 0; i < result.length; i++) {
       const item = result[i];
       let isActive = (i == self.result_active)
 
-      let textEl = document.createElement('textarea');
+      let textEl = document.createElement('div');
       textEl.setAttribute('disabled', true);
-      textEl.innerHTML = item;
+
+      textEl.innerHTML = item.replaceAll('\n', '<br/>');
       
       let resultDivEl = document.createElement('div');
       resultDivEl.classList = ['result-item'];
       resultDivEl.setAttribute('data-index', i);
       if (isActive) {
+        resultActiveEl = resultDivEl
         resultDivEl.classList.add('active');
       }
       resultDivEl.append(textEl);
       
       $(`#${self.idTab} #result .result-generate`).append(resultDivEl);
     }
+
+    $(`#${self.idTab} #result .result-generate`).css('height', `${resultActiveEl.offsetHeight}px`)
 
     self.handlerUpdatePaging();
     self.is_loading = false;
@@ -885,14 +893,15 @@ const TabWriteManager = {
     // process add generate write
     self.processAddGenerateWrite();
 
-    const tabContainerEl = document.getElementById(`tab_container`);
+    const containerEl = document.getElementById(`tab_container`);
+    const formConfigEl = document.body.querySelector(`#${self.idTab} .form-config`);
     const resultEl = document.body.querySelector(`#${self.idTab} #result`);
 
     $(resultEl).removeClass('hidden');
-    $(resultEl).css('height', tabContainerEl.offsetHeight + 'px');
+    // $(resultEl).css('height', formConfigEl.offsetHeight + 'px');
     
-    $(tabContainerEl).animate({
-      scrollTop: tabContainerEl.offsetHeight
+    $(containerEl).animate({
+      scrollTop: $(resultEl).offset().top
     }, 500);
   },
 
@@ -1015,7 +1024,9 @@ const WrapperManager = {
     const heightMain = document.body.querySelector('.gpt-layout main').offsetHeight;
     const heightTitleMain = document.body.querySelector('.gpt-layout main .title').offsetHeight;
     const heightFooterMain = document.body.querySelector('footer').offsetHeight;
-    // document.getElementById('tab_container').style.height = `${document.body.offsetHeight - 110}px`
+
+    $('main .wrap-content').css('height', `${heightMain - heightFooterMain}px`);
+    $('#tab_container').css('height', `${heightMain - (heightFooterMain + heightTitleMain)}px`);
   },
 
   initTab: () => {

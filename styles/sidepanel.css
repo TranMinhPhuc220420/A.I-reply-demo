@@ -106,15 +106,14 @@ body ul li {
   font-weight: 500;
 }
 .gpt-layout.ui-001 main {
-  width: calc(100% - 60px);
+  width: calc(100% - 40px);
   border-radius: 10px;
 }
 .gpt-layout.ui-001 main .title .right .collapse-navbar {
   display: none;
 }
 .gpt-layout.ui-001 .sidebar {
-  width: 60px;
-  max-width: 60px;
+  width: 40px;
   padding: 15px 3px 3px 3px;
   display: flex;
   justify-content: space-between;
@@ -302,11 +301,14 @@ body ul li {
 }
 .gpt-layout main {
   background-color: #fdfdfd;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
 }
 .gpt-layout main .title {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 12px;
+  padding: 5px 0 10px 10px;
 }
 .gpt-layout main .title .left .title {
   display: none;
@@ -335,9 +337,6 @@ body ul li {
   cursor: pointer;
 }
 .gpt-layout main #tab_container {
-  padding-right: 15px;
-}
-.gpt-layout main .tab {
   overflow: auto;
 }
 .gpt-layout main .tab .tab-item {
@@ -355,6 +354,7 @@ body ul li {
   display: flex;
   justify-content: start;
   align-items: center;
+  padding: 5px 0 5px 10px;
 }
 .gpt-layout main footer img {
   width: 15px;
@@ -437,7 +437,7 @@ body ul li {
 .gpt-layout #ocr_tab,
 .gpt-layout #translate_tab,
 .gpt-layout #grammar_tab {
-  padding-right: 5px;
+  padding: 0 10px 0 10px;
 }
 .gpt-layout #write_tab .tab {
   height: unset;
@@ -504,27 +504,30 @@ body ul li {
 .gpt-layout #write_tab .tab .tab-body .tab-item textarea:nth-child(2) {
   margin-top: 10px;
 }
-.gpt-layout #write_tab .voice-config {
+.gpt-layout #write_tab .form-config {
+  margin-bottom: 100px;
+}
+.gpt-layout #write_tab .form-config .voice-config {
   margin-top: 20px;
 }
-.gpt-layout #write_tab .voice-config .config {
+.gpt-layout #write_tab .form-config .voice-config .config {
   margin-bottom: 20px;
 }
-.gpt-layout #write_tab .voice-config .config .title {
+.gpt-layout #write_tab .form-config .voice-config .config .title {
   display: flex;
   align-items: center;
   justify-content: start;
   margin-bottom: 5px;
 }
-.gpt-layout #write_tab .voice-config .config .title .text {
+.gpt-layout #write_tab .form-config .voice-config .config .title .text {
   margin-left: 4px;
   color: #9c9c9c;
 }
-.gpt-layout #write_tab .voice-config .config .options .combobox .item {
+.gpt-layout #write_tab .form-config .voice-config .config .options .combobox .item {
   text-align: start;
   padding: 5px 0 5px 10px;
 }
-.gpt-layout #write_tab .voice-config .config .options .item {
+.gpt-layout #write_tab .form-config .voice-config .config .options .item {
   margin-bottom: 5px;
   cursor: pointer;
   border: none;
@@ -538,24 +541,24 @@ body ul li {
   border: #fff 1px solid;
   position: relative;
 }
-.gpt-layout #write_tab .voice-config .config .options .item:hover {
+.gpt-layout #write_tab .form-config .voice-config .config .options .item:hover {
   background-color: #ececec;
 }
-.gpt-layout #write_tab .voice-config .config .options .item:hover .close {
+.gpt-layout #write_tab .form-config .voice-config .config .options .item:hover .close {
   opacity: 1;
 }
-.gpt-layout #write_tab .voice-config .config .options .item.active {
+.gpt-layout #write_tab .form-config .voice-config .config .options .item.active {
   color: #471aa1;
   border: #471aa1 1px solid;
 }
-.gpt-layout #write_tab .voice-config .config .options .item.text {
+.gpt-layout #write_tab .form-config .voice-config .config .options .item.text {
   padding-left: 15px;
   padding-right: 15px;
 }
-.gpt-layout #write_tab .voice-config .config .options .item span:first-child {
+.gpt-layout #write_tab .form-config .voice-config .config .options .item span:first-child {
   pointer-events: none;
 }
-.gpt-layout #write_tab .voice-config .config .options .item .close {
+.gpt-layout #write_tab .form-config .voice-config .config .options .item .close {
   position: absolute;
   right: -7px;
   top: -7px;
@@ -567,29 +570,29 @@ body ul li {
   opacity: 0;
   transition: 0.15s all;
 }
-.gpt-layout #write_tab .voice-config .config .options .item .close .icon {
+.gpt-layout #write_tab .form-config .voice-config .config .options .item .close .icon {
   height: 18px;
   width: 18px;
 }
-.gpt-layout #write_tab .your-language {
+.gpt-layout #write_tab .form-config .your-language {
   margin-top: 20px;
   margin-bottom: 20px;
 }
-.gpt-layout #write_tab .your-language .title {
+.gpt-layout #write_tab .form-config .your-language .title {
   display: flex;
   align-items: center;
   justify-content: start;
   margin-bottom: 5px;
 }
-.gpt-layout #write_tab .your-language .title .text {
+.gpt-layout #write_tab .form-config .your-language .title .text {
   margin-left: 4px;
   color: #9c9c9c;
 }
-.gpt-layout #write_tab .your-language .options .combobox .item {
+.gpt-layout #write_tab .form-config .your-language .options .combobox .item {
   text-align: start;
   padding: 5px 0 5px 10px;
 }
-.gpt-layout #write_tab .your-language .options .item {
+.gpt-layout #write_tab .form-config .your-language .options .item {
   cursor: pointer;
   border: none;
   background-color: #f4f4f4;
@@ -603,24 +606,24 @@ body ul li {
   position: relative;
   margin-bottom: 5px;
 }
-.gpt-layout #write_tab .your-language .options .item:hover {
+.gpt-layout #write_tab .form-config .your-language .options .item:hover {
   background-color: #ececec;
 }
-.gpt-layout #write_tab .your-language .options .item:hover .close {
+.gpt-layout #write_tab .form-config .your-language .options .item:hover .close {
   opacity: 1;
 }
-.gpt-layout #write_tab .your-language .options .item.active {
+.gpt-layout #write_tab .form-config .your-language .options .item.active {
   color: #471aa1;
   border: #471aa1 1px solid;
 }
-.gpt-layout #write_tab .your-language .options .item.text {
+.gpt-layout #write_tab .form-config .your-language .options .item.text {
   padding-left: 15px;
   padding-right: 15px;
 }
-.gpt-layout #write_tab .your-language .options .item span:first-child {
+.gpt-layout #write_tab .form-config .your-language .options .item span:first-child {
   pointer-events: none;
 }
-.gpt-layout #write_tab .your-language .options .item .close {
+.gpt-layout #write_tab .form-config .your-language .options .item .close {
   position: absolute;
   right: -7px;
   top: -7px;
@@ -632,11 +635,11 @@ body ul li {
   opacity: 0;
   transition: 0.15s all;
 }
-.gpt-layout #write_tab .your-language .options .item .close .icon {
+.gpt-layout #write_tab .form-config .your-language .options .item .close .icon {
   height: 18px;
   width: 18px;
 }
-.gpt-layout #write_tab .version {
+.gpt-layout #write_tab .form-config .version {
   margin-top: 20px;
   margin-bottom: 20px;
   margin-top: 20px;
@@ -644,7 +647,7 @@ body ul li {
   justify-content: start;
   align-items: center;
 }
-.gpt-layout #write_tab .version button.submit-generate {
+.gpt-layout #write_tab .form-config .version button.submit-generate {
   width: 100%;
   max-width: 250px;
   padding: 10px 0;
@@ -657,34 +660,34 @@ body ul li {
   cursor: pointer;
   transition: 0.25s all;
 }
-.gpt-layout #write_tab .version button.submit-generate:hover {
+.gpt-layout #write_tab .form-config .version button.submit-generate:hover {
   background-color: #6135bb;
 }
-.gpt-layout #write_tab .version .title {
+.gpt-layout #write_tab .form-config .version .title {
   display: flex;
   align-items: center;
   justify-content: start;
   margin-bottom: 5px;
 }
-.gpt-layout #write_tab .version .title .text {
+.gpt-layout #write_tab .form-config .version .title .text {
   margin-left: 4px;
   color: #9c9c9c;
 }
-.gpt-layout #write_tab .version .options .combobox .content {
+.gpt-layout #write_tab .form-config .version .options .combobox .content {
   display: flex;
   justify-content: center;
   align-items: center;
   pointer-events: none;
 }
-.gpt-layout #write_tab .version .options .combobox .content img {
+.gpt-layout #write_tab .form-config .version .options .combobox .content img {
   width: 20px;
   border-radius: 50%;
 }
-.gpt-layout #write_tab .version .options .combobox .content svg {
+.gpt-layout #write_tab .form-config .version .options .combobox .content svg {
   width: 18px;
   fill: #2a2a2a;
 }
-.gpt-layout #write_tab .version .options .item {
+.gpt-layout #write_tab .form-config .version .options .item {
   cursor: pointer;
   border: none;
   background-color: #f4f4f4;
@@ -697,24 +700,24 @@ body ul li {
   border: #fff 1px solid;
   position: relative;
 }
-.gpt-layout #write_tab .version .options .item:hover {
+.gpt-layout #write_tab .form-config .version .options .item:hover {
   background-color: #ececec;
 }
-.gpt-layout #write_tab .version .options .item:hover .close {
+.gpt-layout #write_tab .form-config .version .options .item:hover .close {
   opacity: 1;
 }
-.gpt-layout #write_tab .version .options .item.active {
+.gpt-layout #write_tab .form-config .version .options .item.active {
   color: #471aa1;
   border: #471aa1 1px solid;
 }
-.gpt-layout #write_tab .version .options .item.text {
+.gpt-layout #write_tab .form-config .version .options .item.text {
   padding-left: 15px;
   padding-right: 15px;
 }
-.gpt-layout #write_tab .version .options .item span:first-child {
+.gpt-layout #write_tab .form-config .version .options .item span:first-child {
   pointer-events: none;
 }
-.gpt-layout #write_tab .version .options .item .close {
+.gpt-layout #write_tab .form-config .version .options .item .close {
   position: absolute;
   right: -7px;
   top: -7px;
@@ -726,12 +729,13 @@ body ul li {
   opacity: 0;
   transition: 0.15s all;
 }
-.gpt-layout #write_tab .version .options .item .close .icon {
+.gpt-layout #write_tab .form-config .version .options .item .close .icon {
   height: 18px;
   width: 18px;
 }
 .gpt-layout #write_tab #result {
   margin-top: 50px;
+  height: 100%;
 }
 .gpt-layout #write_tab #result .result-title {
   display: flex;
@@ -782,7 +786,6 @@ body ul li {
 }
 .gpt-layout #write_tab #result .result-generate .result-item textarea {
   width: 100%;
-  height: 90%;
   background-color: #fff;
   border: none;
   resize: none;
@@ -791,6 +794,7 @@ body ul li {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 50px;
 }
 .gpt-layout #write_tab #result .result-footer .btn {
   border: none;
