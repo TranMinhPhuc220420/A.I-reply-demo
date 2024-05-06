@@ -136,6 +136,50 @@ let DEBUG_MODE = true;
         GptRequest.generateContentReplyMail(params, callback, retry);
       }
     },
+
+    generateContentReply: async function (params, callback, retry) {
+      if (typeof retry == 'undefined') retry = 0;
+      if (retry > 5) {
+        callback('empty')
+        return false;
+      }
+
+      callback(`
+Title: Why would you want to build URLs using the URL
+Body: Why would you want to build URLs using the URL reversing function url_for() instead of hard-coding them into your templates?
+
+Reversing is often more descriptive than hard-coding the URLs.
+
+You can change your URLs in one go instead of needing to remember to manually change hard-coded URLs.
+
+URL building handles escaping of special characters transparently.
+
+The generated paths are always absolute, avoiding unexpected behavior of relative paths in browsers.
+
+If your application is placed outside the URL root, for example, in /myapplication instead of /, url_for() properly handles that for you.
+      `)
+      return;
+
+      const data = new URLSearchParams();
+      for (const key in params) {
+        if (Object.hasOwnProperty.call(params, key)) {
+          data.append(key, params[key]);
+        }
+      }
+
+      const response = await fetch('http://localhost:8083/generate-content-reply', {
+        method: "POST",
+        body: data,
+      });
+
+      try {
+        const dataRes = await response.json();
+        callback(dataRes);
+      } catch (error) {
+        retry++;
+        GptRequest.generateContentReply(params, callback, retry);
+      }
+    },
   }
 
   function onRequest(request, sender, sendResponse) {
@@ -172,6 +216,12 @@ let DEBUG_MODE = true;
 
       case 'generate_content_reply_mail':
         GptRequest.generateContentReplyMail(request.data, function (recommendList) {
+          sendResponse(recommendList);
+        })
+        return true;
+
+      case 'generate_content_reply':
+        GptRequest.generateContentReply(request.data, function (recommendList) {
           sendResponse(recommendList);
         })
         return true;
