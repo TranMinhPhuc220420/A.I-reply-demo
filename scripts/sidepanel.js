@@ -261,21 +261,72 @@ const LIST_TAB = [
 ];
 const VOICE_SETTING_DATA = [
   {
-    name_kind: "formality",
-    name: "Formality",
+    name_kind: "format",
+    name: "Format",
     icon: descriptionIconUrl,
     options: [
       {
-        value: 'casual',
-        display: `📝 Casual`
+        value: 'essay',
+        display: `Essay`
       },
       {
-        value: 'neutral',
-        display: `📑 Neutral`
+        value: 'paragraph',
+        display: `Paragraph`
       },
       {
-        value: 'formal',
-        display: `✉️ Formal`
+        value: 'email',
+        display: `Email`
+      },
+      {
+        value: 'idea',
+        display: `Idea`
+      },
+      {
+        value: 'blog post',
+        display: `Blog Post`
+      },
+      {
+        value: 'outline',
+        display: `Outline`
+      },
+      {
+        value: 'marketing ads',
+        display: `Marketing Ads`
+      },
+      {
+        value: 'comment',
+        display: `Comment`
+      },
+      {
+        value: 'message',
+        display: `Message`
+      },
+      {
+        value: 'twitter',
+        display: `Twitter`
+      },
+    ]
+  },
+  {
+    name_kind: "format_reply",
+    name: "Format",
+    icon: descriptionIconUrl,
+    options: [
+      {
+        value: 'comment',
+        display: `Comment`
+      },
+      {
+        value: 'email',
+        display: `Email`
+      },
+      {
+        value: 'message',
+        display: `Message`
+      },
+      {
+        value: 'twitter',
+        display: `Twitter`
       },
     ]
   },
@@ -285,40 +336,28 @@ const VOICE_SETTING_DATA = [
     icon: emojiIconUrl,
     options: [
       {
-        value: 'friendly',
-        display: `😀 Friendly`
+        value: 'formal',
+        display: `Formal`
       },
       {
-        value: 'personable',
-        display: `🧐 Personable`
+        value: 'casual',
+        display: `Casual`
       },
       {
-        value: 'informational',
-        display: `🤓 Informational`
-      },
-      {
-        value: 'witty',
-        display: `😉 Witty`
-      },
-      {
-        value: 'confident',
-        display: `😎 Confident`
-      },
-      {
-        value: 'direct',
-        display: `😲 Direct`
+        value: 'professional',
+        display: `Professional`
       },
       {
         value: 'enthusiastic',
-        display: `🥰 Enthusiastic`
+        display: `Enthusiastic`
       },
       {
-        value: 'empathetic',
-        display: `🥺 Empathetic`
+        value: 'informational',
+        display: `Informational`
       },
       {
         value: 'funny',
-        display: `😂 Funny`
+        display: `Funny`
       },
     ],
   },
@@ -377,18 +416,51 @@ const GPT_VERSION_SETTING_DATA = [
   },
 ]
 
+const _SendMessageManager = {
+  generateContentCompose: function (params, callback) {
+    chrome.runtime.sendMessage({
+      method: 'generate_content_compose_mail',
+      data: params
+    },
+      function (response) {
+        callback(response);
+      }
+    );
+  },
+
+  generateContentReply: function (params, callback) {
+    chrome.runtime.sendMessage({
+      method: 'generate_content_reply',
+      data: params
+    },
+      function (response) {
+        callback(response);
+      }
+    );
+  }
+};
+
 const TabWriteManager = {
+  is_loading: false,
   combobox_flag: false,
 
   idTab: LIST_TAB[0].id,
   formData: {
-    voice: {},
-    language: '',
-    gpt_version: '',
+    type_generate: null,
+    topic_compose: null,
+    original_text_reply: null,
+    general_content_reply: null,
+    your_lang: null,
+    gpt_version: null,
   },
+  result_active: 0,
+  generate_result_list: [],
 
   // Getter
   getVHtml: () => {
+    let reloadIconUrl = chrome.runtime.getURL("icons/refresh-icon.png");
+    let copyIconUrl = chrome.runtime.getURL("icons/content-copy-icon.png");
+
     return `<div class="tab">
               <div class="tab-title">
                 <div class="item" key_tab="compose_tab">
@@ -403,8 +475,8 @@ const TabWriteManager = {
                   <textarea placeholder="The topic you want to compose. Press Enter to generate draft"></textarea>
                 </span>
                 <span id="reply_tab" class="tab-item ">
-                  <textarea placeholder="The original text to which you want to reply"></textarea>
-                  <textarea placeholder="The general content of your reply to the above text. Press Enter to generate draft"></textarea>
+                  <textarea class="original_text_reply" placeholder="The original text to which you want to reply"></textarea>
+                  <textarea class="general_content_reply" placeholder="The general content of your reply to the above text. Press Enter to generate draft"></textarea>
                 </span>
               </div>
             </div>
@@ -428,15 +500,62 @@ const TabWriteManager = {
               <button class="submit-generate">Generate draft</button>
             </div>
 
-            <div id="result">
-              <div class="title">
-                <span class="text">Result:</span>
+            <div id="result" class="hidden">
+            
+              <div class="result-title">
+                <div class="left">
+                  <img class="icon" src="./icons/chatgpt-icon.svg" alt="gpt-version-icon">
+                  <span class="name-gpt">...</span>
+                </div>
+
+                <div class="right">
+                  <svg class="icon prev disable" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000">
+                    <path d="M0 0h24v24H0z" fill="none" />
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                  </svg>
+                  <span class="text"> _/_ </span>
+                  <svg class="icon next disable" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000">
+                    <path d="M0 0h24v24H0z" fill="none" />
+                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+                  </svg>
+                </div>
               </div>
-            </div>`
+
+              <div class="result-generate">
+              </div>
+
+              <div class="result-footer">
+                <div class="left">
+                  <button class="btn">
+                    <img src="${reloadIconUrl}" alt="">
+                  </button>
+                  <button class="btn">
+                    <img src="${copyIconUrl}" alt="">
+                  </button>
+                </div>
+                <div class="right">
+                  <button class="btn add-to-site">
+                    Add to site
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          `
   },
 
   createPanel: () => {
     const self = TabWriteManager;
+
+    self.result_active = 0;
+    self.generate_result_list = [];
+
+    self.formData.your_lang = 'english';
+    self.formData.gpt_version = GPT_VERSION_SETTING_DATA[0].value;
+    for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
+      const item = VOICE_SETTING_DATA[i];
+      self.formData[item.name_kind] = item.options[0].value;
+    }
 
     const panelEl = document.createElement('div');
     panelEl.id = self.idTab
@@ -445,6 +564,12 @@ const TabWriteManager = {
     LIST_TAB[0].onActive = self.onActive;
 
     return panelEl;
+  },
+
+  fixHeightResult: () => {
+    const tabContainerEl = document.getElementById(`write_tab`);
+    const resultEl = document.body.querySelector(`#${self.idTab} #result`);
+    $(resultEl).css('height', tabContainerEl.offsetHeight + 'px');
   },
 
   // Setter
@@ -464,7 +589,7 @@ const TabWriteManager = {
         const optionItem = config_item.options[j];
 
         let isActive = false;
-        if (self.formData.voice[config_item.name_kind] == optionItem.value) {
+        if (self.formData[config_item.name_kind] == optionItem.value) {
           isActive = true;
         }
 
@@ -500,7 +625,7 @@ const TabWriteManager = {
     }
 
     let vHtml_init = `
-      <button value="english" class="item text active">English</button>
+      <button value="english" kind="your_lang" class="item text active">English</button>
       <button class="item text combobox" id="language_cbx">
           <span class="space">...</span>
           <ul class="popover-cbx wrap-item">
@@ -591,6 +716,14 @@ const TabWriteManager = {
       const targetEl = event.target;
       const keyTab = targetEl.getAttribute('key_tab');
 
+      $(`#${self.idTab} .voice-config .format`).removeClass('hidden');
+      $(`#${self.idTab} .voice-config .format_reply`).removeClass('hidden');
+      if (keyTab == 'reply_tab') {
+        $(`#${self.idTab} .voice-config .format`).addClass('hidden');
+      } else {
+        $(`#${self.idTab} .voice-config .format_reply`).addClass('hidden');
+      }
+
       $(`#${self.idTab} .tab .tab-title .item`).removeClass('active');
       $(targetEl).addClass('active');
 
@@ -598,27 +731,129 @@ const TabWriteManager = {
       $(`#${self.idTab} .tab .tab-body #${keyTab}.tab-item`).addClass('active');
     });
 
-    // For button submit generate
-    $(`#${self.idTab} .submit-generate`).click(event => {
-      $(`#${self.idTab} #result`).css('height', $(`#tab_container`)[0].offsetHeight + 'px');
+    const handlerActive = () => {
+      $(`#${self.idTab} #result .result-generate .result-item`).removeClass('active');
+      $(`#${self.idTab} #result .result-generate .result-item[data-index="${self.result_active}"]`).addClass('active');
 
-      $(`#tab_container`).animate({
-        scrollTop: $(`#${self.idTab} #result`).offset().top
-      }, 700);
-    });
+      self.handlerUpdatePaging();
+    };
+    $(`#${self.idTab} #result .result-title .right .prev`).click((event) => {
+      if (event.target.className.baseVal.indexOf('disable') != -1) {
+        return;
+      }
+      self.result_active--;
+      handlerActive();
+    })
+    $(`#${self.idTab} #result .result-title .right .next`).click((event) => {
+      if (event.target.className.baseVal.indexOf('disable') != -1) {
+        return;
+      }
+      self.result_active++;
+      handlerActive();
+    })
+
+    // For button submit generate
+    $(`#${self.idTab} .submit-generate`).click(self.onSubmitGenerate);
 
     // For items options voice config
-    $(`#${self.idTab} .config .options .item`).click(event => {
-      const targetEl = event.target;
-      const parent = $(targetEl).parents('.options')[0];
-
-      $(parent).children('.item').removeClass('active');
-      $(targetEl).addClass('active');
-    });
+    $(`#${self.idTab} .config .options .item`).click(self.onClickConfigItem);
 
     document.body.querySelector(`#${self.idTab} #language_cbx`).onSelect = self.onSelectLanguageConfig;
-
     document.body.querySelector(`#${self.idTab} #version_gpt`).onSelect = self.onSelectVersionGptConfig;
+  },
+
+  /**
+     * Handler show generate result
+     * 
+     */
+  handlerShowGenerateResult: function () {
+    const self = TabWriteManager;
+
+    const result = self.generate_result_list;
+    self.result_active = (result.length - 1);
+
+    $(`#${self.idTab} #result .result-generate`).html('');
+
+    for (let i = 0; i < result.length; i++) {
+      const item = result[i];
+      let isActive = (i == self.result_active)
+
+      let textEl = document.createElement('textarea');
+      textEl.setAttribute('disabled', true);
+      textEl.innerHTML = item;
+      
+      let resultDivEl = document.createElement('div');
+      resultDivEl.classList = ['result-item'];
+      resultDivEl.setAttribute('data-index', i);
+      if (isActive) {
+        resultDivEl.classList.add('active');
+      }
+      resultDivEl.append(textEl);
+      
+      $(`#${self.idTab} #result .result-generate`).append(resultDivEl);
+    }
+
+    self.handlerUpdatePaging();
+    self.is_loading = false;
+  },
+
+  /**
+   * Handler update paging status
+   * 
+   */
+  handlerUpdatePaging: function () {
+    const self = TabWriteManager;
+    const result_list = self.generate_result_list;
+
+    $(`#${self.idTab} #result .result-title .right .text`).html(`${self.result_active + 1}/${result_list.length}`)
+
+    // paging prev
+    if (self.result_active <= 0) {
+      $(`#${self.idTab} #result .result-title .right .prev`)[0].classList.add('disable');
+    } else {
+      $(`#${self.idTab} #result .result-title .right .prev`)[0].classList.remove('disable');
+    }
+
+    // paging next
+    if (self.result_active >= (result_list.length - 1)) {
+      $(`#${self.idTab} #result .result-title .right .next`)[0].classList.add('disable');
+    } else {
+      $(`#${self.idTab} #result .result-title .right .next`)[0].classList.remove('disable');
+    }
+  },
+  
+  processAddGenerateWrite: () => {
+    const self = TabWriteManager;
+    if (self.is_loading) return;
+
+    // self.is_loading = true;
+
+    let typeGenerate = '';
+    if ($('#write_tab div[key_tab="compose_tab"]').hasClass('active')) {
+      typeGenerate = 'compose'
+    } else {
+      typeGenerate = 'reply'
+    }
+
+    let topicCompose = $('#write_tab #compose_tab textarea').val()
+    let originalTextReply = $('#write_tab #reply_tab textarea.original_text_reply').val()
+    let generalContentReply = $('#write_tab #reply_tab textarea.general_content_reply').val()
+
+    let params = self.formData;
+    params.type_generate = typeGenerate;
+    params.topic_compose = topicCompose;
+    params.original_text_reply = originalTextReply;
+    params.general_content_reply = generalContentReply;
+
+    $('#write_tab #result .result-title .left .icon').attr('src', getIconGptVersion('icon', self.formData.gpt_version))
+    $('#write_tab #result .result-title .left .name-gpt').text(getIconGptVersion('name', self.formData.gpt_version))
+
+    _SendMessageManager.generateContentReply(params, (content) => {
+      console.log(content);
+      self.generate_result_list.push(content);
+
+      self.handlerShowGenerateResult();
+    });
   },
 
   // Event
@@ -637,6 +872,43 @@ const TabWriteManager = {
     self.loadVersionGPTConfig();
 
     self.resetEvent();
+
+    $(`#${self.idTab} .voice-config .format`).removeClass('hidden');
+    $(`#${self.idTab} .voice-config .format_reply`).addClass('hidden');
+  },
+
+  onSubmitGenerate: (event) => {
+    const self = TabWriteManager;
+
+    if (self.is_loading) return;
+
+    // process add generate write
+    self.processAddGenerateWrite();
+
+    const tabContainerEl = document.getElementById(`tab_container`);
+    const resultEl = document.body.querySelector(`#${self.idTab} #result`);
+
+    $(resultEl).removeClass('hidden');
+    $(resultEl).css('height', tabContainerEl.offsetHeight + 'px');
+    
+    $(tabContainerEl).animate({
+      scrollTop: tabContainerEl.offsetHeight
+    }, 500);
+  },
+
+  onClickConfigItem: (event) => {
+    const self = TabWriteManager;
+
+    const targetEl = event.target;
+    const kind = event.target.getAttribute('kind');
+    const value = event.target.getAttribute('value');
+
+    if (!value || !kind) return;
+    self.formData[kind] = value;
+
+    const parent = $(targetEl).parents('.options')[0];
+    $(parent).children('.item').removeClass('active');
+    $(targetEl).addClass('active');
   },
 
   onSelectLanguageConfig: (comboboxEl, itemEl, value) => {
@@ -652,6 +924,7 @@ const TabWriteManager = {
       $(`#${self.idTab} .your-language .item`).removeClass('active');
 
       const buttonEl = document.createElement('button');
+      buttonEl.setAttribute('kind', 'your_lang');
       buttonEl.setAttribute('value', record.value);
       buttonEl.className = 'item text';
       buttonEl.innerHTML = record.name;
@@ -668,17 +941,13 @@ const TabWriteManager = {
           $(comboboxEl).removeClass('hidden');
         }
       }
-
-      buttonEl.onclick = () => {
-        const parent = $(buttonEl).parents('.options')[0];
-        $(parent).children('.item').removeClass('active');
-        $(buttonEl).addClass('active');
-      }
+      $(buttonEl).click(self.onClickConfigItem);
 
       buttonEl.append(closeBtnEl);
       $(buttonEl).insertBefore(comboboxEl);
 
       setTimeout(() => {
+        self.formData['your_lang'] = value;
         $(buttonEl).addClass('active');
       }, 100);
     }
@@ -696,6 +965,8 @@ const TabWriteManager = {
     });
 
     if (record) {
+      self.formData.gpt_version = value;
+
       $(`#${self.idTab} #version_gpt .content img`).attr('src', record.icon);
     }
   }
@@ -703,12 +974,14 @@ const TabWriteManager = {
 
 const WrapperManager = {
   sidebar_flag: false,
-  
+
   _init: () => {
     const self = WrapperManager;
 
     self.initTab();
     self.setActiveTab();
+
+    self.fixHeightContainer();
   },
 
   // UI
@@ -736,6 +1009,13 @@ const WrapperManager = {
         }
       }
     }
+  },
+
+  fixHeightContainer: () => {
+    const heightMain = document.body.querySelector('.gpt-layout main').offsetHeight;
+    const heightTitleMain = document.body.querySelector('.gpt-layout main .title').offsetHeight;
+    const heightFooterMain = document.body.querySelector('footer').offsetHeight;
+    // document.getElementById('tab_container').style.height = `${document.body.offsetHeight - 110}px`
   },
 
   initTab: () => {
@@ -790,6 +1070,15 @@ const WrapperManager = {
 
   // Event
   initEvent: () => {
+    const self = WrapperManager;
+
+    // Resize event
+    window.addEventListener("resize", (event) => {
+      self.fixHeightContainer();
+
+      // TabWriteManager.fixHeightResult();
+    });
+
     $('.gpt-layout').click(event => {
       if (!TabWriteManager.combobox_flag) {
         $('.popover-cbx').removeClass('show');
@@ -828,6 +1117,15 @@ const WrapperManager = {
   },
 };
 
+const getIconGptVersion = (keyGet, gptVersion) => {
+  for (let i = 0; i < GPT_VERSION_SETTING_DATA.length; i++) {
+    const element = GPT_VERSION_SETTING_DATA[i];
+    
+    if (element.value == gptVersion) {
+      return element[keyGet];
+    }
+  }
+}
 const initialize_side = async () => {
   TAB_ID = await getTabId();
   WINDOW_ID = await getWindowId();

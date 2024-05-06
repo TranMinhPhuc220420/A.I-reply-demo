@@ -48,7 +48,7 @@ body {
 .gpt-layout {
   display: flex;
   justify-content: space-between;
-  height: 99.8%;
+  height: 100%;
   width: 100%;
   background-color: #f7f7f7;
   position: relative;
@@ -134,8 +134,8 @@ body {
 
   &.ui-001 {
     main {
-      width: 90%;
-      margin: 3px 0 3px 3px;
+      width: calc(100% - 60px);
+      // margin: 3px 0 3px 3px;
       border-radius: 10px;
 
       .title {
@@ -148,7 +148,8 @@ body {
     }
 
     .sidebar {
-      width: 35px;
+      width: 60px;
+      max-width: 60px;
       padding: 15px 3px 3px 3px;
       display: flex;
       justify-content: space-between;
@@ -284,7 +285,7 @@ body {
 
     main {
       width: 100%;
-      margin: 3px 0 3px 3px;
+      // margin: 3px 0 3px 3px;
       border-radius: 10px;
     }
 
@@ -383,7 +384,7 @@ body {
 
   main {
     background-color: #fdfdfd;
-    padding: 15px 0 15px 20px;
+    // padding: 15px 0 15px 20px;
 
     .title {
       display: flex;
@@ -430,9 +431,13 @@ body {
       }
     }
 
+    #tab_container {
+      padding-right: 15px;
+    }
+
     .tab {
       overflow: auto;
-      height: 95%;
+      // height: 95%;
 
       .tab-item {
         display: none;
@@ -442,7 +447,30 @@ body {
         }
       }
     }
+
+    footer {
+      background-color: #f7f7f7;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      bottom: 0;
+      position: relative;
+    
+      display: flex;
+      justify-content: start;
+      align-items: center;
+    
+      img {
+        width: 15px;
+        margin-right: 5px;
+      }
+    
+      span {
+        font-weight: 600;
+        color: #575757;
+      }
+    }
   }
+
 
   .sidebar {
     .body {
@@ -651,7 +679,7 @@ body {
 
           .item {
             // display: inline-block;
-            // margin-top: 5px;
+            margin-bottom: 5px;
             cursor: pointer;
             border: none;
             background-color: #f4f4f4;
@@ -908,9 +936,118 @@ body {
     }
 
     #result {
-      .title {
-        font-weight: 600;
-        font-size: 20px;
+      margin-top: 50px;
+
+      .result-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .left {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+
+          .icon {
+            width: 15px;
+          }
+        }
+
+        .right {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+
+          .text {
+            pointer-events: none;
+            user-select: none;
+          }
+
+          .icon {
+            cursor: pointer;
+            width: 15px;
+
+            path {
+              pointer-events: none !important;
+            }
+
+            &.disable {
+              fill: #9c9c9c;
+            }
+          }
+
+          svg {
+            width: 15px;
+            cursor: pointer;
+          }
+        }
+      }
+
+      .result-generate {
+        margin-top: 5px;
+
+        .result-item {
+          display: none;
+
+          &.active {
+            display: block;
+          }
+
+          textarea {
+            width: 100%;
+            height: 90%;
+            background-color: #fff;
+            border: none;
+            resize: none;
+          }
+        }
+      }
+
+      .result-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .btn {
+          border: none;
+          cursor: pointer;
+          border-radius: 5px;
+          height: 30px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          &.insert-btn {
+            background-color: #471aa1;
+            color: #fff;
+            padding: 0 10px;
+          }
+
+          img {
+            width: 15px;
+            transition: 0.25s all;
+          }
+
+          &:hover {
+            img {
+              transform: scale(1.2);
+            }
+          }
+        }
+
+        .left {
+          display: flex;
+
+          .btn {
+            margin-right: 5px;
+          }
+        }
+
+        .right {
+          .add-to-site {
+            min-width: 150px;
+          }
+        }
       }
     }
   }

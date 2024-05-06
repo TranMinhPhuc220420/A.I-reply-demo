@@ -38,7 +38,7 @@ body ul li {
 .gpt-layout {
   display: flex;
   justify-content: space-between;
-  height: 99.8%;
+  height: 100%;
   width: 100%;
   background-color: #f7f7f7;
   position: relative;
@@ -106,15 +106,15 @@ body ul li {
   font-weight: 500;
 }
 .gpt-layout.ui-001 main {
-  width: 90%;
-  margin: 3px 0 3px 3px;
+  width: calc(100% - 60px);
   border-radius: 10px;
 }
 .gpt-layout.ui-001 main .title .right .collapse-navbar {
   display: none;
 }
 .gpt-layout.ui-001 .sidebar {
-  width: 35px;
+  width: 60px;
+  max-width: 60px;
   padding: 15px 3px 3px 3px;
   display: flex;
   justify-content: space-between;
@@ -225,7 +225,6 @@ body ul li {
 }
 .gpt-layout.ui-002 main {
   width: 100%;
-  margin: 3px 0 3px 3px;
   border-radius: 10px;
 }
 .gpt-layout.ui-002 .sidebar {
@@ -303,7 +302,6 @@ body ul li {
 }
 .gpt-layout main {
   background-color: #fdfdfd;
-  padding: 15px 0 15px 20px;
 }
 .gpt-layout main .title {
   display: flex;
@@ -336,15 +334,35 @@ body ul li {
   width: 30px;
   cursor: pointer;
 }
+.gpt-layout main #tab_container {
+  padding-right: 15px;
+}
 .gpt-layout main .tab {
   overflow: auto;
-  height: 95%;
 }
 .gpt-layout main .tab .tab-item {
   display: none;
 }
 .gpt-layout main .tab .tab-item.active {
   display: block;
+}
+.gpt-layout main footer {
+  background-color: #f7f7f7;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  bottom: 0;
+  position: relative;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+}
+.gpt-layout main footer img {
+  width: 15px;
+  margin-right: 5px;
+}
+.gpt-layout main footer span {
+  font-weight: 600;
+  color: #575757;
 }
 .gpt-layout .sidebar .body .action {
   display: flex;
@@ -507,6 +525,7 @@ body ul li {
   padding: 5px 0 5px 10px;
 }
 .gpt-layout #write_tab .voice-config .config .options .item {
+  margin-bottom: 5px;
   cursor: pointer;
   border: none;
   background-color: #f4f4f4;
@@ -711,7 +730,95 @@ body ul li {
   height: 18px;
   width: 18px;
 }
-.gpt-layout #write_tab #result .title {
-  font-weight: 600;
-  font-size: 20px;
+.gpt-layout #write_tab #result {
+  margin-top: 50px;
+}
+.gpt-layout #write_tab #result .result-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.gpt-layout #write_tab #result .result-title .left {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.gpt-layout #write_tab #result .result-title .left .icon {
+  width: 15px;
+}
+.gpt-layout #write_tab #result .result-title .right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.gpt-layout #write_tab #result .result-title .right .text {
+  pointer-events: none;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+.gpt-layout #write_tab #result .result-title .right .icon {
+  cursor: pointer;
+  width: 15px;
+}
+.gpt-layout #write_tab #result .result-title .right .icon path {
+  pointer-events: none !important;
+}
+.gpt-layout #write_tab #result .result-title .right .icon.disable {
+  fill: #9c9c9c;
+}
+.gpt-layout #write_tab #result .result-title .right svg {
+  width: 15px;
+  cursor: pointer;
+}
+.gpt-layout #write_tab #result .result-generate {
+  margin-top: 5px;
+}
+.gpt-layout #write_tab #result .result-generate .result-item {
+  display: none;
+}
+.gpt-layout #write_tab #result .result-generate .result-item.active {
+  display: block;
+}
+.gpt-layout #write_tab #result .result-generate .result-item textarea {
+  width: 100%;
+  height: 90%;
+  background-color: #fff;
+  border: none;
+  resize: none;
+}
+.gpt-layout #write_tab #result .result-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.gpt-layout #write_tab #result .result-footer .btn {
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.gpt-layout #write_tab #result .result-footer .btn.insert-btn {
+  background-color: #471aa1;
+  color: #fff;
+  padding: 0 10px;
+}
+.gpt-layout #write_tab #result .result-footer .btn img {
+  width: 15px;
+  transition: 0.25s all;
+}
+.gpt-layout #write_tab #result .result-footer .btn:hover img {
+  transform: scale(1.2);
+}
+.gpt-layout #write_tab #result .result-footer .left {
+  display: flex;
+}
+.gpt-layout #write_tab #result .result-footer .left .btn {
+  margin-right: 5px;
+}
+.gpt-layout #write_tab #result .result-footer .right .add-to-site {
+  min-width: 150px;
 }/*# sourceMappingURL=sidepanel.css.map */
