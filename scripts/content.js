@@ -1064,7 +1064,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       const params = {
         title_mail: _MailAIGenerate.getTitleMail(),
         content_mail: contentMail,
-        voice_config: JSON.stringify(voiceConfig),
+        voice_config: voiceConfig,
         reply_suggested: suggestionReply,
         lang: LOCALE_CODES.getNameLocale(),
       }
