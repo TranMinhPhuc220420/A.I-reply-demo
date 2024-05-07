@@ -7,7 +7,7 @@
   padding-right: 16px;
   margin: 0px 8px;
   height: 36px;
-  width: 80px;
+  // width: 80px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -27,6 +27,7 @@
 .sateraito-ai-reply span {
   font-weight: 500;
   font-size: .875rem;
+  margin-left: 5px;
 }
 
 .bbar-sateraito-ai-reply {

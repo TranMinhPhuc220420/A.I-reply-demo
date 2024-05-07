@@ -1,11 +1,140 @@
 {
   "extension_name": {
-    "message": "En Sateraito Extension AI"
+    "message": "Sateraito Extension AI"
   },
   "extension_description": {
-    "message": "En Extension AI development by Sateraito Office"
+    "message": "Extension AI development by Sateraito Office"
   },
-  "txt_ai_reply_button": {
+  "txt_ai_reply": {
     "message": "AI Reply"
+  },
+  "txt_result": {
+    "message": "Result"
+  },
+  "txt_insert": {
+    "message": "Insert"
+  },
+  "txt_continue_improving": {
+    "message": "Continue Improving"
+  },
+  "txt_summary": {
+    "message": "Summary"
+  },
+  "txt_key_points": {
+    "message": "Key points"
+  },
+  "txt_original_language": {
+    "message": "Original Language"
+  },
+  "txt_reply_suggestions": {
+    "message": "Reply suggestions"
+  },
+  "des_click_to_config_voice": {
+    "message": "Click to configure your voice for your replies to this message"
+  },
+  "txt_voice_setting": {
+    "message": "Voice setting"
+  },
+  "txt_formality": {
+    "message": "Formality"
+  },
+  "txt_casual": {
+    "message": "Casual"
+  },
+  "txt_neutral": {
+    "message": "Neutral"
+  },
+  "txt_formal": {
+    "message": "Formal"
+  },
+  "txt_tone": {
+    "message": "Tone"
+  },
+  "txt_friendly": {
+    "message": "Friendly"
+  },
+  "txt_personable": {
+    "message": "Personable"
+  },
+  "txt_informational": {
+    "message": "Informational"
+  },
+  "txt_witty": {
+    "message": "Witty"
+  },
+  "txt_confident": {
+    "message": "Confident"
+  },
+  "txt_direct": {
+    "message": "Direct"
+  },
+  "txt_enthusiastic": {
+    "message": "Enthusiastic"
+  },
+  "txt_empathetic": {
+    "message": "Empathetic"
+  },
+  "txt_email_length": {
+    "message": "Email length:"
+  },
+  "txt_medium": {
+    "message": "Medium"
+  },
+  "txt_short": {
+    "message": "Short"
+  },
+  "txt_long": {
+    "message": "Long"
+  },
+  "txt_your_role": {
+    "message": "Your role"
+  },
+  "txt_leader": {
+    "message": "Leader"
+  },
+  "txt_subordinate": {
+    "message": "Subordinate"
+  },
+  "txt_colleague": {
+    "message": "Colleague"
+  },
+  "txt_sales_representative": {
+    "message": "Sales Representative"
+  },
+  "txt_applicant": {
+    "message": "Applicant"
+  },
+  "txt_customer_service_staff": {
+    "message": "Customer Service Staff"
+  },
+  "txt_project_manager": {
+    "message": "Project Manager"
+  },
+  "txt_human_resources": {
+    "message": "Human Resources"
+  },
+  "des_tell_sider_to_reply": {
+    "message": "Tell sider how you want to reply..."
+  },
+  "txt_write": {
+    "message": "Write"
+  },
+  "txt_ocr": {
+    "message": "OCR"
+  },
+  "txt_translate": {
+    "message": "Translate"
+  },
+  "txt_grammar": {
+    "message": "Grammar"
+  },
+  "txt_compose": {
+    "message": "Compose"
+  },
+  "txt_reply": {
+    "message": "Reply"
+  },
+  "txt_format": {
+    "message": "Format"
   }
 }

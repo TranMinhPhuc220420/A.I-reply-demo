@@ -1107,5 +1107,4 @@ const initialize_side = async () => {
   });
 }
 
-console.log(chrome.i18n.getMessage('txt_ai_reply_button'));
 initialize_side();

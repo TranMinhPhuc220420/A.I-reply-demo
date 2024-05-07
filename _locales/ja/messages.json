@@ -1,11 +1,119 @@
 {
   "extension_name": {
-    "message": "Ja Sateraito Extension AI"
+    "message": "Sateraito Extension AI"
   },
   "extension_description": {
-    "message": "Ja Extension AI development by Sateraito Office"
+    "message": "Extension AI development by Sateraito Office"
   },
-  "txt_ai_reply_button": {
+  "txt_ai_reply": {
     "message": "AI応答"
+  },
+  "txt_result": {
+    "message": "結果"
+  },
+  "txt_insert": {
+    "message": "入れる"
+  },
+  "txt_continue_improving": {
+    "message": "改善を続ける"
+  },
+  "txt_summary": {
+    "message": "意図"
+  },
+  "txt_key_points": {
+    "message": "キーポイント"
+  },
+  "txt_original_language": {
+    "message": "元の言語"
+  },
+  "txt_reply_suggestions": {
+    "message": "返信の提案"
+  },
+  "des_click_to_config_voice": {
+    "message": "クリックして、このメッセージへの返信の音声を設定します"
+  },
+  "txt_voice_setting": {
+    "message": "トーン設定"
+  },
+  "txt_formality": {
+    "message": "形式"
+  },
+  "txt_casual": {
+    "message": "カジュアル"
+  },
+  "txt_neutral": {
+    "message": "中性"
+  },
+  "txt_formal": {
+    "message": "フォーマル"
+  },
+  "txt_tone": {
+    "message": "トーン"
+  },
+  "txt_friendly": {
+    "message": "フレンドリー"
+  },
+  "txt_personable": {
+    "message": "親愛なる"
+  },
+  "txt_informational": {
+    "message": "有益な"
+  },
+  "txt_witty": {
+    "message": "頭がいい"
+  },
+  "txt_confident": {
+    "message": "自信を持って"
+  },
+  "txt_direct": {
+    "message": "直接"
+  },
+  "txt_enthusiastic": {
+    "message": "情熱的"
+  },
+  "txt_empathetic": {
+    "message": "共感的な"
+  },
+  "txt_email_length": {
+    "message": "メールの長さ:"
+  },
+  "txt_medium": {
+    "message": "中くらい"
+  },
+  "txt_short": {
+    "message": "短い"
+  },
+  "txt_long": {
+    "message": "長さ"
+  },
+  "txt_your_role": {
+    "message": "あなたの役割"
+  },
+  "txt_leader": {
+    "message": "リーダー"
+  },
+  "txt_subordinate": {
+    "message": "下位"
+  },
+  "txt_colleague": {
+    "message": "同僚"
+  },
+  "txt_sales_representative": {
+    "message": "営業担当者"
+  },
+  "txt_applicant": {
+    "message": "申請者"
+  },
+  "txt_customer_service_staff": {
+    "message": "カスタマーサービススタッフ"
+  },
+  "txt_project_manager": {
+    "message": "プロジェクトマネージャー"
+  },
+  "txt_human_resources": {
+    "message": "人事"
+  },
+  "des_tell_sider_to_reply": {
+    "message": "どのように返信したいかをサイダーに伝えてください..."
   }
 }

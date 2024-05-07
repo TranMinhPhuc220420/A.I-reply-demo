@@ -14,7 +14,7 @@ let DEBUG_MODE = true;
 (function () {
   'use strict';
 
-  let TAB_ID_ACTIVE; 
+  let TAB_ID_ACTIVE;
 
 
   function onRequest(request, sender, sendResponse) {
@@ -24,6 +24,9 @@ let DEBUG_MODE = true;
         return true;
       case 'side_panel_send_result':
         chrome.tabs.sendMessage(TAB_ID_ACTIVE, { action: "side_panel_add_result", payload: request.payload });
+        return true;
+
+      default:
         return true;
     }
   }

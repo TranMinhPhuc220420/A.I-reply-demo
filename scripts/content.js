@@ -92,9 +92,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
   // ==== main ====
   let FAVICON_URL = chrome.runtime.getURL("images/favicon.png");
-  let TXT_AI_REPLY = chrome.i18n.getMessage('txt_ai_reply_button');
-  let TXT_AI_REPLY_BTN = chrome.i18n.getMessage('txt_ai_reply_button');
-  
   let NODE_ID_EXTENSION_INSTALLED = '__sateraito_import_file_is_installed';
 
   let BTN_AI_REPLY_ID = 'SATERAITO_AI_REPLY_MAIL';
@@ -113,125 +110,144 @@ document.addEventListener('RW759_connectExtension', function (e) {
   const VOICE_SETTING_DATA = [
     {
       name_kind: "formality",
-      name: "Formality",
+      name: MyLang.getMsg('TXT_FORMALITY'),
       icon: descriptionIconUrl,
       options: [
         {
           value: 'casual',
-          display: `📝 Casual`
+          name: MyLang.getMsg('TXT_CASUAL'),
+          display: '📝 ' + MyLang.getMsg('TXT_CASUAL'),
         },
         {
           value: 'neutral',
-          display: `📑 Neutral`
+          name: MyLang.getMsg('TXT_NEUTRAL'),
+          display: '📑 ' + MyLang.getMsg('TXT_NEUTRAL'),
         },
         {
           value: 'formal',
-          display: `✉️ Formal`
+          name: MyLang.getMsg('TXT_FORMAL'),
+          display: '✉️ ' + MyLang.getMsg('TXT_FORMAL'),
         },
       ]
     },
     {
       name_kind: "tone",
-      name: "Tone",
+      name: MyLang.getMsg('TXT_TONE'),
       icon: emojiIconUrl,
       options: [
         {
           value: 'friendly',
-          display: `😀 Friendly`
+          name: MyLang.getMsg('TXT_FRIENDLY'),
+          display: '😀 ' + MyLang.getMsg('TXT_FRIENDLY'),
         },
         {
           value: 'personable',
-          display: `🧐 Personable`
+          name: MyLang.getMsg('TXT_PERSONABLE'),
+          display: '🧐 ' + MyLang.getMsg('TXT_PERSONABLE'),
         },
         {
           value: 'informational',
-          display: `🤓 Informational`
+          name: MyLang.getMsg('TXT_INFORMATIONAL'),
+          display: '🤓 ' + MyLang.getMsg('TXT_INFORMATIONAL'),
         },
         {
           value: 'witty',
-          display: `😉 Witty`
+          name: MyLang.getMsg('TXT_WITTY'),
+          display: '😉 ' + MyLang.getMsg('TXT_WITTY'),
         },
         {
           value: 'confident',
-          display: `😎 Confident`
+          name: MyLang.getMsg('TXT_CONFIDENT'),
+          display: '😎 ' + MyLang.getMsg('TXT_CONFIDENT'),
         },
         {
           value: 'direct',
-          display: `😲 Direct`
+          name: MyLang.getMsg('TXT_DIRECT'),
+          display: '😲 ' + MyLang.getMsg('TXT_DIRECT'),
         },
         {
           value: 'enthusiastic',
-          display: `🥰 Enthusiastic`
+          name: MyLang.getMsg('TXT_ENTHUSIASTIC'),
+          display: '🥰 ' + MyLang.getMsg('TXT_ENTHUSIASTIC'),
         },
         {
           value: 'empathetic',
-          display: `🥺 Empathetic`
-        },
-        {
-          value: 'funny',
-          display: `😂 Funny`
+          name: MyLang.getMsg('TXT_EMPATHETIC'),
+          display: '🥺 ' + MyLang.getMsg('TXT_EMPATHETIC'),
         },
       ],
     },
     {
       name_kind: "email_length",
-      name: "Email length",
+      name: MyLang.getMsg('TXT_EMAIL_LENGTH'),
       icon: formatAlignIconUrl,
       options: [
         {
           value: 'medium',
-          display: `Medium`
+          name: MyLang.getMsg('TXT_MEDIUM'),
+          display: MyLang.getMsg('TXT_MEDIUM'),
         },
         {
           value: 'short',
-          display: `Short`
+          name: MyLang.getMsg('TXT_SHORT'),
+          display: MyLang.getMsg('TXT_SHORT'),
         },
         {
           value: 'long',
-          display: `Long`
+          name: MyLang.getMsg('TXT_LONG'),
+          display: MyLang.getMsg('TXT_LONG'),
         },
       ],
     },
     {
       name_kind: "your_role",
-      name: "Your role",
+      name: MyLang.getMsg('TXT_YOUR_ROLE'),
       icon: accountCircleIconUrl,
       options: [
         {
           value: '',
+          name: '---',
           display: `---`
         },
         {
           value: 'leader',
-          display: `Leader`
+          name: MyLang.getMsg('TXT_LEADER'),
+          display: MyLang.getMsg('TXT_LEADER'),
         },
         {
           value: 'subordinate',
-          display: `Subordinate`
+          name: MyLang.getMsg('TXT_SUBORDINATE'),
+          display: MyLang.getMsg('TXT_SUBORDINATE'),
         },
         {
           value: 'colleague',
-          display: `Colleague`
+          name: MyLang.getMsg('TXT_COLLEAGUE'),
+          display: MyLang.getMsg('TXT_COLLEAGUE'),
         },
         {
           value: 'sales representative',
-          display: `Sales Representative`
+          name: MyLang.getMsg('TXT_SALES_REPRESENTATIVE'),
+          display: MyLang.getMsg('TXT_SALES_REPRESENTATIVE'),
         },
         {
           value: 'applicant',
-          display: `Applicant`
+          name: MyLang.getMsg('TXT_APPLICANT'),
+          display: MyLang.getMsg('TXT_APPLICANT'),
         },
         {
           value: 'customer service staff',
-          display: `Customer service staff`
+          name: MyLang.getMsg('TXT_CUSTOMER_SERVICE_STAFF'),
+          display: MyLang.getMsg('TXT_CUSTOMER_SERVICE_STAFF'),
         },
         {
           value: 'project manager',
-          display: `Project Manager`
+          name: MyLang.getMsg('TXT_PROJECT_MANAGER'),
+          display: MyLang.getMsg('TXT_PROJECT_MANAGER'),
         },
         {
           value: 'human resources',
-          display: `Human Resources`
+          name: MyLang.getMsg('TXT_HUMAN_RESOURCES'),
+          display: MyLang.getMsg('TXT_HUMAN_RESOURCES'),
         },
       ],
     },
@@ -358,8 +374,19 @@ document.addEventListener('RW759_connectExtension', function (e) {
    * 
    * @param {Event} event 
    */
-  function onMessage(event) {
+  function onMessage(message, sender, sendResponse) {
+    switch (message.action) {
+      case 'side_panel_add_result':
+        const { payload } = message;
 
+        _MailAIGenerate.setMailCompose({
+          title: payload.title,
+          body: payload.body
+        });
+
+      default:
+        return true;
+    }
   }
 
   const _SendMessageManager = {
@@ -439,14 +466,14 @@ document.addEventListener('RW759_connectExtension', function (e) {
       let reGenerateIconUrl = chrome.runtime.getURL("icons/refresh-icon.png");
       let copyIconUrl = chrome.runtime.getURL("icons/content-copy-icon.png");
       let backIconUrl = chrome.runtime.getURL("icons/black-icon.png");
-      
+
       return `
       <div id="ai_reply_popup" class="show-form form-loading" style="transform:translateX(${transformX}px) translateY(${transformY}px) translateZ(0px)">
         <div class="title">
           <div class="wrap-title">
             <div class="left">
               <img class="logo" src="${FAVICON_URL}" alt="logo">
-              <span class="name">${TXT_AI_REPLY}</span>
+              <span class="name">${MyLang.getMsg('TXT_AI_REPLY')}</span>
             </div>
             <div class="right">
               <button class="reload">
@@ -464,11 +491,10 @@ document.addEventListener('RW759_connectExtension', function (e) {
             <div class="summary-content-mail">
               <div class="top">
                 <div class="tab">
-                  <h5 data-key-tab="tab1" class="active">Summary</h5>
-                  <h5 data-key-tab="tab2">Key Points</h5>
+                  <h5 data-key-tab="tab1" class="active">${MyLang.getMsg('TXT_SUMMARY')}</h5>
+                  <h5 data-key-tab="tab2">${MyLang.getMsg('TXT_KEY_POINTS')}</h5>
                 </div>
                 <div class="language">
-                  <span>Original Language:</span>
                 </div>
               </div>
 
@@ -483,9 +509,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
             </div>
 
             <div class="reply-suggestions">
-              <h5>Reply suggestions</h5>
+              <h5>${MyLang.getMsg('TXT_REPLY_SUGGESTIONS')}</h5>
 
-              <div class="voice-config" title="Click to configure your voice for your replies to this message">
+              <div class="voice-config" title="${MyLang.getMsg('DES_CLICK_TO_CONFIG_VOICE')}">
                 <div class="icon">
                   <img src="${voidConfigIconUrl}" alt="">
                 </div>
@@ -498,7 +524,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
                   <div class="wrap-title">
                     <div class="left">
                       <img src="${voidConfigIconUrl}">
-                      <span class="name">Voice setting</span>
+                      <span class="name">${MyLang.getMsg('TXT_VOICE_SETTING')}</span>
                     </div>
                     <div class="right">
                       <button class="close">
@@ -525,7 +551,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
             <div class="result-generate">
               <div class="top">
                 <div class="left">
-                  <h5>Result</h5>
+                  <h5>${MyLang.getMsg('TXT_RESULT')}</h5>
                 </div>
 
                 <div class="right">
@@ -556,14 +582,14 @@ document.addEventListener('RW759_connectExtension', function (e) {
             <button class="back" type="button">
               <img src="${backIconUrl}" alt="">
             </button>
-            <input type="text" placeholder="Tell sider how you want to reply...">
+            <input type="text" placeholder="${MyLang.getMsg('DES_TELL_SIDER_TO_REPLY')}">
             <button type="submit">
               <img src="${sendIconUrl}" alt="">
             </button>
           </form>
           <div class="action-btn">
             <div class="left">
-              <p>Continue Improving</p>
+              <p>${MyLang.getMsg('TXT_CONTINUE_IMPROVING')}</p>
             </div>
             <div class="right">
               <button class="re-generate icon">
@@ -573,7 +599,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
                 <img src="${copyIconUrl}" alt="">
               </button>
               <button class="insert-btn">
-                <span>Insert</span>
+                <span>${MyLang.getMsg('TXT_INSERT')}</span>
               </button>
             </div>
           </div>
@@ -700,7 +726,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       self.generate_result_list = [];
       for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
         const item = VOICE_SETTING_DATA[i];
-        self.formData.voice_setting[item.name_kind] = item.options[0].value;
+        self.formData.voice_setting[item.name_kind] = item.options[0];
       }
 
       if (self._list_popup_el[idPopup]) {
@@ -779,7 +805,10 @@ document.addEventListener('RW759_connectExtension', function (e) {
         $(keyFindOptionsVoiceConfig).click((event) => {
           const kind = event.target.getAttribute('kind');
           const value = event.target.getAttribute('value');
-          self.formData.voice_setting[kind] = value;
+
+          let options = VOICE_SETTING_DATA.find(item => item.name_kind == kind).options;
+          if (!options) return;
+          self.formData.voice_setting[kind] = options.find(item => item.value == value);
 
           self.reLoadVoiceConfig();
         });
@@ -970,16 +999,16 @@ document.addEventListener('RW759_connectExtension', function (e) {
         elFind.innerHTML = '';
 
         for (const key in self.formData.voice_setting) {
-          let value = self.formData.voice_setting[key];
-          if (!value || value == '') {
+          let param = self.formData.voice_setting[key];
+          if (!param) {
             continue
           }
 
           $(`.popup-voice-config button.item[kind="${key}"]`).removeClass('active');
-          $(`.popup-voice-config button.item[value="${value}"]`).addClass('active');
+          $(`.popup-voice-config button.item[value="${param.value}"]`).addClass('active');
 
           let spanEl = document.createElement('span');
-          spanEl.innerText = value;
+          spanEl.innerText = param.name;
           elFind.append(spanEl);
         }
       });
@@ -996,7 +1025,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       // Show language of content email
       find('#ai_reply_popup .summary-content-mail .language span', (elFind) => {
-        elFind.innerHTML = 'Original Language: ' + data.lang_content;
+        elFind.innerHTML = `${MyLang.getMsg('TXT_ORIGINAL_LANGUAGE')}: ${data.lang_content}`;
       });
 
       // Show text summary content email
@@ -1052,7 +1081,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
             const optionItem = config_item.options[j];
 
             let isActive = false;
-            if (self.formData.voice_setting[config_item.name_kind] == optionItem.value) {
+            if (self.formData.voice_setting[config_item.name_kind].value == optionItem.value) {
               isActive = true;
             }
 
@@ -1134,7 +1163,14 @@ document.addEventListener('RW759_connectExtension', function (e) {
       $('.result-generate .body-mail').addClass('loading');
       $('#form_tell_sider').addClass('loading');
 
-      let voiceConfig = self.formData.voice_setting;
+      let voiceConfig = {};
+      for (const key in self.formData.voice_setting) {
+        if (Object.hasOwnProperty.call(self.formData.voice_setting, key)) {
+          const item = self.formData.voice_setting[key];
+          voiceConfig[key] = item.value;
+        }
+      }
+
       self.formData.content_mail = contentMail;
       self.formData.suggestion_old = suggestionReply;
 
@@ -1212,10 +1248,23 @@ document.addEventListener('RW759_connectExtension', function (e) {
     setMailReply: function (params) {
       const { title, body } = params;
 
-      find('.Am.Al.editable.LW-avf', (findEl) => {
-        findEl.innerHTML = body.replaceAll('\n', '</br>');
-        findEl.focus();
-      });
+      // let is_really_compose = ($(itemBBarEl).parents('.AD').find('.aoP .I5 .bAs table[role="presentation"]').length == 0)
+      let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
+      for (let i = 0; i < listAllBoxCompose.length; i++) {
+        const item = listAllBoxCompose[i];
+
+        let isCompose = ($(item).parents('.AD').find('.aoP .I5 .bAs table[role="presentation"]').length == 0)
+        if (!isCompose) {
+          let findEl = $(item).find('.Am.Al.editable.LW-avf')[0];
+          findEl.innerHTML = body.replaceAll('\n', '</br>');
+          findEl.focus();
+        }
+      }
+
+      // find('.Am.Al.editable.LW-avf', (findEl) => {
+      //   findEl.innerHTML = body.replaceAll('\n', '</br>');
+      //   findEl.focus();
+      // });
     },
 
     setMailCompose: function (params) {
@@ -1310,7 +1359,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       let vHtml = `
         <img src="${FAVICON_URL}">
-        <span class="text">${TXT_AI_REPLY_BTN}</span>
+        <span class="text">${MyLang.getMsg('TXT_AI_REPLY')}</span>
       `;
 
       elmBtn.innerHTML = vHtml;
@@ -1334,8 +1383,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
         let elmBtn = document.createElement('div');
         elmBtn.addEventListener('click', self.handlerReplyBoxBtnClick);
-        elmBtn.setAttribute('data-tooltip', TXT_AI_REPLY);
-        elmBtn.setAttribute('data-label', TXT_AI_REPLY);
+        elmBtn.setAttribute('data-tooltip', MyLang.getMsg('TXT_AI_REPLY'));
+        elmBtn.setAttribute('data-label', MyLang.getMsg('TXT_AI_REPLY'));
         elmBtn.setAttribute('role_btn', 'reply');
         elmBtn.className = BTN_BOX_AI_REPLY_CLS
 
@@ -1370,9 +1419,12 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
         let elmBtn = document.createElement('div');
         elmBtn.addEventListener('click', self.handlerReplyBoxBtnClick);
-        elmBtn.setAttribute('data-tooltip', TXT_AI_REPLY);
-        elmBtn.setAttribute('data-label', TXT_AI_REPLY);
-        elmBtn.setAttribute('role_btn', 'compose');
+        elmBtn.setAttribute('data-tooltip', MyLang.getMsg('TXT_AI_REPLY'));
+        elmBtn.setAttribute('data-label', MyLang.getMsg('TXT_AI_REPLY'));
+
+        let is_really_compose = ($(itemBBarEl).parents('.AD').find('.aoP .I5 .bAs table[role="presentation"]').length == 0)
+        elmBtn.setAttribute('role_btn', is_really_compose ? 'compose' : 'reply');
+
         elmBtn.className = BTN_BOX_AI_REPLY_CLS
 
         let vHtml = `
@@ -1504,17 +1556,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       // TODO::
     }, false);
 
-    chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
-      if (msg.action == 'side_panel_add_result') {
-        const { payload } = msg
-        _MailAIGenerate.setMailCompose({
-          title: payload.title,
-          body: payload.body
-        });
-      }
-
-      return true;
-    });
+    chrome.runtime.onMessage.addListener(onMessage);
 
     let quickRoot = document.createElement('div');
     quickRoot.className = 'chat-gpt-quick-query-container';

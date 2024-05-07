@@ -80,6 +80,19 @@ function loadAddOnSetting(email, callback) {
     }
 }
 
+function getContentByRoleInMessage(role, messages) {
+    let content_all = '';
+    for (let i = 0; i < messages.length; i++) {
+        const item = messages[i];
+        
+        if (item.role == role) {
+            content_all += item.content + '\n\n';
+        }
+    }
+
+    return content_all;
+}
+
 function saveLog(question, answer, type_chat, error = '') {
     //save log
     var data = {
@@ -210,6 +223,8 @@ async function getDataToShowPopupInMailRequest(params, callback, retry) {
         return false;
     }
 
+    let is_use_prompt = (retry % 2) == 1;
+
     const { gpt_ai_key, gpt_model, title_mail, content_mail, lang } = params;
 
     const messages = [
@@ -226,20 +241,23 @@ Summarize the letter's content in a single paragraph, summarize the letter's con
         },
     ];
 
-//     const prompt = `Title: ${title_mail}
-// Body: ${content_mail}
-// json: {summarize: "", key_points: [], language: "", answer_suggest: []}
-// Summarize the letter's content in a single paragraph, summarize the letter's content according to 3 main points, language of body mail, suggest 3 ways to answer.
-// Output in ${lang}`
+    const prompt = `Title: ${title_mail}
+Body: ${content_mail}
+json: {summarize: "", key_points: [], language: "", answer_suggest: []}
+Summarize the letter's content in a single paragraph, summarize the letter's content according to 3 main points, language of body mail, suggest 3 ways to answer.
+Output in ${lang}`
 
     try {
-        const response = await callGPT(gpt_ai_key, messages, gpt_model, false, null, { "type": "json_object" })
+        const response = await callGPT(gpt_ai_key, (is_use_prompt ? prompt : messages), gpt_model, false, null, { "type": "json_object" })
         const contentRes = response.choices[0].message.content;
 
         callback(JSON.parse(contentRes));
 
         //Save log summary chat
-        let question = messages[messages.length - 1].content;
+        let question = prompt;
+        if (!is_use_prompt) {
+            question = getContentByRoleInMessage('user', messages);
+        }
         saveLog(question, contentRes, 'email');
 
     } catch (error) {
@@ -258,21 +276,23 @@ async function generateContentReplyMailRequest(params, callback, retry) {
         return false;
     }
 
+    let is_use_prompt = (retry % 2) == 1;
+
     const { gpt_ai_key, gpt_model, title_mail, content_mail, voice_config, reply_suggested, lang } = params;
 
-    //     let content_user = `
-    // Title: ${title_mail}
-    // Body: ${content_mail}
+    let content_user = `
+Title: ${title_mail}
+Body: ${content_mail}
 
-    // I want you to always answer in ${lang}.`
-    //     const messages = [
-    //         { role: "system", content: "You are a helpful assistant designed to output JSON" },
-    //         { role: 'user', content: `Language in ${lang}.\nFormat: {title: "", body: ""}` },
-    //         { role: 'assistant', content: 'Ok' },
-    //         { role: 'user', content: content_user },
-    //         { role: 'assistant', content: 'Ok' },
-    //         { role: 'user', content: `${voice_config.your_role ? `I'm the ${voice_config.your_role}` : ''}. Help me write a ${voice_config.email_length}, ${voice_config.tone}, ${voice_config.formality} in ${lang} email in response to the message. The content of the answer revolves around the story "${reply_suggested}"` },
-    //     ];
+I want you to always answer in ${lang}.`
+    const messages = [
+        { role: "system", content: "You are a helpful assistant designed to output JSON" },
+        { role: 'user', content: `Language in ${lang}.\nFormat: {title: "", body: ""}` },
+        { role: 'assistant', content: 'Ok' },
+        { role: 'user', content: content_user },
+        { role: 'assistant', content: 'Ok' },
+        { role: 'user', content: `${voice_config.your_role ? `I'm the ${voice_config.your_role}` : ''}. Help me write a ${voice_config.email_length}, ${voice_config.tone}, ${voice_config.formality} in ${lang} email in response to the message. The content of the answer revolves around the story "${reply_suggested}"` },
+    ];
 
     const prompt = `Title: ${title_mail}\nBody: ${content_mail}
 json: {title: "", body: ""}
@@ -280,13 +300,17 @@ ${voice_config.your_role ? `I'm the ${voice_config.your_role}` : ''}. Help me wr
 Output in ${lang}`
 
     try {
-        const response = await callGPT(gpt_ai_key, prompt, gpt_model, false, null, { "type": "json_object" })
+        const response = await callGPT(gpt_ai_key, (is_use_prompt ? prompt : messages), gpt_model, false, null, { "type": "json_object" })
         const contentRes = response.choices[0].message.content;
 
         callback(JSON.parse(contentRes));
 
         //Save log summary chat
-        saveLog(prompt, contentRes, 'email');
+        let question = prompt;
+        if (!is_use_prompt) {
+            question = getContentByRoleInMessage('user', messages);
+        }
+        saveLog(question, contentRes, 'email');
 
     } catch (error) {
         retry++;

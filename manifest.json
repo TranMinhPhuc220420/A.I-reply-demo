@@ -29,6 +29,7 @@
                 "jquery-1.10.2.min.js",
                 "server_request.js",
                 "util.js",
+                "sateraito_lang.js",
                 "scripts/content.js"
             ],
             "run_at": "document_end",
