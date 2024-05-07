@@ -398,6 +398,7 @@ body {
       .left {
         .title {
           display: none;
+          padding: 0;
 
           &.active {
             display: block;
@@ -569,6 +570,24 @@ body {
     }
   }
 
+  .alert {
+    .item {
+      padding: 0.5rem;
+      border-radius: 5px;
+      margin: 5px 0;
+
+      * {
+        pointer-events: none;
+      }
+    }
+
+    .error {
+      color: #842029;
+      background-color: #f8d7da;
+      border-color: #f5c2c7;
+    }
+  }
+
   #write_tab,
   #ocr_tab,
   #translate_tab,
@@ -659,18 +678,19 @@ body {
     }
 
     .form-config {
-      margin-bottom: 100px;
+      margin-bottom: 105px;
 
       .voice-config {
-        margin-top: 20px;
+        margin-top: 10px;
 
         .config {
-          margin-bottom: 20px;
+          margin-bottom: 10px;
 
           .title {
             display: flex;
             align-items: center;
             justify-content: start;
+            padding: 0 0 0 0;
             margin-bottom: 5px;
 
             .text {
@@ -748,8 +768,8 @@ body {
       }
 
       .your-language {
-        margin-top: 20px;
-        margin-bottom: 20px;
+        // margin-top: 10px;
+        margin-bottom: 10px;
 
         .title {
           display: flex;
@@ -830,8 +850,9 @@ body {
       }
 
       .version {
-        margin-top: 20px;
-        margin-bottom: 20px;
+        // margin-top: 20px;
+        // margin-bottom: 20px;
+        // margin-bottom: 10px;
 
         margin-top: 20px;
         display: flex;
@@ -952,6 +973,25 @@ body {
       // min-height: calc(100% + 0px);
       height: 100%;
 
+      &.is-loading {
+
+        .result-generate {
+          min-height: 300px;
+
+          .result-item {
+            display: none !important;
+          }
+
+          .cmp-loading {
+            display: block;
+          }
+        }
+
+        .result-footer {
+          display: none;
+        }
+      }
+
       .result-title {
         display: flex;
         justify-content: space-between;
@@ -963,7 +1003,13 @@ body {
           align-items: center;
 
           .icon {
-            width: 15px;
+            width: 20px;
+            margin-right: 5px;
+          }
+
+          .name-gpt {
+            font-size: 15px;
+            font-weight: 500;
           }
         }
 
@@ -998,23 +1044,59 @@ body {
       }
 
       .result-generate {
-        margin-top: 5px;
+        margin-top: 20px;
+        // border-top: 1px solid #ddd;
         // min-height: calc(100% + 70px);
 
         .result-item {
           display: none;
-          // height: 100%;
+          font-size: 15px;
+
+          .title {
+            display: inline-block;
+            font-size: 15px;
+            margin-bottom: 5px;
+            padding: 0 0 5px 0;
+            color: #2a2a2a;
+            position: relative;
+
+            &::after {
+              content: '';
+              position: absolute;
+              width: 150px;
+              height: 1px;
+              background-color: #ddd;
+              bottom: 0;
+              left: 0;
+            }
+
+            .bold {
+              font-weight: 500;
+            }
+          }
 
           &.active {
             display: block;
           }
+        }
 
-          textarea {
-            width: 100%;
-            // height: 100%;
-            background-color: #fff;
-            border: none;
-            resize: none;
+        .cmp-loading {
+          display: none;
+
+          :nth-child(1) {
+            height: 20px;
+            width: 50%;
+            margin-bottom: 2px;
+          }
+
+          :nth-child(2) {
+            height: 30px;
+            width: 75%;
+            margin-bottom: 2px;
+          }
+
+          :nth-child(3) {
+            height: 110px;
           }
         }
       }
@@ -1057,6 +1139,24 @@ body {
 
           .btn {
             margin-right: 5px;
+
+            img {
+              pointer-events: none;
+            }
+
+            &.done {
+              * {
+                display: none;
+              }
+
+              .icon-done {
+                display: block !important;
+              }
+            }
+
+            .icon-done {
+              display: none;
+            }
           }
         }
 
@@ -1067,5 +1167,32 @@ body {
         }
       }
     }
+  }
+}
+
+.loading {
+  position: relative;
+  overflow: hidden;
+  border-radius: 5px !important;
+
+  &::before {
+    content: '';
+    position: absolute;
+    border-radius: 5px;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, #ffffff, #f2ecff, #ffffff);
+    background-size: 200% 100%;
+    animation: slide 1.5s linear infinite;
+  }
+}
+
+@keyframes slide {
+  0% {
+    background-position: 100% 0;
+  }
+
+  100% {
+    background-position: -100% 0;
   }
 }

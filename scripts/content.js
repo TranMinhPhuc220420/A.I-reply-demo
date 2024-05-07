@@ -1,9 +1,6 @@
 /** @define {boolean} デバッグモード */
 let DEBUG_MODE = true;
 
-/** @define {string} サーバーのURL */
-let SERVER_URL = 'vn-sateraito-apps-fileserver2.appspot.com';
-
 /** @define {object} GLOBALS_GMAIL*/
 let GLOBALS_GMAIL = null;
 
@@ -74,7 +71,7 @@ const LOCALE_CODES = {
   "zh_TW": "Chinese (Taiwan)",
 
   getNameLocale: () => {
-    return 'Vietnamese'
+    // return 'Vietnamese'
     return LOCALE_CODES[chrome.i18n.getUILanguage().replaceAll('-', '_')] || 'Japanese';
   }
 }
@@ -95,7 +92,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
   // ==== main ====
   let FAVICON_URL = chrome.runtime.getURL("images/favicon.png");
+  let TXT_AI_REPLY = chrome.i18n.getMessage('txt_ai_reply_button');
   let TXT_AI_REPLY_BTN = chrome.i18n.getMessage('txt_ai_reply_button');
+  
   let NODE_ID_EXTENSION_INSTALLED = '__sateraito_import_file_is_installed';
 
   let BTN_AI_REPLY_ID = 'SATERAITO_AI_REPLY_MAIL';
@@ -106,6 +105,10 @@ document.addEventListener('RW759_connectExtension', function (e) {
   let emojiIconUrl = chrome.runtime.getURL("icons/emoji-emotions-icon.svg");
   let formatAlignIconUrl = chrome.runtime.getURL("icons/format-align-icon.svg");
   let accountCircleIconUrl = chrome.runtime.getURL("icons/account-circle-icon.svg");
+
+  let chat_gpt_api_key = null
+  let is_domain_regist = false
+  let is_not_access_list = false
 
   const VOICE_SETTING_DATA = [
     {
@@ -309,6 +312,47 @@ document.addEventListener('RW759_connectExtension', function (e) {
     }, time ? time : 0);
   }
 
+  function loadChatGPTAIKey() {
+    if (!chat_gpt_api_key) {
+      fetchChatGPTAIKey(function (api_key, version_ext) {
+        if (typeof (api_key) != "undefined") {
+          chat_gpt_api_key = api_key;
+        }
+      })
+    }
+  }
+
+  function getChatGPTAIKey(callback) {
+    if (!chat_gpt_api_key) {
+      fetchChatGPTAIKey(function (api_key, version_ext) {
+        if (typeof (api_key) != "undefined") {
+          chat_gpt_api_key = api_key;
+          callback(api_key)
+          return;
+        }
+        //fail
+        callback()
+      })
+    } else {
+      // exist key
+      callback(chat_gpt_api_key)
+    }
+  }
+
+  function getCurrentUser() {
+    var current_user = '';
+    if (GLOBALS_GMAIL != null) {
+      if (typeof (GLOBALS_GMAIL) != "undefined") {
+        if (GLOBALS_GMAIL.length > 10) {
+          current_user = GLOBALS_GMAIL[10];
+          if (typeof (current_user) == "undefined") current_user = '';
+        }
+      }
+    }
+    return 'admin@vn2.sateraito.co.jp';
+    return current_user;
+  }
+
   /**
    * Handler when has message send from background or another
    * 
@@ -319,35 +363,51 @@ document.addEventListener('RW759_connectExtension', function (e) {
   }
 
   const _SendMessageManager = {
+    /**
+     * Get data json to show popup in mail
+     * 
+     * @param {string} titleMail 
+     * @param {string} contentMail 
+     * @param {Function} callback 
+     */
     getDataToShowPopup: function (titleMail, contentMail, callback) {
-      chrome.runtime.sendMessage({
-        method: 'get_data_to_show_popup',
-        data: {
+      // Get open ai KEY
+      getChatGPTAIKey((gptAiKey) => {
+        let params = {
           title_mail: titleMail,
           content_mail: contentMail,
+          gpt_ai_key: gptAiKey,
           lang: LOCALE_CODES.getNameLocale()
-        }
-      },
-        function (response) {
+        };
+
+        // Call request get data to show popup in mail
+        getDataToShowPopupInMailRequest(params, (response) => {
           callback({
             summary: response.summarize,
             key_points_list: response.key_points,
             lang_content: response.language,
             suggestion_list: response.answer_suggest,
           });
-        }
-      )
+        })
+      })
     },
 
+    /**
+     * Generate content reply mail with config
+     * 
+     * @param {JSON} params 
+     * @param {Function} callback 
+     */
     generateContentReplyMail: function (params, callback) {
-      chrome.runtime.sendMessage({
-        method: 'generate_content_reply_mail',
-        data: params
-      },
-        function (response) {
+      // Get open ai KEY
+      getChatGPTAIKey((gptAiKey) => {
+        params.gpt_ai_key = gptAiKey;
+
+        // Call request generate content reply mail with config
+        generateContentReplyMailRequest(params, (response) => {
           callback(response);
-        }
-      );
+        })
+      })
     }
   };
 
@@ -379,14 +439,14 @@ document.addEventListener('RW759_connectExtension', function (e) {
       let reGenerateIconUrl = chrome.runtime.getURL("icons/refresh-icon.png");
       let copyIconUrl = chrome.runtime.getURL("icons/content-copy-icon.png");
       let backIconUrl = chrome.runtime.getURL("icons/black-icon.png");
-
+      
       return `
       <div id="ai_reply_popup" class="show-form form-loading" style="transform:translateX(${transformX}px) translateY(${transformY}px) translateZ(0px)">
         <div class="title">
           <div class="wrap-title">
             <div class="left">
               <img class="logo" src="${FAVICON_URL}" alt="logo">
-              <span class="name">AI Reply</span>
+              <span class="name">${TXT_AI_REPLY}</span>
             </div>
             <div class="right">
               <button class="reload">
@@ -657,6 +717,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       self._list_popup_el[idPopup] = root;
 
       self.reLoadVoiceConfig();
+      self.addEventUIForDialog(idPopup);
     },
 
     /**
@@ -666,7 +727,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
      */
     closePopup: function (idPopup) {
       const self = _MyPopup;
-      if (self.is_loading) return;
+      // if (self.is_loading) return;
 
       clearInterval(self.stillBoxReplyIntervalRealtime);
       self.stillBoxReplyIntervalRealtime = null;
@@ -817,6 +878,21 @@ document.addEventListener('RW759_connectExtension', function (e) {
           handlerActive();
         })
       });
+    },
+
+    /**
+     * Add event UI for dialog
+     * 
+     * @param {string} idPopup id popup
+     */
+    addEventUIForDialog: (idPopup) => {
+      const self = _MyPopup;
+
+      find('form#form_tell_sider', (elFind) => {
+        elFind.addEventListener('submit', (event) => {
+          event.preventDefault();
+        })
+      });
 
       // Down Drag event
       find('#ai_reply_popup', (elFind) => {
@@ -874,6 +950,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       window.addEventListener("resize", (event) => {
         self.fixPosition();
       });
+
       // Tracking to show popup event
       self.stillBoxReplyIntervalRealtime = setInterval(() => {
         let boxReply = document.body.querySelector('.LW-avf.tS-tW');
@@ -1087,7 +1164,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
     showPopup: (value, posX, posY) => {
       const self = _QuickActionPopup;
-      
+
       let containerQuickEl = document.querySelector('.chat-gpt-quick-query-container .quick-action-container');
       let quickEl = document.querySelector('.chat-gpt-quick-query-container .quick-action-container .quick-selection');
 
@@ -1136,6 +1213,18 @@ document.addEventListener('RW759_connectExtension', function (e) {
       const { title, body } = params;
 
       find('.Am.Al.editable.LW-avf', (findEl) => {
+        findEl.innerHTML = body.replaceAll('\n', '</br>');
+        findEl.focus();
+      });
+    },
+
+    setMailCompose: function (params) {
+      const { title, body } = params;
+
+      find('.nH .aaZ input[name="subjectbox"]', (findEl) => {
+        findEl.value = title;
+      });
+      find('.nH .aaZ .Am.Al.editable.LW-avf', (findEl) => {
         findEl.innerHTML = body.replaceAll('\n', '</br>');
         findEl.focus();
       });
@@ -1234,23 +1323,60 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * Process add button A.I reply to bottom bar for all box reply mail
      * 
      */
-    processAddAIReplyBtnForListBox: function () {
+    processAddAIReplyBtnForListBoxReply: function () {
       let self = _MailAIGenerate;
-      let lisBBarEl = FoDoc.querySelectorAll('.G3.G2 .IZ .btC');
+      let lisBBarReplyEl = FoDoc.querySelectorAll('.G3.G2 .IZ .btC');
 
-      for (let i = 0; i < lisBBarEl.length; i++) {
-        let itemBBarEl = lisBBarEl[i];
+      for (let i = 0; i < lisBBarReplyEl.length; i++) {
+        let itemBBarEl = lisBBarReplyEl[i];
 
         if (itemBBarEl.querySelector('.bbar-sateraito-ai-reply')) continue;
 
         let elmBtn = document.createElement('div');
         elmBtn.addEventListener('click', self.handlerReplyBoxBtnClick);
-        elmBtn.setAttribute('data-tooltip', 'AI Reply');
-        elmBtn.setAttribute('data-label', 'AI Reply');
+        elmBtn.setAttribute('data-tooltip', TXT_AI_REPLY);
+        elmBtn.setAttribute('data-label', TXT_AI_REPLY);
+        elmBtn.setAttribute('role_btn', 'reply');
         elmBtn.className = BTN_BOX_AI_REPLY_CLS
 
         let vHtml = `
-          <img src="${FAVICON_URL}">
+          <img style="pointer-events:none" src="${FAVICON_URL}">
+          `;
+
+        elmBtn.innerHTML = vHtml;
+
+        if (itemBBarEl.querySelector('.gU .bAK')) {
+          itemBBarEl.querySelector('.gU .bAK').append(elmBtn);
+        }
+        else if (itemBBarEl.querySelector('.gU.aYL')) {
+          itemBBarEl.insertBefore(elmBtn, itemBBarEl.querySelector('.gU.aYL'));
+        }
+        else if (itemBBarEl.querySelector('.gU.a0z')) {
+          itemBBarEl.insertBefore(elmBtn, itemBBarEl.querySelector('.gU.a0z'));
+        } else {
+          itemBBarEl.append(elmBtn);
+        }
+      }
+    },
+
+    processAddAIReplyBtnForListBoxCompose: function () {
+      let self = _MailAIGenerate;
+      let lisBBarComposeEl = FoDoc.querySelectorAll('.nH .aaZ .btC');
+
+      for (let i = 0; i < lisBBarComposeEl.length; i++) {
+        let itemBBarEl = lisBBarComposeEl[i];
+
+        if (itemBBarEl.querySelector('.bbar-sateraito-ai-reply')) continue;
+
+        let elmBtn = document.createElement('div');
+        elmBtn.addEventListener('click', self.handlerReplyBoxBtnClick);
+        elmBtn.setAttribute('data-tooltip', TXT_AI_REPLY);
+        elmBtn.setAttribute('data-label', TXT_AI_REPLY);
+        elmBtn.setAttribute('role_btn', 'compose');
+        elmBtn.className = BTN_BOX_AI_REPLY_CLS
+
+        let vHtml = `
+          <img style="pointer-events:none" src="${FAVICON_URL}">
           `;
 
         elmBtn.innerHTML = vHtml;
@@ -1314,11 +1440,21 @@ document.addEventListener('RW759_connectExtension', function (e) {
       }
 
       // Render button AI reply for all box reply
-      self.processAddAIReplyBtnForListBox();
+      self.processAddAIReplyBtnForListBoxReply();
+      // Render button AI reply for all box compose
+      self.processAddAIReplyBtnForListBoxCompose();
     },
 
     handlerReplyBtnClick: function (event) {
       const self = _MailAIGenerate;
+
+      let current_user = getCurrentUser();
+      //addon setting
+      loadAddOnSetting(current_user, function (result) {
+        is_domain_regist = result.is_domain_regist
+        is_not_access_list = result.is_not_access_list
+        console.log(`auto summary chat GPT: domain regist:[${is_domain_regist}], permission deny:[${is_not_access_list}]`)
+      })
 
       let titleMail = _MailAIGenerate.getTitleMail();
       let contentMail = _MailAIGenerate.getContentBodyMail();
@@ -1328,15 +1464,21 @@ document.addEventListener('RW759_connectExtension', function (e) {
     handlerReplyBoxBtnClick: function (event) {
       const self = _MailAIGenerate;
 
-      let mainContentEl = FoDoc.body.querySelector('.G3.G2');
-      const idPopup = mainContentEl.getAttribute('s_popup_id');
+      if (event.target.getAttribute('role_btn') == 'reply') {
+        let mainContentEl = FoDoc.body.querySelector('.G3.G2');
+        const idPopup = mainContentEl.getAttribute('s_popup_id');
 
-      if (idPopup && _MyPopup._list_popup_el[idPopup]) {
-        _MyPopup.focusInput(idPopup);
+        if (idPopup && _MyPopup._list_popup_el[idPopup]) {
+          _MyPopup.focusInput(idPopup);
+        } else {
+          let titleMail = _MailAIGenerate.getTitleMail();
+          let contentMail = _MailAIGenerate.getContentBodyMail();
+          self.processRequestToShowPopup(titleMail, contentMail);
+        }
       } else {
-        let titleMail = _MailAIGenerate.getTitleMail();
-        let contentMail = _MailAIGenerate.getContentBodyMail();
-        self.processRequestToShowPopup(titleMail, contentMail);
+        chrome.runtime.sendMessage({
+          method: 'open_side_panel',
+        })
       }
     },
   };
@@ -1361,6 +1503,18 @@ document.addEventListener('RW759_connectExtension', function (e) {
     window.addEventListener('message', function (event) {
       // TODO::
     }, false);
+
+    chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
+      if (msg.action == 'side_panel_add_result') {
+        const { payload } = msg
+        _MailAIGenerate.setMailCompose({
+          title: payload.title,
+          body: payload.body
+        });
+      }
+
+      return true;
+    });
 
     let quickRoot = document.createElement('div');
     quickRoot.className = 'chat-gpt-quick-query-container';

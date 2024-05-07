@@ -23,7 +23,12 @@
                 "styles/style.css"
             ],
             "js": [
+                "crypto/core.min.js",
+                "crypto/crypto-js.min.js",
+                "crypto/md5.js",
                 "jquery-1.10.2.min.js",
+                "server_request.js",
+                "util.js",
                 "scripts/content.js"
             ],
             "run_at": "document_end",

@@ -31,185 +31,6 @@ const handlerTextSelectedChange = async (payload) => {
   sateraito.UI.update_text_selected(text);
 }
 
-const init_components = () => {
-  let flag = false;
-  let sidebar_flag = false;
-
-  const LANGUAGE = [
-    {
-      name_dis: 'Việt Nam',
-      sub_dis: 'Vietnamese',
-      value: 'vietnamese',
-    },
-    {
-      name_dis: '日本語',
-      sub_dis: 'Japanese',
-      value: 'japanese',
-    },
-    {
-      name_dis: '한국어',
-      sub_dis: 'Korean',
-      value: 'korean',
-    },
-  ]
-  const VERSION_GPT = [
-    {
-      name_dis: 'GPT-3.5 Turbo',
-      icon: '/chatgpt-icon.svg',
-      value: 'gpt-3.5-turbo',
-    },
-    {
-      name_dis: '日本語',
-      icon: '/chatgpt-4-icon.svg',
-      value: 'gpt-4-turbo',
-    },
-    {
-      name_dis: '한국어',
-      icon: '/google-gemini-icon.svg',
-      value: 'gemini',
-    },
-  ]
-
-  // For combobox component
-  $('.combobox').click(event => {
-    $('.popover-cbx').removeClass('show');
-
-    const targetEl = event.target;
-    const popoverEl = targetEl.querySelector(`.popover-cbx`);
-
-    if (!popoverEl) return;
-
-    flag = true;
-
-    popoverEl.classList.add('show');
-    popoverEl.style.top = `-${popoverEl.offsetHeight - 10}px`;
-    popoverEl.style.left = `${targetEl.offsetWidth - 20}px`;
-
-    setTimeout(() => {
-      flag = false;
-    }, 100)
-  });
-  $('.popover-cbx.wrap-item .combobox-item').click(event => {
-    const value = event.target.getAttribute('value');
-
-    const comboboxEl = $(event.target).parents('button.combobox')[0];
-    if (comboboxEl.onSelect) {
-      comboboxEl.onSelect(comboboxEl, event.target, value);
-    }
-  });
-
-  // For tab component
-  $('.tab .tab-title .item').click(event => {
-    const targetEl = event.target;
-    const keyTab = targetEl.getAttribute('key_tab');
-    console.log(keyTab);
-
-    $('.tab .tab-title .item').removeClass('active');
-    $(targetEl).addClass('active');
-
-    $('.tab .tab-body .tab-item').removeClass('active');
-    $(`.tab .tab-body #${keyTab}.tab-item`).addClass('active');
-  });
-
-  document.getElementById('language_cbx').onSelect = (comboboxEl, itemEl, value) => {
-    let record = LANGUAGE.find(item => {
-      return value == item.value
-    });
-
-    if (record) {
-      itemEl.remove();
-
-      $('.your-language .item').removeClass('active');
-
-      const buttonEl = document.createElement('button');
-      buttonEl.setAttribute('value', record.value);
-      buttonEl.className = 'item text active';
-      buttonEl.innerHTML = record.name_dis;
-
-      const closeBtnEl = document.createElement('div');
-      closeBtnEl.className = 'close';
-      closeBtnEl.innerHTML = '<img class="icon" src="./icons/cancel.svg">';
-
-      closeBtnEl.onclick = () => {
-        buttonEl.remove();
-
-      }
-      buttonEl.onclick = () => {
-        const parent = $(buttonEl).parents('.options')[0];
-        $(parent).children('.item').removeClass('active');
-        $(buttonEl).addClass('active');
-      }
-
-      buttonEl.append(closeBtnEl);
-      $(buttonEl).insertBefore(comboboxEl);
-    }
-
-    if ($('.your-language .combobox-item').length == 0) {
-      comboboxEl.remove();
-    }
-  }
-  document.getElementById('version_gpt').onSelect = (comboboxEl, itemEl, value) => {
-    let record = VERSION_GPT.find(item => {
-      return value == item.value
-    });
-
-    if (record) {
-      $('#version_gpt .content img').attr('src', record.icon);
-    }
-  }
-  $('.submit-generate').click(event => {
-    $('#result').css('height', $('#tab_container')[0].offsetHeight + 'px');
-
-    $('#tab_container').animate({
-      scrollTop: $("#result").offset().top
-    }, 700);
-  });
-
-  $('.config .options .item').click(event => {
-    const targetEl = event.target;
-    const parent = $(targetEl).parents('.options')[0];
-
-    $(parent).children('.item').removeClass('active');
-    $(targetEl).addClass('active');
-  });
-
-  $('.gpt-layout').click(event => {
-    if (!flag) {
-      $('.popover-cbx').removeClass('show');
-    }
-
-    // For sidebar
-    if (!sidebar_flag) {
-      $('.sidebar').removeClass('show');
-    }
-  });
-
-  $('.collapse-navbar').click(event => {
-    sidebar_flag = true;
-
-    // For sidebar
-    $('.sidebar').addClass('show');
-
-    setTimeout(() => {
-      sidebar_flag = false;
-    }, 100)
-  });
-
-  $('.sidebar .action .collapse').click(event => {
-    const root = $('#root_gpt');
-    const ui001 = 'ui-001'
-    const ui002 = 'ui-002'
-
-    if (root.hasClass(ui001)) {
-      root.removeClass(ui001)
-      root.addClass(ui002)
-    } else {
-      root.removeClass(ui002)
-      root.addClass(ui001)
-    }
-  });
-};
-
 let write_icon = `  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                         <path d="M0 0h24v24H0z" fill="none" />
                         <path d="M18.41 5.8L17.2 4.59c-.78-.78-2.05-.78-2.83 0l-2.68 2.68L3 15.96V20h4.04l8.74-8.74 2.63-2.63c.79-.78.79-2.05 0-2.83zM6.21 18H5v-1.21l8.66-8.66 1.21 1.21L6.21 18zM11 20l4-4h6v4H11z" />
@@ -400,7 +221,7 @@ const LANGUAGE_SETTING_DATA = [
 ];
 const GPT_VERSION_SETTING_DATA = [
   {
-    value: 'gpt-3.5-turbo',
+    value: 'gpt-3.5-turbo-0125',
     icon: './icons/chatgpt-icon.svg',
     name: 'GPT-3.5 Turbo',
   },
@@ -417,6 +238,27 @@ const GPT_VERSION_SETTING_DATA = [
 ]
 
 const _SendMessageManager = {
+  chat_gpt_api_key: null,
+
+  getChatGPTAIKey: (callback) => {
+    const self = _SendMessageManager;
+
+    if (!self.chat_gpt_api_key) {
+      fetchChatGPTAIKey(function (api_key, version_ext) {
+        if (typeof (api_key) != "undefined") {
+          self.chat_gpt_api_key = api_key;
+          callback(api_key)
+          return;
+        }
+        //fail
+        callback()
+      })
+    } else {
+      // exist key
+      callback(self.chat_gpt_api_key)
+    }
+  },
+
   generateContentCompose: function (params, callback) {
     chrome.runtime.sendMessage({
       method: 'generate_content_compose_mail',
@@ -429,14 +271,17 @@ const _SendMessageManager = {
   },
 
   generateContentReply: function (params, callback) {
-    chrome.runtime.sendMessage({
-      method: 'generate_content_reply',
-      data: params
-    },
-      function (response) {
+    const self = _SendMessageManager;
+
+    // Get open ai KEY
+    self.getChatGPTAIKey((gptAiKey) => {
+
+      params.gpt_ai_key = gptAiKey;
+
+      generateContentRequest(params, (response) => {
         callback(response);
-      }
-    );
+      })
+    })
   }
 };
 
@@ -460,6 +305,7 @@ const TabWriteManager = {
   getVHtml: () => {
     let reloadIconUrl = chrome.runtime.getURL("icons/refresh-icon.png");
     let copyIconUrl = chrome.runtime.getURL("icons/content-copy-icon.png");
+    let doneIconUrl = chrome.runtime.getURL("icons/done.svg");
 
     return `
             <div class="form-config">
@@ -501,9 +347,12 @@ const TabWriteManager = {
 
                 <button class="submit-generate">Generate draft</button>
               </div>
+
+              <div class="alert">
+              </div>
             </div>
 
-            <div id="result" class="hidden">
+            <div id="result" class="hidden is-loading">
             
               <div class="result-title">
                 <div class="left">
@@ -525,19 +374,25 @@ const TabWriteManager = {
               </div>
 
               <div class="result-generate">
+                <div class="cmp-loading">
+                  <div class="loading"></div>
+                  <div class="loading"></div>
+                  <div class="loading"></div>
+                </div>
               </div>
 
               <div class="result-footer">
                 <div class="left">
-                  <button class="btn">
+                  <button class="btn re-generate">
                     <img src="${reloadIconUrl}" alt="">
                   </button>
-                  <button class="btn">
+                  <button class="btn copy-content">
                     <img src="${copyIconUrl}" alt="">
+                    <img class="icon-done" src="${doneIconUrl}" alt="">
                   </button>
                 </div>
                 <div class="right">
-                  <button class="btn add-to-site">
+                  <button class="btn send-to-site">
                     Add to site
                   </button>
                 </div>
@@ -575,11 +430,43 @@ const TabWriteManager = {
     $(resultEl).css('height', tabContainerEl.offsetHeight + 'px');
   },
 
+  isValidateToCallGPT: () => {
+    const self = TabWriteManager;
+
+    let typeGenerate = '';
+    if ($('#write_tab div[key_tab="compose_tab"]').hasClass('active')) {
+      typeGenerate = 'compose'
+    } else {
+      typeGenerate = 'reply'
+    }
+
+    let topicCompose = $('#write_tab #compose_tab textarea').val().trim();
+    let originalTextReply = $('#write_tab #reply_tab textarea.original_text_reply').val().trim();
+    let generalContentReply = $('#write_tab #reply_tab textarea.general_content_reply').val().trim();
+
+    if (typeGenerate == 'compose') {
+      if (!topicCompose || topicCompose == '') {
+        return 'Please enter the topic you want to compose'
+      }
+    }
+    if (typeGenerate == 'reply') {
+      if (!originalTextReply || originalTextReply == '') {
+        return 'Please enter the original text to which you want to reply'
+      }
+      if (!generalContentReply || generalContentReply == '') {
+        return 'Please enter the general content of your reply to the above text'
+      }
+    }
+    if (self.formData.gpt_version == 'gemini') {
+      return 'Opps! Gemini 1.0 Pro has not been released yet'
+    }
+  },
+
   // Setter
   loadData: () => {
     const self = TabWriteManager;
 
-    $(`#${self.idTab} .voice-config`).html('');
+    $(`#${self.idTab} .voice-config .config`).remove();
 
     for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
       const config_item = VOICE_SETTING_DATA[i];
@@ -683,6 +570,23 @@ const TabWriteManager = {
     $(`#${self.idTab} .version .options`).html(vHtml_init);
   },
 
+  showAlert: (type, message) => {
+    const self = TabWriteManager;
+
+    let alertEl = document.createElement('div');
+    alertEl.className = 'item ' + type;
+    alertEl.innerHTML = message;
+
+    $(`#${self.idTab} .form-config .alert`).append(alertEl);
+
+    alertEl.onclick = (event) => {
+      alertEl.remove();
+    }
+    setTimeout(() => {
+      alertEl.remove();
+    }, 3000);
+  },
+
   resetEvent: () => {
     const self = TabWriteManager;
 
@@ -761,6 +665,11 @@ const TabWriteManager = {
     // For items options voice config
     $(`#${self.idTab} .config .options .item`).click(self.onClickConfigItem);
 
+    // For items options voice config
+    $(`#${self.idTab} .result-footer .btn.re-generate`).click(self.onSubmitGenerate);
+    $(`#${self.idTab} .result-footer .btn.copy-content`).click(self.onClickCopyContentResult);
+    $(`#${self.idTab} .result-footer .btn.send-to-site`).click(self.onClickSendContentResultToSite);
+
     document.body.querySelector(`#${self.idTab} #language_cbx`).onSelect = self.onSelectLanguageConfig;
     document.body.querySelector(`#${self.idTab} #version_gpt`).onSelect = self.onSelectVersionGptConfig;
   },
@@ -775,18 +684,23 @@ const TabWriteManager = {
     const result = self.generate_result_list;
     self.result_active = (result.length - 1);
 
-    $(`#${self.idTab} #result .result-generate`).html('');
+    $(`#${self.idTab} #result`).removeClass('is-loading');
+    $(`#${self.idTab} #result .result-generate .result-item`).remove();
 
     let resultActiveEl = null;
     for (let i = 0; i < result.length; i++) {
       const item = result[i];
       let isActive = (i == self.result_active)
 
+      let titleEl = document.createElement('div');
+      titleEl.className = 'title'
+      titleEl.innerHTML = `<span class="bold">Subject: </span> ${item.title}`
+
       let textEl = document.createElement('div');
       textEl.setAttribute('disabled', true);
 
-      textEl.innerHTML = item.replaceAll('\n', '<br/>');
-      
+      textEl.innerHTML = item.body.replaceAll('\n', '<br/>');
+
       let resultDivEl = document.createElement('div');
       resultDivEl.classList = ['result-item'];
       resultDivEl.setAttribute('data-index', i);
@@ -794,8 +708,10 @@ const TabWriteManager = {
         resultActiveEl = resultDivEl
         resultDivEl.classList.add('active');
       }
+
+      resultDivEl.append(titleEl);
       resultDivEl.append(textEl);
-      
+
       $(`#${self.idTab} #result .result-generate`).append(resultDivEl);
     }
 
@@ -829,7 +745,7 @@ const TabWriteManager = {
       $(`#${self.idTab} #result .result-title .right .next`)[0].classList.remove('disable');
     }
   },
-  
+
   processAddGenerateWrite: () => {
     const self = TabWriteManager;
     if (self.is_loading) return;
@@ -856,9 +772,8 @@ const TabWriteManager = {
     $('#write_tab #result .result-title .left .icon').attr('src', getIconGptVersion('icon', self.formData.gpt_version))
     $('#write_tab #result .result-title .left .name-gpt').text(getIconGptVersion('name', self.formData.gpt_version))
 
-    _SendMessageManager.generateContentReply(params, (content) => {
-      console.log(content);
-      self.generate_result_list.push(content);
+    _SendMessageManager.generateContentReply(params, (data) => {
+      self.generate_result_list.push(data);
 
       self.handlerShowGenerateResult();
     });
@@ -890,6 +805,12 @@ const TabWriteManager = {
 
     if (self.is_loading) return;
 
+    let messValidate = self.isValidateToCallGPT();
+    if (messValidate) {
+      self.showAlert('error', messValidate);
+      return;
+    }
+
     // process add generate write
     self.processAddGenerateWrite();
 
@@ -898,11 +819,36 @@ const TabWriteManager = {
     const resultEl = document.body.querySelector(`#${self.idTab} #result`);
 
     $(resultEl).removeClass('hidden');
-    // $(resultEl).css('height', formConfigEl.offsetHeight + 'px');
-    
     $(containerEl).animate({
-      scrollTop: $(resultEl).offset().top
+      scrollTop: $(resultEl).offset().top + containerEl.scrollTop
     }, 500);
+
+    $(resultEl).addClass('is-loading');
+    // $(resultEl).css('height', formConfigEl.offsetHeight + 'px');
+  },
+
+  onClickCopyContentResult: (event) => {
+    const self = TabWriteManager;
+
+    $(event.target).addClass('done');
+    navigator.clipboard.writeText(self.generate_result_list[self.result_active].body);
+
+    setTimeout(() => {
+      $(event.target).removeClass('done');
+    }, 1000);
+  },
+
+  onClickSendContentResultToSite: (event) => {
+    const self = TabWriteManager;
+    let itemActive = self.generate_result_list[self.result_active];
+
+    chrome.runtime.sendMessage({
+      method: 'side_panel_send_result',
+      payload: {
+        title: itemActive.title,
+        body: itemActive.body,
+      }
+    })
   },
 
   onClickConfigItem: (event) => {
@@ -1128,10 +1074,13 @@ const WrapperManager = {
   },
 };
 
+const getCurrentUser = () => {
+  return 'admin@vn2.sateraito.co.jp'
+}
 const getIconGptVersion = (keyGet, gptVersion) => {
   for (let i = 0; i < GPT_VERSION_SETTING_DATA.length; i++) {
     const element = GPT_VERSION_SETTING_DATA[i];
-    
+
     if (element.value == gptVersion) {
       return element[keyGet];
     }
@@ -1140,6 +1089,14 @@ const getIconGptVersion = (keyGet, gptVersion) => {
 const initialize_side = async () => {
   TAB_ID = await getTabId();
   WINDOW_ID = await getWindowId();
+
+  let current_user = getCurrentUser();
+  //addon setting
+  loadAddOnSetting(current_user, function (result) {
+    is_domain_regist = result.is_domain_regist
+    is_not_access_list = result.is_not_access_list
+    console.log(`auto summary chat GPT: domain regist:[${is_domain_regist}], permission deny:[${is_not_access_list}]`)
+  })
 
   WrapperManager._init();
 
@@ -1150,4 +1107,5 @@ const initialize_side = async () => {
   });
 }
 
+console.log(chrome.i18n.getMessage('txt_ai_reply_button'));
 initialize_side();

@@ -312,6 +312,7 @@ body ul li {
 }
 .gpt-layout main .title .left .title {
   display: none;
+  padding: 0;
 }
 .gpt-layout main .title .left .title.active {
   display: block;
@@ -433,6 +434,19 @@ body ul li {
 .gpt-layout .sidebar .footer .item:hover {
   background-color: #ededed;
 }
+.gpt-layout .alert .item {
+  padding: 0.5rem;
+  border-radius: 5px;
+  margin: 5px 0;
+}
+.gpt-layout .alert .item * {
+  pointer-events: none;
+}
+.gpt-layout .alert .error {
+  color: #842029;
+  background-color: #f8d7da;
+  border-color: #f5c2c7;
+}
 .gpt-layout #write_tab,
 .gpt-layout #ocr_tab,
 .gpt-layout #translate_tab,
@@ -505,18 +519,19 @@ body ul li {
   margin-top: 10px;
 }
 .gpt-layout #write_tab .form-config {
-  margin-bottom: 100px;
+  margin-bottom: 105px;
 }
 .gpt-layout #write_tab .form-config .voice-config {
-  margin-top: 20px;
+  margin-top: 10px;
 }
 .gpt-layout #write_tab .form-config .voice-config .config {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 .gpt-layout #write_tab .form-config .voice-config .config .title {
   display: flex;
   align-items: center;
   justify-content: start;
+  padding: 0 0 0 0;
   margin-bottom: 5px;
 }
 .gpt-layout #write_tab .form-config .voice-config .config .title .text {
@@ -575,8 +590,7 @@ body ul li {
   width: 18px;
 }
 .gpt-layout #write_tab .form-config .your-language {
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 .gpt-layout #write_tab .form-config .your-language .title {
   display: flex;
@@ -640,8 +654,6 @@ body ul li {
   width: 18px;
 }
 .gpt-layout #write_tab .form-config .version {
-  margin-top: 20px;
-  margin-bottom: 20px;
   margin-top: 20px;
   display: flex;
   justify-content: start;
@@ -737,6 +749,18 @@ body ul li {
   margin-top: 50px;
   height: 100%;
 }
+.gpt-layout #write_tab #result.is-loading .result-generate {
+  min-height: 300px;
+}
+.gpt-layout #write_tab #result.is-loading .result-generate .result-item {
+  display: none !important;
+}
+.gpt-layout #write_tab #result.is-loading .result-generate .cmp-loading {
+  display: block;
+}
+.gpt-layout #write_tab #result.is-loading .result-footer {
+  display: none;
+}
 .gpt-layout #write_tab #result .result-title {
   display: flex;
   justify-content: space-between;
@@ -748,7 +772,12 @@ body ul li {
   align-items: center;
 }
 .gpt-layout #write_tab #result .result-title .left .icon {
-  width: 15px;
+  width: 20px;
+  margin-right: 5px;
+}
+.gpt-layout #write_tab #result .result-title .left .name-gpt {
+  font-size: 15px;
+  font-weight: 500;
 }
 .gpt-layout #write_tab #result .result-title .right {
   display: flex;
@@ -776,19 +805,50 @@ body ul li {
   cursor: pointer;
 }
 .gpt-layout #write_tab #result .result-generate {
-  margin-top: 5px;
+  margin-top: 20px;
 }
 .gpt-layout #write_tab #result .result-generate .result-item {
   display: none;
+  font-size: 15px;
+}
+.gpt-layout #write_tab #result .result-generate .result-item .title {
+  display: inline-block;
+  font-size: 15px;
+  margin-bottom: 5px;
+  padding: 0 0 5px 0;
+  color: #2a2a2a;
+  position: relative;
+}
+.gpt-layout #write_tab #result .result-generate .result-item .title::after {
+  content: "";
+  position: absolute;
+  width: 150px;
+  height: 1px;
+  background-color: #ddd;
+  bottom: 0;
+  left: 0;
+}
+.gpt-layout #write_tab #result .result-generate .result-item .title .bold {
+  font-weight: 500;
 }
 .gpt-layout #write_tab #result .result-generate .result-item.active {
   display: block;
 }
-.gpt-layout #write_tab #result .result-generate .result-item textarea {
-  width: 100%;
-  background-color: #fff;
-  border: none;
-  resize: none;
+.gpt-layout #write_tab #result .result-generate .cmp-loading {
+  display: none;
+}
+.gpt-layout #write_tab #result .result-generate .cmp-loading :nth-child(1) {
+  height: 20px;
+  width: 50%;
+  margin-bottom: 2px;
+}
+.gpt-layout #write_tab #result .result-generate .cmp-loading :nth-child(2) {
+  height: 30px;
+  width: 75%;
+  margin-bottom: 2px;
+}
+.gpt-layout #write_tab #result .result-generate .cmp-loading :nth-child(3) {
+  height: 110px;
 }
 .gpt-layout #write_tab #result .result-footer {
   display: flex;
@@ -823,6 +883,43 @@ body ul li {
 .gpt-layout #write_tab #result .result-footer .left .btn {
   margin-right: 5px;
 }
+.gpt-layout #write_tab #result .result-footer .left .btn img {
+  pointer-events: none;
+}
+.gpt-layout #write_tab #result .result-footer .left .btn.done * {
+  display: none;
+}
+.gpt-layout #write_tab #result .result-footer .left .btn.done .icon-done {
+  display: block !important;
+}
+.gpt-layout #write_tab #result .result-footer .left .btn .icon-done {
+  display: none;
+}
 .gpt-layout #write_tab #result .result-footer .right .add-to-site {
   min-width: 150px;
+}
+
+.loading {
+  position: relative;
+  overflow: hidden;
+  border-radius: 5px !important;
+}
+.loading::before {
+  content: "";
+  position: absolute;
+  border-radius: 5px;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, #ffffff, #f2ecff, #ffffff);
+  background-size: 200% 100%;
+  animation: slide 1.5s linear infinite;
+}
+
+@keyframes slide {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
 }/*# sourceMappingURL=sidepanel.css.map */
