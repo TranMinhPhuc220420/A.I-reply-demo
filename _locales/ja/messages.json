@@ -115,5 +115,101 @@
   },
   "des_tell_sider_to_reply": {
     "message": "どのように返信したいかをサイダーに伝えてください..."
+  },
+  "txt_write": {
+    "message": "書く"
+  },
+  "txt_ocr": {
+    "message": "OCR"
+  },
+  "txt_translate": {
+    "message": "翻訳する"
+  },
+  "txt_grammar": {
+    "message": "文法"
+  },
+  "txt_compose": {
+    "message": "作曲する"
+  },
+  "txt_reply": {
+    "message": "返事"
+  },
+  "txt_placeholder_topic_compose": {
+    "message": "作りたいテーマ. Enter を押して下書きを生成します"
+  },
+  "txt_placeholder_original_text_reply": {
+    "message": "返信したい元のテキスト"
+  },
+  "txt_placeholder_general_content_reply": {
+    "message": "上記の本文に対する返信の一般的な内容. Enter を押して下書きを生成します"
+  },
+  "txt_format": {
+    "message": "フォーマット"
+  },
+  "txt_essay": {
+    "message": "エッセイ"
+  },
+  "txt_paragraph": {
+    "message": "段落"
+  },
+  "txt_email": {
+    "message": "Eメール"
+  },
+  "txt_idea": {
+    "message": "アイディア"
+  },
+  "txt_blog_post": {
+    "message": "ブログ投稿"
+  },
+  "txt_outline": {
+    "message": "概要"
+  },
+  "txt_marketing_ads": {
+    "message": "マーケティング広告"
+  },
+  "txt_comment": {
+    "message": "コメント"
+  },
+  "txt_message": {
+    "message": "メッセージ"
+  },
+  "txt_twitter": {
+    "message": "ツイッター"
+  },
+  "txt_professional": {
+    "message": "プロ"
+  },
+  "txt_funny": {
+    "message": "面白い"
+  },
+  "txt_english": {
+    "message": "英語"
+  },
+  "txt_vietnamese": {
+    "message": "ベトナム語"
+  },
+  "txt_korean": {
+    "message": "韓国語"
+  },
+  "txt_japanese": {
+    "message": "日本語"
+  },
+  "txt_generate_draft": {
+    "message": "ドラフトの生成"
+  },
+  "txt_add_to_site": {
+    "message": "サイトに追加"
+  },
+  "des_error_empty_topic_compose": {
+    "message": "「作成したいトピックを入力してください」"
+  },
+  "des_error_empty_original_text_reply": {
+    "message": "「返信したい元のテキストを入力してください」"
+  },
+  "des_error_empty_general_content_reply": {
+    "message": "「上記のテキストに対する返信の一般的な内容を入力してください」"
+  },
+  "des_error_gemini_not_released": {
+    "message": "「おっと！Gemini 1.0 Proはまだリリースされていません」"
   }
 }

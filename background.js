@@ -14,17 +14,22 @@ let DEBUG_MODE = true;
 (function () {
   'use strict';
 
-  let TAB_ID_ACTIVE;
+  let TAB_ID_ACTIVE, USER_ADDON_LOGIN, ID_USER_ADDON_LOGIN;
 
 
   function onRequest(request, sender, sendResponse) {
     switch (request.method) {
       case 'open_side_panel':
         chrome.sidePanel.open({ windowId: sender.tab.windowId });
-        return true;
+        sendResponse(true);
       case 'side_panel_send_result':
         chrome.tabs.sendMessage(TAB_ID_ACTIVE, { action: "side_panel_add_result", payload: request.payload });
-        return true;
+        sendResponse(true);
+      case 'get_user_info':
+        sendResponse({
+          id: ID_USER_ADDON_LOGIN,
+          email: USER_ADDON_LOGIN
+        })
 
       default:
         return true;
@@ -42,6 +47,11 @@ let DEBUG_MODE = true;
     chrome.tabs.onUpdated.addListener((tabId) => {
       TAB_ID_ACTIVE = tabId;
     })
+
+    chrome.identity.getProfileUserInfo(function (userInfo) {
+      USER_ADDON_LOGIN = userInfo.email;
+      ID_USER_ADDON_LOGIN = userInfo.id;
+    });
   }
 
   chrome.runtime.onMessage.addListener(onRequest);

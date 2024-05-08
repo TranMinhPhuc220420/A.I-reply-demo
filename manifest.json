@@ -9,6 +9,7 @@
         "sidePanel",
         "storage",
         "identity",
+        "identity.email",
         "scripting"
     ],
     "content_security_policy": {

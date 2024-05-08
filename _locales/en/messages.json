@@ -134,7 +134,82 @@
   "txt_reply": {
     "message": "Reply"
   },
+  "txt_placeholder_topic_compose": {
+    "message": "The topic you want to compose. Press Enter to generate draft"
+  },
+  "txt_placeholder_original_text_reply": {
+    "message": "The original text to which you want to reply"
+  },
+  "txt_placeholder_general_content_reply": {
+    "message": "The general content of your reply to the above text. Press Enter to generate draft"
+  },
   "txt_format": {
     "message": "Format"
+  },
+  "txt_essay": {
+    "message": "Essay"
+  },
+  "txt_paragraph": {
+    "message": "Paragraph"
+  },
+  "txt_email": {
+    "message": "Email"
+  },
+  "txt_idea": {
+    "message": "Idea"
+  },
+  "txt_blog_post": {
+    "message": "Blog Post"
+  },
+  "txt_outline": {
+    "message": "Outline"
+  },
+  "txt_marketing_ads": {
+    "message": "Marketing Ads"
+  },
+  "txt_comment": {
+    "message": "Comment"
+  },
+  "txt_message": {
+    "message": "Message"
+  },
+  "txt_twitter": {
+    "message": "Twitter"
+  },
+  "txt_professional": {
+    "message": "Professional"
+  },
+  "txt_funny": {
+    "message": "Funny"
+  },
+  "txt_english": {
+    "message": "English"
+  },
+  "txt_vietnamese": {
+    "message": "Tiếng Việt"
+  },
+  "txt_korean": {
+    "message": "한국어"
+  },
+  "txt_japanese": {
+    "message": "日本語"
+  },
+  "txt_generate_draft": {
+    "message": "Generate draft"
+  },
+  "txt_add_to_site": {
+    "message": "Add to site"
+  },
+  "des_error_empty_topic_compose": {
+    "message": "Please enter the topic you want to compose"
+  },
+  "des_error_empty_original_text_reply": {
+    "message": "Please enter the original text to which you want to reply"
+  },
+  "des_error_empty_general_content_reply": {
+    "message": "Please enter the general content of your reply to the above text"
+  },
+  "des_error_gemini_not_released": {
+    "message": "Opps! Gemini 1.0 Pro has not been released yet"
   }
 }

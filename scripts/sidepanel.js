@@ -1,4 +1,4 @@
-let TAB_ID, WINDOW_ID = '';
+let TAB_ID, WINDOW_ID, ID_USER_ADDON_LOGIN_SIDE, USER_ADDON_LOGIN_SIDE = '';
 
 const sateraito = {
   UI: {
@@ -57,25 +57,25 @@ let accountCircleIconUrl = chrome.runtime.getURL("icons/account-circle-icon.svg"
 const LIST_TAB = [
   {
     id: 'write_tab',
-    name: 'Write',
+    name: MyLang.getMsg('TXT_WRITE'),
     icon: write_icon,
     onActive: null
   },
   {
     id: 'ocr_tab',
-    name: 'OCR',
+    name: MyLang.getMsg('TXT_OCR'),
     icon: ocr_icon,
     onActive: null
   },
   {
     id: 'translate_tab',
-    name: 'Translate',
+    name: MyLang.getMsg('TXT_TRANSLATE'),
     icon: translate_icon,
     onActive: null
   },
   {
     id: 'grammar_tab',
-    name: 'Grammar',
+    name: MyLang.getMsg('TXT_GRAMMAR'),
     icon: grammar_icon,
     onActive: null
   },
@@ -83,121 +83,121 @@ const LIST_TAB = [
 const VOICE_SETTING_DATA = [
   {
     name_kind: "format",
-    name: "Format",
+    name: MyLang.getMsg('TXT_FORMAT'),
     icon: descriptionIconUrl,
     options: [
       {
         value: 'essay',
-        display: `Essay`
+        display: MyLang.getMsg('TXT_ESSAY')
       },
       {
         value: 'paragraph',
-        display: `Paragraph`
+        display: MyLang.getMsg('TXT_PARAGRAPH')
       },
       {
         value: 'email',
-        display: `Email`
+        display: MyLang.getMsg('TXT_EMAIL')
       },
       {
         value: 'idea',
-        display: `Idea`
+        display: MyLang.getMsg('TXT_IDEA')
       },
       {
         value: 'blog post',
-        display: `Blog Post`
+        display: MyLang.getMsg('TXT_BLOG_POST')
       },
       {
         value: 'outline',
-        display: `Outline`
+        display: MyLang.getMsg('TXT_OUTLINE')
       },
       {
         value: 'marketing ads',
-        display: `Marketing Ads`
+        display: MyLang.getMsg('TXT_MARKETING_ADS')
       },
       {
         value: 'comment',
-        display: `Comment`
+        display: MyLang.getMsg('TXT_COMMENT')
       },
       {
         value: 'message',
-        display: `Message`
+        display: MyLang.getMsg('TXT_MESSAGE')
       },
       {
         value: 'twitter',
-        display: `Twitter`
+        display: MyLang.getMsg('TXT_TWITTER')
       },
     ]
   },
   {
     name_kind: "format_reply",
-    name: "Format",
+    name: MyLang.getMsg('TXT_FORMAT'),
     icon: descriptionIconUrl,
     options: [
       {
         value: 'comment',
-        display: `Comment`
+        display: MyLang.getMsg('TXT_COMMENT')
       },
       {
         value: 'email',
-        display: `Email`
+        display: MyLang.getMsg('TXT_EMAIL')
       },
       {
         value: 'message',
-        display: `Message`
+        display: MyLang.getMsg('TXT_MESSAGE')
       },
       {
         value: 'twitter',
-        display: `Twitter`
+        display: MyLang.getMsg('TXT_TWITTER')
       },
     ]
   },
   {
     name_kind: "tone",
-    name: "Tone",
+    name: MyLang.getMsg('TXT_TONE'),
     icon: emojiIconUrl,
     options: [
       {
         value: 'formal',
-        display: `Formal`
+        display: MyLang.getMsg('TXT_FORMAL'),
       },
       {
         value: 'casual',
-        display: `Casual`
+        display: MyLang.getMsg('TXT_CASUAL'),
       },
       {
         value: 'professional',
-        display: `Professional`
+        display: MyLang.getMsg('TXT_PROFESSIONAL'),
       },
       {
         value: 'enthusiastic',
-        display: `Enthusiastic`
+        display: MyLang.getMsg('TXT_ENTHUSIASTIC'),
       },
       {
         value: 'informational',
-        display: `Informational`
+        display: MyLang.getMsg('TXT_INFORMATIONAL'),
       },
       {
         value: 'funny',
-        display: `Funny`
+        display: MyLang.getMsg('TXT_FUNNY'),
       },
     ],
   },
   {
     name_kind: "email_length",
-    name: "Email length",
+    name: MyLang.getMsg('TXT_EMAIL_LENGTH'),
     icon: formatAlignIconUrl,
     options: [
       {
         value: 'medium',
-        display: `Medium`
+        display: MyLang.getMsg('TXT_MEDIUM'),
       },
       {
         value: 'short',
-        display: `Short`
+        display: MyLang.getMsg('TXT_SHORT'),
       },
       {
         value: 'long',
-        display: `Long`
+        display: MyLang.getMsg('TXT_LONG'),
       },
     ],
   },
@@ -206,17 +206,17 @@ const LANGUAGE_SETTING_DATA = [
   {
     value: 'vietnamese',
     name: 'Tiếng Việt',
-    sub: 'Vietnamese',
+    sub: MyLang.getMsg('TXT_VIETNAMESE'),
   },
   {
     value: 'japanese',
     name: '日本語',
-    sub: 'Japanese',
+    sub: MyLang.getMsg('TXT_JAPANESE'),
   },
   {
     value: 'korean',
     name: '한국어',
-    sub: 'Korean',
+    sub: MyLang.getMsg('TXT_KOREAN'),
   },
 ];
 const GPT_VERSION_SETTING_DATA = [
@@ -312,19 +312,19 @@ const TabWriteManager = {
               <div class="tab">
                 <div class="tab-title">
                   <div class="item" key_tab="compose_tab">
-                    <span>Compose</span>
+                    <span>${MyLang.getMsg('TXT_COMPOSE')}</span>
                   </div>
                   <div class="item" key_tab="reply_tab">
-                    <span>Reply</span>
+                    <span>${MyLang.getMsg('TXT_REPLY')}</span>
                   </div>
                 </div>
                 <div class="tab-body">
                   <span id="compose_tab" class="tab-item">
-                    <textarea placeholder="The topic you want to compose. Press Enter to generate draft"></textarea>
+                    <textarea placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_TOPIC_COMPOSE')}"></textarea>
                   </span>
                   <span id="reply_tab" class="tab-item ">
-                    <textarea class="original_text_reply" placeholder="The original text to which you want to reply"></textarea>
-                    <textarea class="general_content_reply" placeholder="The general content of your reply to the above text. Press Enter to generate draft"></textarea>
+                    <textarea class="original_text_reply" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_REPLY')}"></textarea>
+                    <textarea class="general_content_reply" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_GENERAL_CONTENT_REPLY')}"></textarea>
                   </span>
                 </div>
               </div>
@@ -345,7 +345,7 @@ const TabWriteManager = {
                 <div class="options">
                 </div>
 
-                <button class="submit-generate">Generate draft</button>
+                <button class="submit-generate">${MyLang.getMsg('TXT_GENERATE_DRAFT')}</button>
               </div>
 
               <div class="alert">
@@ -393,7 +393,7 @@ const TabWriteManager = {
                 </div>
                 <div class="right">
                   <button class="btn send-to-site">
-                    Add to site
+                    ${MyLang.getMsg('TXT_ADD_TO_SITE')}
                   </button>
                 </div>
               </div>
@@ -446,19 +446,19 @@ const TabWriteManager = {
 
     if (typeGenerate == 'compose') {
       if (!topicCompose || topicCompose == '') {
-        return 'Please enter the topic you want to compose'
+        return MyLang.getMsg('DES_ERROR_TOPIC_COMPOSE');
       }
     }
     if (typeGenerate == 'reply') {
       if (!originalTextReply || originalTextReply == '') {
-        return 'Please enter the original text to which you want to reply'
+        return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_REPLY');
       }
       if (!generalContentReply || generalContentReply == '') {
-        return 'Please enter the general content of your reply to the above text'
+        return MyLang.getMsg('DES_ERROR_GENERAL_CONTENT_REPLY');
       }
     }
     if (self.formData.gpt_version == 'gemini') {
-      return 'Opps! Gemini 1.0 Pro has not been released yet'
+      return MyLang.getMsg('DES_ERROR_GEMINI_NOT_RELEASED');
     }
   },
 
@@ -1075,7 +1075,10 @@ const WrapperManager = {
 };
 
 const getCurrentUser = () => {
-  return 'admin@vn2.sateraito.co.jp'
+  return {
+    id: ID_USER_ADDON_LOGIN_SIDE,
+    email: USER_ADDON_LOGIN_SIDE,
+  }
 }
 const getIconGptVersion = (keyGet, gptVersion) => {
   for (let i = 0; i < GPT_VERSION_SETTING_DATA.length; i++) {
@@ -1090,14 +1093,6 @@ const initialize_side = async () => {
   TAB_ID = await getTabId();
   WINDOW_ID = await getWindowId();
 
-  let current_user = getCurrentUser();
-  //addon setting
-  loadAddOnSetting(current_user, function (result) {
-    is_domain_regist = result.is_domain_regist
-    is_not_access_list = result.is_not_access_list
-    console.log(`auto summary chat GPT: domain regist:[${is_domain_regist}], permission deny:[${is_not_access_list}]`)
-  })
-
   WrapperManager._init();
 
   chrome.storage.onChanged.addListener((payload) => {
@@ -1105,6 +1100,19 @@ const initialize_side = async () => {
       handlerTextSelectedChange(payload);
     }
   });
+
+  chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
+    ID_USER_ADDON_LOGIN_SIDE = userInfo.id;
+    USER_ADDON_LOGIN_SIDE = userInfo.email;
+
+    //addon setting
+    loadAddOnSetting(userInfo.email, function (result) {
+      is_domain_regist = result.is_domain_regist
+      is_not_access_list = result.is_not_access_list
+      console.log(`auto summary chat GPT: domain regist:[${is_domain_regist}], permission deny:[${is_not_access_list}]`)
+    });
+    
+  })
 }
 
 initialize_side();

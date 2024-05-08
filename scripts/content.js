@@ -107,6 +107,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
   let is_domain_regist = false
   let is_not_access_list = false
 
+  let ID_USER_ADDON_LOGIN, USER_ADDON_LOGIN = '';
+
   const VOICE_SETTING_DATA = [
     {
       name_kind: "formality",
@@ -356,17 +358,27 @@ document.addEventListener('RW759_connectExtension', function (e) {
   }
 
   function getCurrentUser() {
-    var current_user = '';
-    if (GLOBALS_GMAIL != null) {
-      if (typeof (GLOBALS_GMAIL) != "undefined") {
-        if (GLOBALS_GMAIL.length > 10) {
-          current_user = GLOBALS_GMAIL[10];
-          if (typeof (current_user) == "undefined") current_user = '';
+    if (USER_ADDON_LOGIN != '') {
+      return {
+        id: ID_USER_ADDON_LOGIN,
+        email: USER_ADDON_LOGIN,
+      }
+    } else {
+      var current_user = '';
+      if (GLOBALS_GMAIL != null) {
+        if (typeof (GLOBALS_GMAIL) != "undefined") {
+          if (GLOBALS_GMAIL.length > 10) {
+            current_user = GLOBALS_GMAIL[10];
+            if (typeof (current_user) == "undefined") current_user = '';
+          }
         }
       }
+
+      return {
+        id: '',
+        email: current_user,
+      };
     }
-    return 'admin@vn2.sateraito.co.jp';
-    return current_user;
   }
 
   /**
@@ -1502,7 +1514,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       let current_user = getCurrentUser();
       //addon setting
-      loadAddOnSetting(current_user, function (result) {
+      loadAddOnSetting(current_user.email, function (result) {
         is_domain_regist = result.is_domain_regist
         is_not_access_list = result.is_not_access_list
         console.log(`auto summary chat GPT: domain regist:[${is_domain_regist}], permission deny:[${is_not_access_list}]`)
@@ -1579,6 +1591,11 @@ document.addEventListener('RW759_connectExtension', function (e) {
       //   _QuickActionPopup.showPopup(text_selected, clientX, clientY);
       // }, 100)
     });
+
+    chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
+      USER_ADDON_LOGIN = userInfo.email;
+      ID_USER_ADDON_LOGIN = userInfo.id;
+    })
 
     debugLog('▲▲▲ initilize ended ! ');
   }
