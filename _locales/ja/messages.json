@@ -1,6 +1,6 @@
 {
   "extension_name": {
-    "message": "Sateraito Extension AI"
+    "message": "A.I Reply - Sateraito"
   },
   "extension_description": {
     "message": "Extension AI development by Sateraito Office"
@@ -135,13 +135,13 @@
     "message": "返事"
   },
   "txt_placeholder_topic_compose": {
-    "message": "作りたいテーマ. Enter を押して下書きを生成します"
+    "message": "作りたいテーマ"
   },
   "txt_placeholder_original_text_reply": {
     "message": "返信したい元のテキスト"
   },
   "txt_placeholder_general_content_reply": {
-    "message": "上記の本文に対する返信の一般的な内容. Enter を押して下書きを生成します"
+    "message": "上記の本文に対する返信の一般的な内容"
   },
   "txt_format": {
     "message": "フォーマット"

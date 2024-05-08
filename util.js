@@ -236,8 +236,7 @@ async function getDataToShowPopupInMailRequest(params, callback, retry) {
 Title: ${title_mail}
 Content: ${content_mail}
 
-I want you to always answer in ${lang}.
-Summarize the letter's content in a single paragraph, summarize the letter's content according to 3 main points, language of body mail, suggest 3 ways to answer`
+Summarize the letter's content in a single paragraph, summarize the letter's content according to 3 main points, language of body mail, suggest 3 ways to answer\nOutput in ${lang}`
         },
     ];
 
@@ -291,7 +290,7 @@ I want you to always answer in ${lang}.`
         { role: 'assistant', content: 'Ok' },
         { role: 'user', content: content_user },
         { role: 'assistant', content: 'Ok' },
-        { role: 'user', content: `${voice_config.your_role ? `I'm the ${voice_config.your_role}` : ''}. Help me write a ${voice_config.email_length}, ${voice_config.tone}, ${voice_config.formality} in ${lang} email in response to the message. The content of the answer revolves around the story "${reply_suggested}"` },
+        { role: 'user', content: `${voice_config.your_role ? `I'm the ${voice_config.your_role}` : ''}. Help me write a ${voice_config.email_length}, ${voice_config.tone}, ${voice_config.formality} in ${lang} email in response to the message. The content of the answer revolves around the story "${reply_suggested}"\nOutput in ${lang}` },
     ];
 
     const prompt = `Title: ${title_mail}\nBody: ${content_mail}
@@ -340,7 +339,7 @@ async function generateContentRequest(params, callback, retry) {
     if (type_generate == 'compose') {
         prompt += `Write a ${format}, with ${tone} tone and ${email_length} length. The topic is:\n\"\"\"\n${topic_compose}\n\"\"\"\nOutput in ${your_lang}`
     } else {
-        prompt += `Write a ${format_reply} to reply to the original text. Ensure your response has a ${tone} tone and a ${email_length} length. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.\nRespond in the ${your_lang} language.\n\n-----\n\nOriginal text:\n\"\"\"\n${original_text_reply}\n\"\"\"\n\nThe key points of the reply:\n\"\"\"\n${general_content_reply}\n\"\"\"`
+        prompt += `Write a ${format_reply} to reply to the original text. Ensure your response has a ${tone} tone and a ${email_length} length. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.\nRespond in the ${your_lang} language.\n\n-----\n\nOriginal text:\n\"\"\"\n${original_text_reply}\n\"\"\"\n\nThe key points of the reply:\n\"\"\"\n${general_content_reply}\n\"\"\"Output in ${your_lang}`
     }
     prompt += '\n\njson:\n\"\"\"\n{title: "", body: ""}\n\"\"\"\n\n'
 

@@ -1,6 +1,6 @@
 {
   "extension_name": {
-    "message": "Sateraito Extension AI"
+    "message": "A.I Reply - Sateraito"
   },
   "extension_description": {
     "message": "Extension AI development by Sateraito Office"
@@ -135,13 +135,13 @@
     "message": "Reply"
   },
   "txt_placeholder_topic_compose": {
-    "message": "The topic you want to compose. Press Enter to generate draft"
+    "message": "The topic you want to compose"
   },
   "txt_placeholder_original_text_reply": {
     "message": "The original text to which you want to reply"
   },
   "txt_placeholder_general_content_reply": {
-    "message": "The general content of your reply to the above text. Press Enter to generate draft"
+    "message": "The general content of your reply to the above text"
   },
   "txt_format": {
     "message": "Format"

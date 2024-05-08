@@ -4,6 +4,8 @@ let DEBUG_MODE = true;
 /** @define {object} GLOBALS_GMAIL*/
 let GLOBALS_GMAIL = null;
 
+let USER_SETTING = {};
+
 //==========CREATE HANDLE TO GET [GLOBALS] VARIABLE GMAIL=================
 //CREATE HANDLE TO GET [GLOBALS] VARIABLE GMAIL
 let s = document.createElement('script');
@@ -71,7 +73,9 @@ const LOCALE_CODES = {
   "zh_TW": "Chinese (Taiwan)",
 
   getNameLocale: () => {
-    // return 'Vietnamese'
+    if (USER_SETTING && USER_SETTING.language) {
+      return LOCALE_CODES[USER_SETTING.language] || 'Japanese';
+    }
     return LOCALE_CODES[chrome.i18n.getUILanguage().replaceAll('-', '_')] || 'Japanese';
   }
 }
@@ -387,17 +391,28 @@ document.addEventListener('RW759_connectExtension', function (e) {
    * @param {Event} event 
    */
   function onMessage(message, sender, sendResponse) {
-    switch (message.action) {
-      case 'side_panel_add_result':
-        const { payload } = message;
 
-        _MailAIGenerate.setMailCompose({
-          title: payload.title,
-          body: payload.body
-        });
 
-      default:
-        return true;
+  }
+
+  /**
+   * Handler when storage has value change
+   * 
+   * @param {Event} event 
+   */
+  function storageOnChanged(payload, type) {
+    if ('side_panel_send_result' in payload) {
+      const newValue = payload.side_panel_send_result.newValue;
+      if (newValue.title && newValue.body) {
+        _MailAIGenerate.setMailCompose(newValue);
+      }
+      setTimeout(() => {
+        chrome.storage.sync.set({ side_panel_send_result: {} });
+      }, 1000);
+    }
+
+    else if ('user_setting' in payload) {
+      USER_SETTING = payload.user_setting.newValue;
     }
   }
 
@@ -468,8 +483,21 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * @returns {string}
      */
     getVHtml: function () {
-      let transformX = window.innerWidth - 606;
-      let transformY = window.innerHeight - 602;
+      let transformX = window.innerWidth - 600;
+      let transformY = window.innerHeight - 575;
+
+      let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
+      for (let i = 0; i < listAllBoxCompose.length; i++) {
+        const item = listAllBoxCompose[i];
+
+        let isReplyInBox = false;
+        let elContainerReply = $(item).parents('.AD')[0];
+        isReplyInBox = ($(elContainerReply).find('.aoP .I5 .bAs table[role="presentation"]').length > 0)
+
+        if (isReplyInBox) {
+          transformX = transformX - (elContainerReply.offsetWidth - 70);
+        }
+      }
 
       let reloadIconUrl = chrome.runtime.getURL("icons/refresh-icon.png");
       let closeIconUrl = chrome.runtime.getURL("icons/close-icon.png");
@@ -507,6 +535,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
                   <h5 data-key-tab="tab2">${MyLang.getMsg('TXT_KEY_POINTS')}</h5>
                 </div>
                 <div class="language">
+                  <span>${MyLang.getMsg('TXT_ORIGINAL_LANGUAGE')}:</span>
                 </div>
               </div>
 
@@ -636,8 +665,21 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * 
      */
     fixPosition: function () {
-      let transformX = window.innerWidth - 606;
-      let transformY = window.innerHeight - 602;
+      let transformX = window.innerWidth - 600;
+      let transformY = window.innerHeight - 575;
+
+      let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
+      for (let i = 0; i < listAllBoxCompose.length; i++) {
+        const item = listAllBoxCompose[i];
+
+        let isReplyInBox = false;
+        let elContainerReply = $(item).parents('.AD')[0];
+        isReplyInBox = ($(elContainerReply).find('.aoP .I5 .bAs table[role="presentation"]').length > 0)
+
+        if (isReplyInBox) {
+          transformX = transformX - (elContainerReply.offsetWidth - 70);
+        }
+      }
 
       find('#ai_reply_popup', (elFind) => {
         elFind.style.top = 'unset';
@@ -1260,35 +1302,46 @@ document.addEventListener('RW759_connectExtension', function (e) {
     setMailReply: function (params) {
       const { title, body } = params;
 
-      // let is_really_compose = ($(itemBBarEl).parents('.AD').find('.aoP .I5 .bAs table[role="presentation"]').length == 0)
       let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
-      for (let i = 0; i < listAllBoxCompose.length; i++) {
-        const item = listAllBoxCompose[i];
-
-        let isCompose = ($(item).parents('.AD').find('.aoP .I5 .bAs table[role="presentation"]').length == 0)
-        if (!isCompose) {
-          let findEl = $(item).find('.Am.Al.editable.LW-avf')[0];
+      if (listAllBoxCompose.length > 0) {
+        // This handle for popup out reply
+        for (let i = 0; i < listAllBoxCompose.length; i++) {
+          const item = listAllBoxCompose[i];
+  
+          let isCompose = ($(item).parents('.AD').find('.aoP .I5 .bAs table[role="presentation"]').length == 0)
+          if (!isCompose) {
+            let findEl = $(item).find('.Am.Al.editable.LW-avf')[0];
+            findEl.innerHTML = body.replaceAll('\n', '</br>');
+            findEl.focus();
+          }
+        }
+      } else {
+        // This handle for popup normal reply
+        find('.Am.Al.editable.LW-avf', (findEl) => {
           findEl.innerHTML = body.replaceAll('\n', '</br>');
           findEl.focus();
-        }
+        });
       }
-
-      // find('.Am.Al.editable.LW-avf', (findEl) => {
-      //   findEl.innerHTML = body.replaceAll('\n', '</br>');
-      //   findEl.focus();
-      // });
     },
 
     setMailCompose: function (params) {
       const { title, body } = params;
 
-      find('.nH .aaZ input[name="subjectbox"]', (findEl) => {
-        findEl.value = title;
-      });
-      find('.nH .aaZ .Am.Al.editable.LW-avf', (findEl) => {
-        findEl.innerHTML = body.replaceAll('\n', '</br>');
-        findEl.focus();
-      });
+      let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
+      for (let i = 0; i < listAllBoxCompose.length; i++) {
+        const item = listAllBoxCompose[i];
+
+        let isCompose = ($(item).parents('.AD').find('.aoP .I5 .bAs table[role="presentation"]').length == 0)
+        if (isCompose) {
+          let findEl = $(item).find('.aoD input[name="subjectbox"]');
+          findEl.val(title)
+
+          findEl = $(item).find('.iN .Am.Al.editable.LW-avf');
+          findEl.html(body.replaceAll('\n', '</br>'));
+          findEl.focus();
+        }
+      }
+
     },
 
     // Getter
@@ -1564,11 +1617,12 @@ document.addEventListener('RW759_connectExtension', function (e) {
       }
     }
 
-    window.addEventListener('message', function (event) {
-      // TODO::
-    }, false);
+    chrome.storage.sync.get('user_setting').then(value => {
+      USER_SETTING = value.user_setting;
+    })
 
     chrome.runtime.onMessage.addListener(onMessage);
+    chrome.storage.onChanged.addListener(storageOnChanged);
 
     let quickRoot = document.createElement('div');
     quickRoot.className = 'chat-gpt-quick-query-container';

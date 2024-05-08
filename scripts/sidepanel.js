@@ -1,4 +1,5 @@
 let TAB_ID, WINDOW_ID, ID_USER_ADDON_LOGIN_SIDE, USER_ADDON_LOGIN_SIDE = '';
+let USER_SETTING = {};
 
 const sateraito = {
   UI: {
@@ -237,6 +238,52 @@ const GPT_VERSION_SETTING_DATA = [
   },
 ]
 
+const _StorageManager = {
+  getLanguageWrite: (callback) => {
+    chrome.storage.sync.get('write_language_output').then(payload => {
+      let config = payload.write_language_output;
+      if (!config) config = [];
+
+      callback(config);
+    });
+  },
+
+  addLanguageWrite: (value) => {
+    chrome.storage.sync.get('write_language_output').then(payload => {
+      let config = payload.write_language_output;
+      if (!config) config = [];
+
+      const record = LANGUAGE_SETTING_DATA.find(item => {
+        return value == item.value
+      });
+      const record_in_config = config.find(item => {
+        return value == item.value
+      });
+
+      if (record && !record_in_config) {
+        config.push(record);
+        chrome.storage.sync.set({ write_language_output: config });
+      }
+    });
+  },
+
+  removeLanguageWrite: (value) => {
+    chrome.storage.sync.get('write_language_output').then(payload => {
+      let config = payload.write_language_output;
+      if (!config) config = [];
+
+      for (let i = 0; i < config.length; i++) {
+        if (config[i].value == value) {
+          config.splice(i, 1);
+          chrome.storage.sync.set({ write_language_output: config });
+          console.log(config);
+          break;
+        }
+      }
+    });
+  },
+}
+
 const _SendMessageManager = {
   chat_gpt_api_key: null,
 
@@ -300,6 +347,7 @@ const TabWriteManager = {
   },
   result_active: 0,
   generate_result_list: [],
+  language_output_config: [],
 
   // Getter
   getVHtml: () => {
@@ -415,6 +463,11 @@ const TabWriteManager = {
       self.formData[item.name_kind] = item.options[0].value;
     }
 
+    _StorageManager.getLanguageWrite(config => {
+      TabWriteManager.language_output_config = config;
+      self.loadLangConfig();
+    });
+
     const panelEl = document.createElement('div');
     panelEl.id = self.idTab
     panelEl.innerHTML = self.getVHtml();
@@ -506,16 +559,32 @@ const TabWriteManager = {
     let lang_option = '';
     for (let i = 0; i < LANGUAGE_SETTING_DATA.length; i++) {
       const item = LANGUAGE_SETTING_DATA[i];
+
+      let hasInConfig = self.language_output_config.find(configItem => configItem.value == item.value);
       lang_option += `
-        <li class="combobox-item" value="${item.value}">
-          <div class="name">${item.name}</div>
-          <div class="sub">${item.sub}</div>
-        </li>
-      `;
+          <li class="combobox-item ${hasInConfig ? 'hidden' : ''}" value="${item.value}">
+            <div class="name">${item.name}</div>
+            <div class="sub">${item.sub}</div>
+          </li>
+        `;
+    }
+
+    let lang_config = '<button value="english" kind="your_lang" class="item text active">English</button>';
+    for (let i = 0; i < self.language_output_config.length; i++) {
+      const configItem = self.language_output_config[i];
+
+      lang_config += `
+        <button kind="your_lang" value="${configItem.value}" class="item text">
+          ${configItem.name}
+          <div class="close">
+            <img class="icon" src="./icons/cancel.svg">
+          </div>
+        </button>
+      `
     }
 
     let vHtml_init = `
-      <button value="english" kind="your_lang" class="item text active">English</button>
+      ${lang_config}
       <button class="item text combobox" id="language_cbx">
           <span class="space">...</span>
           <ul class="popover-cbx wrap-item">
@@ -525,6 +594,11 @@ const TabWriteManager = {
     `
 
     $(`#${self.idTab} .your-language .options`).html(vHtml_init);
+
+    document.body.querySelector(`#${self.idTab} #language_cbx`).onSelect = self.onSelectLanguageConfig;
+    if ($(`#${self.idTab} .your-language .combobox-item.hidden`).length == $(`#${self.idTab} .your-language .combobox-item`).length) {
+      $('#language_cbx').addClass('hidden');
+    }
   },
 
   loadVersionGPTConfig: () => {
@@ -591,7 +665,7 @@ const TabWriteManager = {
     const self = TabWriteManager;
 
     // For combobox component
-    $(`#${self.idTab} .combobox`).click(event => {
+    $(document).on('click', `#${self.idTab} .combobox`, function (event) {
       $(`#${self.idTab} .popover-cbx`).removeClass('show');
 
       const targetEl = event.target;
@@ -609,7 +683,7 @@ const TabWriteManager = {
         self.combobox_flag = false;
       }, 100)
     });
-    $(`#${self.idTab} .popover-cbx.wrap-item .combobox-item`).click(event => {
+    $(document).on('click', `#${self.idTab} .popover-cbx.wrap-item .combobox-item`, function (event) {
       const value = event.target.getAttribute('value');
 
       const comboboxEl = $(event.target).parents('button.combobox')[0];
@@ -640,7 +714,10 @@ const TabWriteManager = {
 
     const handlerActive = () => {
       $(`#${self.idTab} #result .result-generate .result-item`).removeClass('active');
-      $(`#${self.idTab} #result .result-generate .result-item[data-index="${self.result_active}"]`).addClass('active');
+      let itemActiveEl = $(`#${self.idTab} #result .result-generate .result-item[data-index="${self.result_active}"]`);
+      itemActiveEl.addClass('active');
+
+      $(`#${self.idTab} #result .result-generate`).css('height', `${itemActiveEl[0].offsetHeight}px`)
 
       self.handlerUpdatePaging();
     };
@@ -663,14 +740,28 @@ const TabWriteManager = {
     $(`#${self.idTab} .submit-generate`).click(self.onSubmitGenerate);
 
     // For items options voice config
-    $(`#${self.idTab} .config .options .item`).click(self.onClickConfigItem);
+    $(document).on('click', `#${self.idTab} .config .options .item`, self.onClickConfigItem);
 
-    // For items options voice config
+    // Remove and save language config
+    $(document).on('click', `#${self.idTab} .form-config .your-language .item .close`, (event) => {
+      const targetEl = event.target;
+
+      const parentBtnEl = $(targetEl).parents('button.item.text');
+      const value = parentBtnEl.attr('value');
+
+      _StorageManager.removeLanguageWrite(value);
+
+      parentBtnEl.remove();
+
+      $(`#language_cbx .combobox-item[value="${value}"]`).removeClass('hidden');
+      $(`#${self.idTab} #language_cbx`).removeClass('hidden');
+    });
+
+    // For action button session result footer
     $(`#${self.idTab} .result-footer .btn.re-generate`).click(self.onSubmitGenerate);
     $(`#${self.idTab} .result-footer .btn.copy-content`).click(self.onClickCopyContentResult);
     $(`#${self.idTab} .result-footer .btn.send-to-site`).click(self.onClickSendContentResultToSite);
 
-    document.body.querySelector(`#${self.idTab} #language_cbx`).onSelect = self.onSelectLanguageConfig;
     document.body.querySelector(`#${self.idTab} #version_gpt`).onSelect = self.onSelectVersionGptConfig;
   },
 
@@ -842,13 +933,11 @@ const TabWriteManager = {
     const self = TabWriteManager;
     let itemActive = self.generate_result_list[self.result_active];
 
-    chrome.runtime.sendMessage({
-      method: 'side_panel_send_result',
-      payload: {
-        title: itemActive.title,
-        body: itemActive.body,
-      }
-    })
+    let params = {
+      title: itemActive.title,
+      body: itemActive.body,
+    }
+    chrome.storage.sync.set({ side_panel_send_result: params });
   },
 
   onClickConfigItem: (event) => {
@@ -888,14 +977,6 @@ const TabWriteManager = {
       closeBtnEl.className = 'close';
       closeBtnEl.innerHTML = '<img class="icon" src="./icons/cancel.svg">';
 
-      closeBtnEl.onclick = () => {
-        buttonEl.remove();
-        $(itemEl).removeClass('hidden');
-
-        if ($(`#${self.idTab} #language_cbx`).hasClass('hidden')) {
-          $(comboboxEl).removeClass('hidden');
-        }
-      }
       $(buttonEl).click(self.onClickConfigItem);
 
       buttonEl.append(closeBtnEl);
@@ -905,6 +986,8 @@ const TabWriteManager = {
         self.formData['your_lang'] = value;
         $(buttonEl).addClass('active');
       }, 100);
+
+      _StorageManager.addLanguageWrite(value);
     }
 
     if ($(`#${self.idTab} .your-language .combobox-item.hidden`).length == $(`#${self.idTab} .your-language .combobox-item`).length) {
@@ -1090,6 +1173,8 @@ const getIconGptVersion = (keyGet, gptVersion) => {
   }
 }
 const initialize_side = async () => {
+  USER_SETTING = await chrome.storage.sync.get('user_setting')
+
   TAB_ID = await getTabId();
   WINDOW_ID = await getWindowId();
 
@@ -1111,7 +1196,7 @@ const initialize_side = async () => {
       is_not_access_list = result.is_not_access_list
       console.log(`auto summary chat GPT: domain regist:[${is_domain_regist}], permission deny:[${is_not_access_list}]`)
     });
-    
+
   })
 }
 
