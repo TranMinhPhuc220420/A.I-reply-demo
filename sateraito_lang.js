@@ -11,6 +11,7 @@ const MyLang = {
 
         "TXT_SUMMARY": chrome.i18n.getMessage('txt_summary'),
         "TXT_KEY_POINTS": chrome.i18n.getMessage('txt_key_points'),
+        "TXT_LANGUAGE": chrome.i18n.getMessage('txt_language'),
         "TXT_ORIGINAL_LANGUAGE": chrome.i18n.getMessage('txt_original_language'),
         "TXT_REPLY_SUGGESTIONS": chrome.i18n.getMessage('txt_reply_suggestions'),
         "DES_CLICK_TO_CONFIG_VOICE": chrome.i18n.getMessage('des_click_to_config_voice'),

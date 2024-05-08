@@ -1,289 +1,3 @@
-let TAB_ID, WINDOW_ID, ID_USER_ADDON_LOGIN_SIDE, USER_ADDON_LOGIN_SIDE = '';
-let USER_SETTING = {};
-
-const sateraito = {
-  UI: {
-    update_text_selected: (text) => {
-      document.getElementById('original_text').value = text;
-    },
-    show_text_selected: async () => {
-      let payload = await chrome.storage.sync.get('text_selected');
-      document.getElementById('original_text').value = payload.text_selected;
-    },
-  }
-}
-
-const getTabId = async () => {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  return tab.id;
-}
-const getWindowId = async () => {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  return tab.windowId;
-}
-const getCurrentTab = async () => {
-  const queryOptions = { active: true, currentWindow: true };
-  const [tab] = await chrome.tabs.query(queryOptions);
-  return tab;
-}
-
-const handlerTextSelectedChange = async (payload) => {
-  let text = payload.text_selected.newValue;
-  sateraito.UI.update_text_selected(text);
-}
-
-let write_icon = `  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path d="M0 0h24v24H0z" fill="none" />
-                        <path d="M18.41 5.8L17.2 4.59c-.78-.78-2.05-.78-2.83 0l-2.68 2.68L3 15.96V20h4.04l8.74-8.74 2.63-2.63c.79-.78.79-2.05 0-2.83zM6.21 18H5v-1.21l8.66-8.66 1.21 1.21L6.21 18zM11 20l4-4h6v4H11z" />
-                    </svg>`;
-let ocr_icon = `    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path d="M0 0h24v24H0z" fill="none" />
-                        <path d="M0 0h24v24H0V0z" fill="none" />
-                        <path d="M18 13v7H4V6h5.02c.05-.71.22-1.38.48-2H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-5l-2-2zm-1.5 5h-11l2.75-3.53 1.96 2.36 2.75-3.54zm2.8-9.11c.44-.7.7-1.51.7-2.39C20 4.01 17.99 2 15.5 2S11 4.01 11 6.5s2.01 4.5 4.49 4.5c.88 0 1.7-.26 2.39-.7L21 13.42 22.42 12 19.3 8.89zM15.5 9C14.12 9 13 7.88 13 6.5S14.12 4 15.5 4 18 5.12 18 6.5 16.88 9 15.5 9z" />
-                    </svg>`
-let translate_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path d="M0 0h24v24H0z" fill="none" />
-                        <path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" />
-                    </svg>`
-let grammar_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                        <path d="M0 0h24v24H0z" fill="none" />
-                        <path d="M14 17H4v2h10v-2zm6-8H4v2h16V9zM4 15h16v-2H4v2zM4 5v2h16V5H4z" />
-                    </svg>`
-
-let descriptionIconUrl = chrome.runtime.getURL("icons/description-icon.svg");
-let emojiIconUrl = chrome.runtime.getURL("icons/emoji-emotions-icon.svg");
-let formatAlignIconUrl = chrome.runtime.getURL("icons/format-align-icon.svg");
-let accountCircleIconUrl = chrome.runtime.getURL("icons/account-circle-icon.svg");
-
-const LIST_TAB = [
-  {
-    id: 'write_tab',
-    name: MyLang.getMsg('TXT_WRITE'),
-    icon: write_icon,
-    onActive: null
-  },
-  {
-    id: 'ocr_tab',
-    name: MyLang.getMsg('TXT_OCR'),
-    icon: ocr_icon,
-    onActive: null
-  },
-  {
-    id: 'translate_tab',
-    name: MyLang.getMsg('TXT_TRANSLATE'),
-    icon: translate_icon,
-    onActive: null
-  },
-  {
-    id: 'grammar_tab',
-    name: MyLang.getMsg('TXT_GRAMMAR'),
-    icon: grammar_icon,
-    onActive: null
-  },
-];
-const VOICE_SETTING_DATA = [
-  {
-    name_kind: "format",
-    name: MyLang.getMsg('TXT_FORMAT'),
-    icon: descriptionIconUrl,
-    options: [
-      {
-        value: 'essay',
-        display: MyLang.getMsg('TXT_ESSAY')
-      },
-      {
-        value: 'paragraph',
-        display: MyLang.getMsg('TXT_PARAGRAPH')
-      },
-      {
-        value: 'email',
-        display: MyLang.getMsg('TXT_EMAIL')
-      },
-      {
-        value: 'idea',
-        display: MyLang.getMsg('TXT_IDEA')
-      },
-      {
-        value: 'blog post',
-        display: MyLang.getMsg('TXT_BLOG_POST')
-      },
-      {
-        value: 'outline',
-        display: MyLang.getMsg('TXT_OUTLINE')
-      },
-      {
-        value: 'marketing ads',
-        display: MyLang.getMsg('TXT_MARKETING_ADS')
-      },
-      {
-        value: 'comment',
-        display: MyLang.getMsg('TXT_COMMENT')
-      },
-      {
-        value: 'message',
-        display: MyLang.getMsg('TXT_MESSAGE')
-      },
-      {
-        value: 'twitter',
-        display: MyLang.getMsg('TXT_TWITTER')
-      },
-    ]
-  },
-  {
-    name_kind: "format_reply",
-    name: MyLang.getMsg('TXT_FORMAT'),
-    icon: descriptionIconUrl,
-    options: [
-      {
-        value: 'comment',
-        display: MyLang.getMsg('TXT_COMMENT')
-      },
-      {
-        value: 'email',
-        display: MyLang.getMsg('TXT_EMAIL')
-      },
-      {
-        value: 'message',
-        display: MyLang.getMsg('TXT_MESSAGE')
-      },
-      {
-        value: 'twitter',
-        display: MyLang.getMsg('TXT_TWITTER')
-      },
-    ]
-  },
-  {
-    name_kind: "tone",
-    name: MyLang.getMsg('TXT_TONE'),
-    icon: emojiIconUrl,
-    options: [
-      {
-        value: 'formal',
-        display: MyLang.getMsg('TXT_FORMAL'),
-      },
-      {
-        value: 'casual',
-        display: MyLang.getMsg('TXT_CASUAL'),
-      },
-      {
-        value: 'professional',
-        display: MyLang.getMsg('TXT_PROFESSIONAL'),
-      },
-      {
-        value: 'enthusiastic',
-        display: MyLang.getMsg('TXT_ENTHUSIASTIC'),
-      },
-      {
-        value: 'informational',
-        display: MyLang.getMsg('TXT_INFORMATIONAL'),
-      },
-      {
-        value: 'funny',
-        display: MyLang.getMsg('TXT_FUNNY'),
-      },
-    ],
-  },
-  {
-    name_kind: "email_length",
-    name: MyLang.getMsg('TXT_EMAIL_LENGTH'),
-    icon: formatAlignIconUrl,
-    options: [
-      {
-        value: 'medium',
-        display: MyLang.getMsg('TXT_MEDIUM'),
-      },
-      {
-        value: 'short',
-        display: MyLang.getMsg('TXT_SHORT'),
-      },
-      {
-        value: 'long',
-        display: MyLang.getMsg('TXT_LONG'),
-      },
-    ],
-  },
-];
-const LANGUAGE_SETTING_DATA = [
-  {
-    value: 'vietnamese',
-    name: 'Tiếng Việt',
-    sub: MyLang.getMsg('TXT_VIETNAMESE'),
-  },
-  {
-    value: 'japanese',
-    name: '日本語',
-    sub: MyLang.getMsg('TXT_JAPANESE'),
-  },
-  {
-    value: 'korean',
-    name: '한국어',
-    sub: MyLang.getMsg('TXT_KOREAN'),
-  },
-];
-const GPT_VERSION_SETTING_DATA = [
-  {
-    value: 'gpt-3.5-turbo-0125',
-    icon: './icons/chatgpt-icon.svg',
-    name: 'GPT-3.5 Turbo',
-  },
-  {
-    value: 'gpt-4-turbo',
-    icon: './icons/chatgpt-4-icon.svg',
-    name: 'GPT-4 Turbo',
-  },
-  {
-    value: 'gemini',
-    icon: './icons/google-gemini-icon.svg',
-    name: 'Gemini 1.0 Pro',
-  },
-]
-
-const _StorageManager = {
-  getLanguageWrite: (callback) => {
-    chrome.storage.sync.get('write_language_output').then(payload => {
-      let config = payload.write_language_output;
-      if (!config) config = [];
-
-      callback(config);
-    });
-  },
-
-  addLanguageWrite: (value) => {
-    chrome.storage.sync.get('write_language_output').then(payload => {
-      let config = payload.write_language_output;
-      if (!config) config = [];
-
-      const record = LANGUAGE_SETTING_DATA.find(item => {
-        return value == item.value
-      });
-      const record_in_config = config.find(item => {
-        return value == item.value
-      });
-
-      if (record && !record_in_config) {
-        config.push(record);
-        chrome.storage.sync.set({ write_language_output: config });
-      }
-    });
-  },
-
-  removeLanguageWrite: (value) => {
-    chrome.storage.sync.get('write_language_output').then(payload => {
-      let config = payload.write_language_output;
-      if (!config) config = [];
-
-      for (let i = 0; i < config.length; i++) {
-        if (config[i].value == value) {
-          config.splice(i, 1);
-          chrome.storage.sync.set({ write_language_output: config });
-          console.log(config);
-          break;
-        }
-      }
-    });
-  },
-}
-
 const _SendMessageManager = {
   chat_gpt_api_key: null,
 
@@ -347,7 +61,7 @@ const TabWriteManager = {
   },
   result_active: 0,
   generate_result_list: [],
-  language_output_config: [],
+  language_output_list_config: [],
 
   // Getter
   getVHtml: () => {
@@ -383,7 +97,7 @@ const TabWriteManager = {
               <div class="your-language config">
                 <div class="title">
                   <img class="icon" src="./icons/translate.svg" alt="account-circle-icon">
-                  <span class="text">Language:</span>
+                  <span class="text">${MyLang.getMsg('TXT_LANGUAGE')}:</span>
                 </div>
                 <div class="options">
                 </div>
@@ -463,8 +177,8 @@ const TabWriteManager = {
       self.formData[item.name_kind] = item.options[0].value;
     }
 
-    _StorageManager.getLanguageWrite(config => {
-      TabWriteManager.language_output_config = config;
+    _StorageManager.getLanguageWriteList(config => {
+      TabWriteManager.language_output_list_config = config;
       self.loadLangConfig();
     });
 
@@ -556,25 +270,25 @@ const TabWriteManager = {
   loadLangConfig: () => {
     const self = TabWriteManager;
 
-    let lang_option = '';
-    for (let i = 0; i < LANGUAGE_SETTING_DATA.length; i++) {
-      const item = LANGUAGE_SETTING_DATA[i];
+    let lang_default = LANGUAGE_SETTING_DATA[0];
 
-      let hasInConfig = self.language_output_config.find(configItem => configItem.value == item.value);
-      lang_option += `
-          <li class="combobox-item ${hasInConfig ? 'hidden' : ''}" value="${item.value}">
-            <div class="name">${item.name}</div>
-            <div class="sub">${item.sub}</div>
-          </li>
-        `;
+    // Get and set to your_lang with lang was used before
+    let langActive = USER_SETTING.language_write_active || lang_default;
+    self.formData.your_lang = langActive.value;
+
+    // User is begin open side panel or not generate before
+    if (self.language_output_list_config.length == 0) {
+      self.language_output_list_config.push(lang_default);
+      _StorageManager.addLanguageWriteList(lang_default.value);
     }
 
-    let lang_config = '<button value="english" kind="your_lang" class="item text active">English</button>';
-    for (let i = 0; i < self.language_output_config.length; i++) {
-      const configItem = self.language_output_config[i];
+    // Shows all previously added langs
+    let lang_config = '';
+    for (let i = 0; i < self.language_output_list_config.length; i++) {
+      const configItem = self.language_output_list_config[i];
 
       lang_config += `
-        <button kind="your_lang" value="${configItem.value}" class="item text">
+        <button kind="your_lang" value="${configItem.value}" class="item text ${langActive.value == configItem.value ? 'active' : ''}">
           ${configItem.name}
           <div class="close">
             <img class="icon" src="./icons/cancel.svg">
@@ -583,6 +297,21 @@ const TabWriteManager = {
       `
     }
 
+    // Add lang not use to option combobox
+    let lang_option = '';
+    for (let i = 0; i < LANGUAGE_SETTING_DATA.length; i++) {
+      const item = LANGUAGE_SETTING_DATA[i];
+
+      let hasInConfig = self.language_output_list_config.find(configItem => configItem.value == item.value);
+      lang_option += `
+          <li class="combobox-item ${hasInConfig ? 'hidden' : ''}" value="${item.value}">
+            <div class="name">${item.name}</div>
+            <div class="sub">${item.sub}</div>
+          </li>
+        `;
+    }
+
+    // Button combobox
     let vHtml_init = `
       ${lang_config}
       <button class="item text combobox" id="language_cbx">
@@ -593,9 +322,13 @@ const TabWriteManager = {
       </button>
     `
 
+    // Add to html side panel
     $(`#${self.idTab} .your-language .options`).html(vHtml_init);
 
+    // Set event on select item in combobox language
     document.body.querySelector(`#${self.idTab} #language_cbx`).onSelect = self.onSelectLanguageConfig;
+
+    // Hidden combobox language element when add all language to html side panel
     if ($(`#${self.idTab} .your-language .combobox-item.hidden`).length == $(`#${self.idTab} .your-language .combobox-item`).length) {
       $('#language_cbx').addClass('hidden');
     }
@@ -749,7 +482,7 @@ const TabWriteManager = {
       const parentBtnEl = $(targetEl).parents('button.item.text');
       const value = parentBtnEl.attr('value');
 
-      _StorageManager.removeLanguageWrite(value);
+      _StorageManager.removeLanguageWriteList(value);
 
       parentBtnEl.remove();
 
@@ -862,6 +595,9 @@ const TabWriteManager = {
 
     $('#write_tab #result .result-title .left .icon').attr('src', getIconGptVersion('icon', self.formData.gpt_version))
     $('#write_tab #result .result-title .left .name-gpt').text(getIconGptVersion('name', self.formData.gpt_version))
+
+    // Save language used
+    _StorageManager.setLanguageWrite(params.your_lang)
 
     _SendMessageManager.generateContentReply(params, (data) => {
       self.generate_result_list.push(data);
@@ -987,7 +723,7 @@ const TabWriteManager = {
         $(buttonEl).addClass('active');
       }, 100);
 
-      _StorageManager.addLanguageWrite(value);
+      _StorageManager.addLanguageWriteList(value);
     }
 
     if ($(`#${self.idTab} .your-language .combobox-item.hidden`).length == $(`#${self.idTab} .your-language .combobox-item`).length) {
@@ -1173,18 +909,14 @@ const getIconGptVersion = (keyGet, gptVersion) => {
   }
 }
 const initialize_side = async () => {
-  USER_SETTING = await chrome.storage.sync.get('user_setting')
-
-  TAB_ID = await getTabId();
-  WINDOW_ID = await getWindowId();
+  _StorageManager.getLanguageWrite(recordLang => {
+    if (!recordLang) {
+      recordLang = LANGUAGE_SETTING_DATA[0]
+    }
+    USER_SETTING.language_write_active = recordLang;
+  })
 
   WrapperManager._init();
-
-  chrome.storage.onChanged.addListener((payload) => {
-    if ('text_selected' in payload) {
-      handlerTextSelectedChange(payload);
-    }
-  });
 
   chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
     ID_USER_ADDON_LOGIN_SIDE = userInfo.id;
@@ -1197,7 +929,7 @@ const initialize_side = async () => {
       console.log(`auto summary chat GPT: domain regist:[${is_domain_regist}], permission deny:[${is_not_access_list}]`)
     });
 
-  })
+  });
 }
 
 initialize_side();

@@ -4,7 +4,6 @@ let DEBUG_MODE = true;
 /** @define {object} GLOBALS_GMAIL*/
 let GLOBALS_GMAIL = null;
 
-let USER_SETTING = {};
 
 //==========CREATE HANDLE TO GET [GLOBALS] VARIABLE GMAIL=================
 //CREATE HANDLE TO GET [GLOBALS] VARIABLE GMAIL
@@ -14,71 +13,6 @@ s.src = chrome.runtime.getURL('script.js');
 s.onload = function () {
   s.remove();
 };
-
-const LOCALE_CODES = {
-  "ar": "Arabic",
-  "am": "Amharic",
-  "bg": "Bulgarian",
-  "bn": "Bengali",
-  "ca": "Catalan",
-  "cs": "Czech",
-  "da": "Danish",
-  "de": "German",
-  "el": "Greek",
-  "en": "English",
-  "en_AU": "English (Australia)",
-  "en_GB": "English (Great Britain)",
-  "en_US": "English (USA)",
-  "es": "Spanish",
-  "es_419": "Spanish (Latin America and Caribbean)",
-  "et": "Estonian",
-  "fa": "Persian",
-  "fi": "Finnish",
-  "fil": "Filipino",
-  "fr": "French",
-  "gu": "Gujarati",
-  "he": "Hebrew",
-  "hi": "Hindi",
-  "hr": "Croatian",
-  "hu": "Hungarian",
-  "id": "Indonesian",
-  "it": "Italian",
-  "ja": "Japanese",
-  "kn": "Kannada",
-  "ko": "Korean",
-  "lt": "Lithuanian",
-  "lv": "Latvian",
-  "ml": "Malayalam",
-  "mr": "Marathi",
-  "ms": "Malay",
-  "nl": "Dutch",
-  "no": "Norwegian",
-  "pl": "Polish",
-  "pt_BR": "Portuguese (Brazil)",
-  "pt_PT": "Portuguese (Portugal)",
-  "ro": "Romanian",
-  "ru": "Russian",
-  "sk": "Slovak",
-  "sl": "Slovenian",
-  "sr": "Serbian",
-  "sv": "Swedish",
-  "sw": "Swahili",
-  "ta": "Tamil",
-  "te": "Telugu",
-  "th": "Thai",
-  "tr": "Turkish",
-  "uk": "Ukrainian",
-  "vi": "Vietnamese",
-  "zh_CN": "Chinese (China)",
-  "zh_TW": "Chinese (Taiwan)",
-
-  getNameLocale: () => {
-    if (USER_SETTING && USER_SETTING.language) {
-      return LOCALE_CODES[USER_SETTING.language] || 'Japanese';
-    }
-    return LOCALE_CODES[chrome.i18n.getUILanguage().replaceAll('-', '_')] || 'Japanese';
-  }
-}
 
 // Event listener
 document.addEventListener('RW759_connectExtension', function (e) {
@@ -256,6 +190,28 @@ document.addEventListener('RW759_connectExtension', function (e) {
           display: MyLang.getMsg('TXT_HUMAN_RESOURCES'),
         },
       ],
+    },
+  ];
+  const LANGUAGE_SETTING_DATA = [
+    {
+      value: 'english',
+      name: 'English',
+      sub: MyLang.getMsg('TXT_ENGLISH'),
+    },
+    {
+      value: 'vietnamese',
+      name: 'Tiếng Việt',
+      sub: MyLang.getMsg('TXT_VIETNAMESE'),
+    },
+    {
+      value: 'japanese',
+      name: '日本語',
+      sub: MyLang.getMsg('TXT_JAPANESE'),
+    },
+    {
+      value: 'korean',
+      name: '한국어',
+      sub: MyLang.getMsg('TXT_KOREAN'),
     },
   ];
 
@@ -574,8 +530,19 @@ document.addEventListener('RW759_connectExtension', function (e) {
                     </div>
                   </div>
                 </div>
+
                 <div class="body">
                 </div>
+
+                <div class="your-language config">
+                  <div class="title">
+                    <img class="icon" src="./icons/translate.svg" alt="account-circle-icon">
+                    <span class="text">Language:</span>
+                  </div>
+                  <div class="options">
+                  </div>
+                </div>
+                
               </div>
 
               <div class="option loading">
@@ -1302,20 +1269,26 @@ document.addEventListener('RW759_connectExtension', function (e) {
     setMailReply: function (params) {
       const { title, body } = params;
 
+      let isAdded = false;
+
       let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
       if (listAllBoxCompose.length > 0) {
         // This handle for popup out reply
         for (let i = 0; i < listAllBoxCompose.length; i++) {
           const item = listAllBoxCompose[i];
-  
+
           let isCompose = ($(item).parents('.AD').find('.aoP .I5 .bAs table[role="presentation"]').length == 0)
           if (!isCompose) {
             let findEl = $(item).find('.Am.Al.editable.LW-avf')[0];
             findEl.innerHTML = body.replaceAll('\n', '</br>');
             findEl.focus();
+
+            isAdded = true;
           }
         }
-      } else {
+      }
+
+      if (!isAdded) {
         // This handle for popup normal reply
         find('.Am.Al.editable.LW-avf', (findEl) => {
           findEl.innerHTML = body.replaceAll('\n', '</br>');

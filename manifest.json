@@ -50,7 +50,6 @@
     "action": {
         "default_title": "Click to open panel"
     },
-    "options_page": "options.html",
     "side_panel": {
         "default_path": "sidepanel.html"
     },

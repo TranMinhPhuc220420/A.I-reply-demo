@@ -23,6 +23,9 @@
   "txt_key_points": {
     "message": "キーポイント"
   },
+  "txt_language": {
+    "message": "言語"
+  },
   "txt_original_language": {
     "message": "元の言語"
   },
