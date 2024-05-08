@@ -20,6 +20,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
   // ==== main ====
   let FAVICON_URL = chrome.runtime.getURL("images/favicon.png");
+  let cancelIconUrl = chrome.runtime.getURL("icons/cancel.svg");
   let NODE_ID_EXTENSION_INSTALLED = '__sateraito_import_file_is_installed';
 
   let BTN_AI_REPLY_ID = 'SATERAITO_AI_REPLY_MAIL';
@@ -187,7 +188,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
           title_mail: titleMail,
           content_mail: contentMail,
           gpt_ai_key: gptAiKey,
-          lang: LOCALE_CODES.getNameLocale()
+          lang: USER_SETTING.language_write_active.value
         };
 
         // Call request get data to show popup in mail
@@ -225,6 +226,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
     _list_popup_el: {},
     stillBoxReplyIntervalRealtime: null,
 
+    combobox_flag: false,
+
     is_loading: false,
 
     formData: {
@@ -232,6 +235,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
     },
     result_active: 0,
     generate_result_list: [],
+    language_output_list_config: [],
 
     /**
      * Get inner HTML in popup
@@ -239,7 +243,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * @returns {string}
      */
     getVHtml: function () {
-      let transformX = window.innerWidth - 600;
+      let transformX = window.innerWidth - 800;
       let transformY = window.innerHeight - 575;
 
       let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
@@ -251,13 +255,14 @@ document.addEventListener('RW759_connectExtension', function (e) {
         isReplyInBox = ($(elContainerReply).find('.aoP .I5 .bAs table[role="presentation"]').length > 0)
 
         if (isReplyInBox) {
-          transformX = transformX - (elContainerReply.offsetWidth - 70);
+          transformX = transformX - (elContainerReply.offsetWidth - 120);
         }
       }
 
       let reloadIconUrl = chrome.runtime.getURL("icons/refresh-icon.png");
       let closeIconUrl = chrome.runtime.getURL("icons/close-icon.png");
       let sendIconUrl = chrome.runtime.getURL("icons/send-icon.png")
+      let translateIconUrl = chrome.runtime.getURL("icons/translate.svg")
       let voidConfigIconUrl = chrome.runtime.getURL("icons/graphic-eq.svg");
       let reGenerateIconUrl = chrome.runtime.getURL("icons/refresh-icon.png");
       let copyIconUrl = chrome.runtime.getURL("icons/content-copy-icon.png");
@@ -336,8 +341,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
                 <div class="your-language config">
                   <div class="title">
-                    <img class="icon" src="./icons/translate.svg" alt="account-circle-icon">
-                    <span class="text">Language:</span>
+                    <img class="icon" src="${translateIconUrl}" alt="translate-icon">
+                    <span class="text">${MyLang.getMsg('TXT_LANGUAGE')}:</span>
                   </div>
                   <div class="options">
                   </div>
@@ -432,7 +437,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * 
      */
     fixPosition: function () {
-      let transformX = window.innerWidth - 600;
+      let transformX = window.innerWidth - 800;
       let transformY = window.innerHeight - 575;
 
       let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
@@ -545,10 +550,10 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       self.result_active = 0;
       self.generate_result_list = [];
-      for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
-        const item = VOICE_SETTING_DATA[i];
-        self.formData.voice_setting[item.name_kind] = item.options[0];
-      }
+      // for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
+      //   const item = VOICE_SETTING_DATA[i];
+      //   self.formData.voice_setting[item.name_kind] = item.options[0];
+      // }
 
       if (self._list_popup_el[idPopup]) {
         self.focusInput(idPopup);
@@ -565,6 +570,11 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       self.reLoadVoiceConfig();
       self.addEventUIForDialog(idPopup);
+
+      _StorageManager.getLanguageWriteList(config => {
+        _MyPopup.language_output_list_config = config;
+        self.loadLangConfig();
+      });
     },
 
     /**
@@ -592,48 +602,35 @@ document.addEventListener('RW759_connectExtension', function (e) {
      */
     addEventForAction: function (idPopup) {
       const self = _MyPopup;
-      let clsFind = '#ai_reply_popup .option';
+      let clsTemplate;
 
-      find(clsFind, (elFind) => {
-        $(clsFind).click((event) => {
-          if (self.is_loading) return;
+      // For combobox component
+      clsTemplate = '.popup-voice-config .combobox';
+      $(document).off('click', clsTemplate, self.onClickCombobox);
+      $(document).on('click', clsTemplate, self.onClickCombobox);
 
-          let contentMail = _MailAIGenerate.getContentBodyMail();
-          let suggestionReply = event.target.getAttribute('data-sugg');
+      clsTemplate = `.popup-voice-config .popover-cbx.wrap-item .combobox-item`;
+      $(document).off('click', clsTemplate, self.onClickItemCombobox);
+      $(document).on('click', clsTemplate, self.onClickItemCombobox);
 
-          event.target.classList.add('selected');
+      // For items options voice config
+      clsTemplate = '.popup-voice-config .your-language.config .options .item';
+      $(document).off('click', clsTemplate, self.onClickConfigItem);
+      $(document).on('click', clsTemplate, self.onClickConfigItem);
 
-          find('form#form_tell_sider input', (findEl) => {
-            findEl.value = suggestionReply;
-            self.processAddGenerateReplyMail(contentMail, suggestionReply);
-          })
-        })
-      });
-
-      find('form#form_tell_sider', (elFind) => {
-        elFind.addEventListener('submit', (event) => {
-          event.preventDefault();
-
-          if (self.is_loading) return;
-
-          self.handlerSubmitForm(idPopup);
-        })
-      });
+      clsTemplate = '#ai_reply_popup .option';
+      $(document).off('click', clsTemplate, self.onClickOptionItem);
+      $(document).on('click', clsTemplate, self.onClickOptionItem);
 
       // Button voice-config
-      const keyFindOptionsVoiceConfig = '.reply-suggestions .popup-voice-config .options button.item';
-      find(keyFindOptionsVoiceConfig, () => {
-        $(keyFindOptionsVoiceConfig).click((event) => {
-          const kind = event.target.getAttribute('kind');
-          const value = event.target.getAttribute('value');
+      clsTemplate = '.reply-suggestions .popup-voice-config .config .options button.item';
+      $(document).off('click', clsTemplate, self.onClickOptionVoiceConfigItem);
+      $(document).on('click', clsTemplate, self.onClickOptionVoiceConfigItem);
 
-          let options = VOICE_SETTING_DATA.find(item => item.name_kind == kind).options;
-          if (!options) return;
-          self.formData.voice_setting[kind] = options.find(item => item.value == value);
-
-          self.reLoadVoiceConfig();
-        });
-      }, 200)
+      // Remove and save language config
+      clsTemplate = `.reply-suggestions .popup-voice-config .your-language .item .close`;
+      $(document).off('click', clsTemplate, self.onClickRemoveLanguageConfig);
+      $(document).on('click', clsTemplate, self.onClickRemoveLanguageConfig);
 
       $('.action-btn button.re-generate').click((event) => {
         if (self.is_loading) return;
@@ -652,6 +649,16 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
         _MailAIGenerate.setMailReply(self.generate_result_list[self.result_active]);
         self.closePopup(idPopup);
+      });
+
+      find('form#form_tell_sider', (elFind) => {
+        elFind.addEventListener('submit', (event) => {
+          event.preventDefault();
+
+          if (self.is_loading) return;
+
+          self.handlerSubmitForm(idPopup);
+        })
       });
 
       // Close popup event
@@ -819,18 +826,41 @@ document.addEventListener('RW759_connectExtension', function (e) {
       find('.voice-config .config', (elFind) => {
         elFind.innerHTML = '';
 
-        for (const key in self.formData.voice_setting) {
-          let param = self.formData.voice_setting[key];
-          if (!param) {
+        let list_name_kind = VOICE_SETTING_DATA.map(item => item.name_kind);
+        list_name_kind.push('your_lang');
+
+        for (let i = 0; i < list_name_kind.length; i++) {
+          const kindNameItem = list_name_kind[i];
+
+          let voiceConfig = self.formData.voice_setting[kindNameItem];
+          if (!voiceConfig) {
             continue
           }
 
-          $(`.popup-voice-config button.item[kind="${key}"]`).removeClass('active');
-          $(`.popup-voice-config button.item[value="${param.value}"]`).addClass('active');
+          let record;
+          if (kindNameItem != 'your_lang') {
+            let kind = VOICE_SETTING_DATA.find(kindItem => kindItem.name_kind == kindNameItem);
+            if (kind) {
+              record = kind.options.find(item => item.value == voiceConfig);
 
-          let spanEl = document.createElement('span');
-          spanEl.innerText = param.name;
-          elFind.append(spanEl);
+              if (!record) {
+                continue
+              }
+            } else {
+              continue
+            }
+          } else {
+            record = LANGUAGE_SETTING_DATA.find(langItem => langItem.value == voiceConfig);
+          }
+
+          $(`.popup-voice-config button.item[kind="${kindNameItem}"]`).removeClass('active');
+          $(`.popup-voice-config button.item[value="${record.value}"]`).addClass('active');
+
+          if (record.value.trim() != '') {
+            let spanEl = document.createElement('span');
+            spanEl.innerText = record.name;
+            elFind.append(spanEl);
+          }
         }
       });
     },
@@ -893,6 +923,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
       find('.popup-voice-config .body', (elFind) => {
         for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
           const config_item = VOICE_SETTING_DATA[i];
+          // important
+          if (config_item.name_kind == 'formality') continue;
 
           const configEl = document.createElement('div');
           configEl.className = `${config_item.name_kind} config`;
@@ -932,8 +964,76 @@ document.addEventListener('RW759_connectExtension', function (e) {
       // add event
       self.addEventForUI(idPopup);
       self.addEventForAction(idPopup);
+      self.reLoadVoiceConfig();
 
       _MyPopup.is_loading = false;
+    },
+
+    loadLangConfig: () => {
+      const self = _MyPopup;
+
+      let lang_default = LANGUAGE_SETTING_DATA[0];
+
+      // Get and set to your_lang with lang was used before
+      let langActive = USER_SETTING.language_write_active || lang_default;
+      self.formData.voice_setting.your_lang = langActive.value;
+
+      // User is begin open side panel or not generate before
+      if (self.language_output_list_config.length == 0) {
+        self.language_output_list_config.push(lang_default);
+        _StorageManager.addLanguageWriteList(lang_default.value);
+      }
+
+      // Shows all previously added langs
+      let lang_config = '';
+      for (let i = 0; i < self.language_output_list_config.length; i++) {
+        const configItem = self.language_output_list_config[i];
+
+        lang_config += `
+        <button kind="your_lang" value="${configItem.value}" class="item text ${langActive.value == configItem.value ? 'active' : ''}">
+          ${configItem.name}
+          <div class="close">
+            <img class="icon" src="${cancelIconUrl}">
+          </div>
+        </button>
+      `
+      }
+
+      // Add lang not use to option combobox
+      let lang_option = '';
+      for (let i = 0; i < LANGUAGE_SETTING_DATA.length; i++) {
+        const item = LANGUAGE_SETTING_DATA[i];
+
+        let hasInConfig = self.language_output_list_config.find(configItem => configItem.value == item.value);
+        lang_option += `
+          <li class="combobox-item ${hasInConfig ? 'hidden' : ''}" value="${item.value}">
+            <div class="name">${item.name}</div>
+            <div class="sub">${item.sub}</div>
+          </li>
+        `;
+      }
+
+      // Button combobox
+      let vHtml_init = `
+      ${lang_config}
+      <button class="item text combobox" id="language_cbx">
+          <span class="space">...</span>
+          <ul class="popover-cbx wrap-item">
+            ${lang_option}
+          </ul>
+      </button>
+    `
+
+      // Add to html side panel
+      $(`.popup-voice-config .your-language .options`).html(vHtml_init);
+
+      // Set event on select item in combobox language
+      document.body.querySelector(`.popup-voice-config #language_cbx`).onSelect = self.onSelectLanguageConfig;
+
+      // Hidden combobox language element when add all language to html side panel
+      if ($(`.popup-voice-config .your-language .combobox-item.hidden`).length == $(`.popup-voice-config .your-language .combobox-item`).length) {
+        $('.popup-voice-config #language_cbx').addClass('hidden');
+      }
     },
 
     // Handler func
@@ -988,9 +1088,13 @@ document.addEventListener('RW759_connectExtension', function (e) {
       for (const key in self.formData.voice_setting) {
         if (Object.hasOwnProperty.call(self.formData.voice_setting, key)) {
           const item = self.formData.voice_setting[key];
-          voiceConfig[key] = item.value;
+          voiceConfig[key] = item;
         }
       }
+
+      // Save language used
+      _StorageManager.setLanguageWrite(voiceConfig.your_lang)
+      _StorageManager.setVoiceConfigWrite(voiceConfig);
 
       self.formData.content_mail = contentMail;
       self.formData.suggestion_old = suggestionReply;
@@ -1000,7 +1104,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
         content_mail: contentMail,
         voice_config: voiceConfig,
         reply_suggested: suggestionReply,
-        lang: LOCALE_CODES.getNameLocale(),
+        // lang: LOCALE_CODES.getNameLocale(),
       }
 
       _SendMessageManager.generateContentReplyMail(params, (replyContent) => {
@@ -1014,35 +1118,145 @@ document.addEventListener('RW759_connectExtension', function (e) {
         $('#ai_reply_popup').removeClass('form-loading');
       });
     },
-  };
 
-  const _QuickActionPopup = {
-    is_show: false,
+    onClickCombobox: (event) => {
+      const self = _MyPopup;
 
-    showPopup: (value, posX, posY) => {
-      const self = _QuickActionPopup;
+      $(`.popup-voice-config .popover-cbx`).removeClass('show');
+      const popoverEl = event.target.querySelector(`.popup-voice-config .popover-cbx`);
+      if (!popoverEl) return;
 
-      let containerQuickEl = document.querySelector('.chat-gpt-quick-query-container .quick-action-container');
-      let quickEl = document.querySelector('.chat-gpt-quick-query-container .quick-action-container .quick-selection');
+      self.combobox_flag = true;
 
-      if (value != '') {
-        self.is_show = true;
-        if (!quickEl) {
-          quickEl = document.createElement('div');
-          quickEl.className = "quick-selection";
-        }
-        quickEl.innerHTML = value;
-        quickEl.style.top = posY + 'px';
-        quickEl.style.left = posX + 'px';
+      popoverEl.classList.add('show');
+      popoverEl.style.top = `-${popoverEl.offsetHeight - 10}px`;
+      popoverEl.style.left = `${event.target.offsetWidth - 20}px`;
 
-        containerQuickEl.append(quickEl);
-      } else {
-        if (quickEl && !self.is_show) {
-          quickEl.remove();
-        }
+      setTimeout(() => {
+        self.combobox_flag = false;
+      }, 100)
+    },
+
+    onClickItemCombobox: (event) => {
+      const self = _MyPopup;
+
+      const value = event.target.getAttribute('value');
+      const comboboxEl = $(event.target).parents('button.combobox')[0];
+      if (comboboxEl.onSelect) {
+        comboboxEl.onSelect(comboboxEl, event.target, value);
       }
-    }
-  }
+    },
+
+    onClickOptionItem: (event) => {
+      const self = _MyPopup;
+      if (self.is_loading) return;
+
+      let contentMail = _MailAIGenerate.getContentBodyMail();
+      let suggestionReply = event.target.getAttribute('data-sugg');
+
+      event.target.classList.add('selected');
+
+      find('form#form_tell_sider input', (findEl) => {
+        findEl.value = suggestionReply;
+        self.processAddGenerateReplyMail(contentMail, suggestionReply);
+      })
+    },
+
+    onClickOptionVoiceConfigItem: (event) => {
+      const self = _MyPopup;
+      const kind = event.target.getAttribute('kind');
+      const value = event.target.getAttribute('value');
+
+      if (!kind || !value) return;
+
+      if (kind == 'your_lang') {
+        let recordLang = LANGUAGE_SETTING_DATA.find(item => item.value == value);
+        if (!recordLang) return;
+
+        USER_SETTING.language_write_active = recordLang;
+        _StorageManager.setLanguageWrite(recordLang);
+        
+        self.formData.voice_setting[kind] = recordLang.value;
+
+      } else {
+        let options = VOICE_SETTING_DATA.find(item => item.name_kind == kind).options;
+        if (!options) return;
+        self.formData.voice_setting[kind] = options.find(item => item.value == value).value;
+      }
+
+      self.reLoadVoiceConfig();
+    },
+
+    onClickRemoveLanguageConfig: (event) => {
+      const self = _MyPopup;
+      const targetEl = event.target;
+
+      const parentBtnEl = $(targetEl).parents('button.item.text');
+      const value = parentBtnEl.attr('value');
+
+      _StorageManager.removeLanguageWriteList(value);
+
+      parentBtnEl.remove();
+
+      $(`#language_cbx .combobox-item[value="${value}"]`).removeClass('hidden');
+      $(`.reply-suggestions #language_cbx`).removeClass('hidden');
+    },
+
+    onClickConfigItem: (event) => {
+      const self = _MyPopup;
+
+      const targetEl = event.target;
+      const kind = event.target.getAttribute('kind');
+      const value = event.target.getAttribute('value');
+
+      if (!value || !kind) return;
+      self.formData.voice_setting[kind] = value;
+
+      const parent = $(targetEl).parents('.options')[0];
+      $(parent).children('.item').removeClass('active');
+      $(targetEl).addClass('active');
+    },
+
+    onSelectLanguageConfig: (comboboxEl, itemEl, value) => {
+      const self = _MyPopup;
+
+      let record = LANGUAGE_SETTING_DATA.find(item => {
+        return value == item.value
+      });
+
+      if (record) {
+        $(itemEl).addClass('hidden');
+
+        $(`.popup-voice-config .your-language .item`).removeClass('active');
+
+        const buttonEl = document.createElement('button');
+        buttonEl.setAttribute('kind', 'your_lang');
+        buttonEl.setAttribute('value', record.value);
+        buttonEl.className = 'item text';
+        buttonEl.innerHTML = record.name;
+
+        const closeBtnEl = document.createElement('div');
+        closeBtnEl.className = 'close';
+        closeBtnEl.innerHTML = '<img class="icon" src="' + cancelIconUrl + '">';
+
+        $(buttonEl).click(self.onClickConfigItem);
+
+        buttonEl.append(closeBtnEl);
+        $(buttonEl).insertBefore(comboboxEl);
+
+        setTimeout(() => {
+          self.formData.voice_setting['your_lang'] = value;
+          $(buttonEl).addClass('active');
+        }, 100);
+
+        _StorageManager.addLanguageWriteList(value);
+      }
+
+      if ($(`.popup-voice-config .your-language .combobox-item.hidden`).length == $(`.popup-voice-config .your-language .combobox-item`).length) {
+        $(comboboxEl).addClass('hidden');
+      }
+    },
+  };
 
   /**
    * Mail Add-on
@@ -1392,10 +1606,50 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
     chrome.storage.onChanged.addListener(storageOnChanged);
 
-    chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
-      USER_ADDON_LOGIN = userInfo.email;
-      ID_USER_ADDON_LOGIN = userInfo.id;
+    _StorageManager.getLanguageWrite(recordLang => {
+      if (!recordLang) {
+        recordLang = LANGUAGE_SETTING_DATA[0]
+      }
+      USER_SETTING.language_write_active = recordLang;
     })
+
+    _StorageManager.getVoiceConfigWrite(voiceConfig => {
+      if (!voiceConfig) {
+        voiceConfig = {}
+        voiceConfig.your_lang = 'english';
+        voiceConfig.gpt_version = GPT_VERSION_SETTING_DATA[0].value;
+        for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
+          const item = VOICE_SETTING_DATA[i];
+          // important
+          if (item.name_kind == 'formality') continue;
+
+          voiceConfig[item.name_kind] = item.options[0].value;
+        }
+      }
+
+      delete voiceConfig.gpt_ai_key
+      delete voiceConfig.gpt_version
+      delete voiceConfig.type_generate
+      delete voiceConfig.topic_compose
+      delete voiceConfig.original_text_reply
+      delete voiceConfig.general_content_reply
+
+      // Init voice config
+      _MyPopup.formData.voice_setting = voiceConfig;
+    })
+
+    chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
+      ID_USER_ADDON_LOGIN = userInfo.id;
+      USER_ADDON_LOGIN = userInfo.email;
+
+      //addon setting
+      loadAddOnSetting(userInfo.email, function (result) {
+        is_domain_regist = result.is_domain_regist
+        is_not_access_list = result.is_not_access_list
+        console.log(`auto summary chat GPT: domain regist:[${is_domain_regist}], permission deny:[${is_not_access_list}]`)
+      });
+
+    });
 
     debugLog('▲▲▲ initilize ended ! ');
   }

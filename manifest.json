@@ -28,9 +28,10 @@
                 "crypto/crypto-js.min.js",
                 "crypto/md5.js",
                 "jquery-1.10.2.min.js",
+                "sateraito_lang.js",
+                "common.js",
                 "server_request.js",
                 "util.js",
-                "sateraito_lang.js",
                 "scripts/content.js"
             ],
             "run_at": "document_end",
@@ -75,7 +76,9 @@
                 "icons/description-icon.svg",
                 "icons/emoji-emotions-icon.svg",
                 "icons/format-align-icon.svg",
-                "icons/graphic-eq.svg"
+                "icons/graphic-eq.svg",
+                "icons/translate.svg",
+                "icons/cancel.svg"
             ],
             "use_dynamic_url": true
         }

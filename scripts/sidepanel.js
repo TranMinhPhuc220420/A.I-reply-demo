@@ -170,13 +170,6 @@ const TabWriteManager = {
     self.result_active = 0;
     self.generate_result_list = [];
 
-    self.formData.your_lang = 'english';
-    self.formData.gpt_version = GPT_VERSION_SETTING_DATA[0].value;
-    for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
-      const item = VOICE_SETTING_DATA[i];
-      self.formData[item.name_kind] = item.options[0].value;
-    }
-
     _StorageManager.getLanguageWriteList(config => {
       TabWriteManager.language_output_list_config = config;
       self.loadLangConfig();
@@ -251,7 +244,7 @@ const TabWriteManager = {
         }
 
         vHtmlOption += `<button kind="${config_item.name_kind}" value="${optionItem.value}" class="item ${isActive ? 'active' : ''}">
-                            ${optionItem.display}
+                            ${optionItem.name}
                         </button>`
       }
       let vHtml = `<div class="title">
@@ -430,12 +423,12 @@ const TabWriteManager = {
       const targetEl = event.target;
       const keyTab = targetEl.getAttribute('key_tab');
 
-      $(`#${self.idTab} .voice-config .format`).removeClass('hidden');
-      $(`#${self.idTab} .voice-config .format_reply`).removeClass('hidden');
+      $(`#${self.idTab} .voice-config .formality`).removeClass('hidden');
+      $(`#${self.idTab} .voice-config .formality_reply`).removeClass('hidden');
       if (keyTab == 'reply_tab') {
-        $(`#${self.idTab} .voice-config .format`).addClass('hidden');
+        $(`#${self.idTab} .voice-config .formality`).addClass('hidden');
       } else {
-        $(`#${self.idTab} .voice-config .format_reply`).addClass('hidden');
+        $(`#${self.idTab} .voice-config .formality_reply`).addClass('hidden');
       }
 
       $(`#${self.idTab} .tab .tab-title .item`).removeClass('active');
@@ -598,6 +591,16 @@ const TabWriteManager = {
 
     // Save language used
     _StorageManager.setLanguageWrite(params.your_lang)
+    _StorageManager.setVoiceConfigWrite({
+      ...self.formData,
+      // delete parameters that do not need to be saved in the voice config
+      gpt_ai_key: null,
+      gpt_version: null,
+      type_generate: null,
+      topic_compose: null,
+      original_text_reply: null,
+      general_content_reply: null,
+    })
 
     _SendMessageManager.generateContentReply(params, (data) => {
       self.generate_result_list.push(data);
@@ -623,8 +626,8 @@ const TabWriteManager = {
 
     self.resetEvent();
 
-    $(`#${self.idTab} .voice-config .format`).removeClass('hidden');
-    $(`#${self.idTab} .voice-config .format_reply`).addClass('hidden');
+    $(`#${self.idTab} .voice-config .formality`).removeClass('hidden');
+    $(`#${self.idTab} .voice-config .formality_reply`).addClass('hidden');
   },
 
   onSubmitGenerate: (event) => {
@@ -895,8 +898,8 @@ const WrapperManager = {
 
 const getCurrentUser = () => {
   return {
-    id: ID_USER_ADDON_LOGIN_SIDE,
-    email: USER_ADDON_LOGIN_SIDE,
+    id: ID_USER_ADDON_LOGIN,
+    email: USER_ADDON_LOGIN,
   }
 }
 const getIconGptVersion = (keyGet, gptVersion) => {
@@ -909,18 +912,44 @@ const getIconGptVersion = (keyGet, gptVersion) => {
   }
 }
 const initialize_side = async () => {
+  let pallaFinishedCount = 0;
+  let NUM_PROCEED_PALLA_FINISHED_COUNT = 3;
+  let proceedByPallaFinishedCount = function () {
+    pallaFinishedCount++;
+    if (pallaFinishedCount >= NUM_PROCEED_PALLA_FINISHED_COUNT) {
+      WrapperManager._init();
+    }
+  };
+
   _StorageManager.getLanguageWrite(recordLang => {
     if (!recordLang) {
       recordLang = LANGUAGE_SETTING_DATA[0]
     }
     USER_SETTING.language_write_active = recordLang;
+
+    proceedByPallaFinishedCount();
   })
 
-  WrapperManager._init();
+  _StorageManager.getVoiceConfigWrite(voiceConfig => {
+    if (!voiceConfig) {
+      voiceConfig = {}
+      voiceConfig.your_lang = 'english';
+      voiceConfig.gpt_version = GPT_VERSION_SETTING_DATA[0].value;
+      for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
+        const item = VOICE_SETTING_DATA[i];
+        voiceConfig[item.name_kind] = item.options[0].value;
+      }
+    }
+
+    // when init tab write
+    TabWriteManager.formData = voiceConfig;
+
+    proceedByPallaFinishedCount();
+  })
 
   chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
-    ID_USER_ADDON_LOGIN_SIDE = userInfo.id;
-    USER_ADDON_LOGIN_SIDE = userInfo.email;
+    ID_USER_ADDON_LOGIN = userInfo.id;
+    USER_ADDON_LOGIN = userInfo.email;
 
     //addon setting
     loadAddOnSetting(userInfo.email, function (result) {
@@ -929,6 +958,7 @@ const initialize_side = async () => {
       console.log(`auto summary chat GPT: domain regist:[${is_domain_regist}], permission deny:[${is_not_access_list}]`)
     });
 
+    proceedByPallaFinishedCount();
   });
 }
 

@@ -3,7 +3,7 @@ var timeout_fetch = 60000
 var chat_gpt_model = "gpt-3.5-turbo-0125"
 var chuck_size_text = 4000
 var retry_call_gpt = true
-var USER_ADDON_LOGIN = ''
+// var USER_ADDON_LOGIN = ''
 var DOMAIN_ADDON_LOGIN = ''
 var MAXIMIZE_TIME_AUTO = 1000 * 60 * 5 //milisecond 5p == 1000*60*5
 var is_domain_regist_addon = false
@@ -84,7 +84,7 @@ function getContentByRoleInMessage(role, messages) {
     let content_all = '';
     for (let i = 0; i < messages.length; i++) {
         const item = messages[i];
-        
+
         if (item.role == role) {
             content_all += item.content + '\n\n';
         }
@@ -277,26 +277,29 @@ async function generateContentReplyMailRequest(params, callback, retry) {
 
     let is_use_prompt = (retry % 2) == 1;
 
-    const { gpt_ai_key, gpt_model, title_mail, content_mail, voice_config, reply_suggested, lang } = params;
+    const { gpt_ai_key, gpt_model, title_mail, content_mail, voice_config, reply_suggested } = params;
 
     let content_user = `
 Title: ${title_mail}
-Body: ${content_mail}
+Body: ${content_mail}`
 
-I want you to always answer in ${lang}.`
     const messages = [
         { role: "system", content: "You are a helpful assistant designed to output JSON" },
-        { role: 'user', content: `Language in ${lang}.\nFormat: {title: "", body: ""}` },
+        { role: 'user', content: `Language in ${voice_config.your_lang}.\nFormat: {title: "", body: ""}` },
         { role: 'assistant', content: 'Ok' },
         { role: 'user', content: content_user },
         { role: 'assistant', content: 'Ok' },
-        { role: 'user', content: `${voice_config.your_role ? `I'm the ${voice_config.your_role}` : ''}. Help me write a ${voice_config.email_length}, ${voice_config.tone}, ${voice_config.formality} in ${lang} email in response to the message. The content of the answer revolves around the story "${reply_suggested}"\nOutput in ${lang}` },
+        { role: 'user', content: `${voice_config.your_role ? `I'm the ${voice_config.your_role}` : ''}. Help me write a ${voice_config.formality_reply} to reply. Ensure your response has a ${voice_config.tone} tone with and a ${voice_config.email_length} length. The key points of the write is "${reply_suggested}"\nOutput in ${voice_config.your_lang}` },
     ];
 
-    const prompt = `Title: ${title_mail}\nBody: ${content_mail}
-json: {title: "", body: ""}
-${voice_config.your_role ? `I'm the ${voice_config.your_role}` : ''}. Help me write a ${voice_config.email_length}, ${voice_config.tone}, ${voice_config.formality} in ${lang} email in response to the message. The content of the answer revolves around the story "${reply_suggested}"
-Output in ${lang}`
+    let anOra = 'a', prompt = '', prompt_start = '';
+    if (voice_config.your_role.trim() != '') {
+        prompt_start = `as a ${voice_config.your_role}`
+        anOra = 'an'
+    }
+    prompt_start = `Write ${anOra} ${voice_config.formality_reply} ${prompt_start}`;
+    prompt = `${prompt_start} to reply to the original text. Ensure your response has a ${voice_config.tone} tone with and a ${voice_config.email_length} length. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.\nRespond in the ${voice_config.your_lang} language.\n\n-----\n\nOriginal text:\n\"\"\"\n${content_user}\n\"\"\"\n\nThe key points of the reply:\n\"\"\"\n${reply_suggested}\n\"\"\"\n\nOutput in ${voice_config.your_lang}`
+    prompt += '\n\njson:\n\"\"\"\n{title: "", body: ""}\n\"\"\"\n\n'
 
     try {
         const response = await callGPT(gpt_ai_key, (is_use_prompt ? prompt : messages), gpt_model, false, null, { "type": "json_object" })
@@ -327,19 +330,26 @@ async function generateContentRequest(params, callback, retry) {
     const {
         gpt_ai_key, gpt_version, type_generate,
 
-        topic_compose, format,
-        general_content_reply, original_text_reply, format_reply,
+        topic_compose, formality,
+        general_content_reply, original_text_reply, formality_reply,
 
-        tone, email_length, your_lang
+        tone, email_length, your_role, your_lang
     } = params;
 
 
-    let prompt = '';
+    let anOra = 'a', prompt = '', prompt_start = '';
+
+    if (your_role.trim() != '') {
+        prompt_start = `as a ${your_role}`
+        anOra = 'an'
+    }
 
     if (type_generate == 'compose') {
-        prompt += `Write a ${format}, with ${tone} tone and ${email_length} length. The topic is:\n\"\"\"\n${topic_compose}\n\"\"\"\nOutput in ${your_lang}`
+        prompt_start = `Write ${anOra} ${formality} ${prompt_start}`;
+        prompt += `${prompt_start}, with ${tone} tone and ${email_length} length. The topic is:\n\"\"\"\n${topic_compose}\n\"\"\"\nOutput in ${your_lang}`
     } else {
-        prompt += `Write a ${format_reply} to reply to the original text. Ensure your response has a ${tone} tone and a ${email_length} length. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.\nRespond in the ${your_lang} language.\n\n-----\n\nOriginal text:\n\"\"\"\n${original_text_reply}\n\"\"\"\n\nThe key points of the reply:\n\"\"\"\n${general_content_reply}\n\"\"\"Output in ${your_lang}`
+        prompt_start = `Write ${anOra} ${formality_reply} ${prompt_start}`;
+        prompt += `${prompt_start} to reply to the original text. Ensure your response has a ${tone} tone with and a ${email_length} length. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.\nRespond in the ${your_lang} language.\n\n-----\n\nOriginal text:\n\"\"\"\n${original_text_reply}\n\"\"\"\n\nThe key points of the reply:\n\"\"\"\n${general_content_reply}\n\"\"\"Output in ${your_lang}`
     }
     prompt += '\n\njson:\n\"\"\"\n{title: "", body: ""}\n\"\"\"\n\n'
 
