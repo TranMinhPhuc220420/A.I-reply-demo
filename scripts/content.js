@@ -4,16 +4,6 @@ let DEBUG_MODE = true;
 /** @define {object} GLOBALS_GMAIL*/
 let GLOBALS_GMAIL = null;
 
-
-//==========CREATE HANDLE TO GET [GLOBALS] VARIABLE GMAIL=================
-//CREATE HANDLE TO GET [GLOBALS] VARIABLE GMAIL
-let s = document.createElement('script');
-s.src = chrome.runtime.getURL('script.js');
-(document.head || document.documentElement).appendChild(s);
-s.onload = function () {
-  s.remove();
-};
-
 // Event listener
 document.addEventListener('RW759_connectExtension', function (e) {
   // e.detail contains the transferred data (can be anything, ranging
@@ -36,184 +26,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
   let BTN_AI_REPLY_CLS = 'sateraito-ai-reply';
   let BTN_BOX_AI_REPLY_CLS = 'bbar-sateraito-ai-reply wG J-Z-I';
 
-  let descriptionIconUrl = chrome.runtime.getURL("icons/description-icon.svg");
-  let emojiIconUrl = chrome.runtime.getURL("icons/emoji-emotions-icon.svg");
-  let formatAlignIconUrl = chrome.runtime.getURL("icons/format-align-icon.svg");
-  let accountCircleIconUrl = chrome.runtime.getURL("icons/account-circle-icon.svg");
-
   let chat_gpt_api_key = null
   let is_domain_regist = false
   let is_not_access_list = false
-
-  let ID_USER_ADDON_LOGIN, USER_ADDON_LOGIN = '';
-
-  const VOICE_SETTING_DATA = [
-    {
-      name_kind: "formality",
-      name: MyLang.getMsg('TXT_FORMALITY'),
-      icon: descriptionIconUrl,
-      options: [
-        {
-          value: 'casual',
-          name: MyLang.getMsg('TXT_CASUAL'),
-          display: '📝 ' + MyLang.getMsg('TXT_CASUAL'),
-        },
-        {
-          value: 'neutral',
-          name: MyLang.getMsg('TXT_NEUTRAL'),
-          display: '📑 ' + MyLang.getMsg('TXT_NEUTRAL'),
-        },
-        {
-          value: 'formal',
-          name: MyLang.getMsg('TXT_FORMAL'),
-          display: '✉️ ' + MyLang.getMsg('TXT_FORMAL'),
-        },
-      ]
-    },
-    {
-      name_kind: "tone",
-      name: MyLang.getMsg('TXT_TONE'),
-      icon: emojiIconUrl,
-      options: [
-        {
-          value: 'friendly',
-          name: MyLang.getMsg('TXT_FRIENDLY'),
-          display: '😀 ' + MyLang.getMsg('TXT_FRIENDLY'),
-        },
-        {
-          value: 'personable',
-          name: MyLang.getMsg('TXT_PERSONABLE'),
-          display: '🧐 ' + MyLang.getMsg('TXT_PERSONABLE'),
-        },
-        {
-          value: 'informational',
-          name: MyLang.getMsg('TXT_INFORMATIONAL'),
-          display: '🤓 ' + MyLang.getMsg('TXT_INFORMATIONAL'),
-        },
-        {
-          value: 'witty',
-          name: MyLang.getMsg('TXT_WITTY'),
-          display: '😉 ' + MyLang.getMsg('TXT_WITTY'),
-        },
-        {
-          value: 'confident',
-          name: MyLang.getMsg('TXT_CONFIDENT'),
-          display: '😎 ' + MyLang.getMsg('TXT_CONFIDENT'),
-        },
-        {
-          value: 'direct',
-          name: MyLang.getMsg('TXT_DIRECT'),
-          display: '😲 ' + MyLang.getMsg('TXT_DIRECT'),
-        },
-        {
-          value: 'enthusiastic',
-          name: MyLang.getMsg('TXT_ENTHUSIASTIC'),
-          display: '🥰 ' + MyLang.getMsg('TXT_ENTHUSIASTIC'),
-        },
-        {
-          value: 'empathetic',
-          name: MyLang.getMsg('TXT_EMPATHETIC'),
-          display: '🥺 ' + MyLang.getMsg('TXT_EMPATHETIC'),
-        },
-      ],
-    },
-    {
-      name_kind: "email_length",
-      name: MyLang.getMsg('TXT_EMAIL_LENGTH'),
-      icon: formatAlignIconUrl,
-      options: [
-        {
-          value: 'medium',
-          name: MyLang.getMsg('TXT_MEDIUM'),
-          display: MyLang.getMsg('TXT_MEDIUM'),
-        },
-        {
-          value: 'short',
-          name: MyLang.getMsg('TXT_SHORT'),
-          display: MyLang.getMsg('TXT_SHORT'),
-        },
-        {
-          value: 'long',
-          name: MyLang.getMsg('TXT_LONG'),
-          display: MyLang.getMsg('TXT_LONG'),
-        },
-      ],
-    },
-    {
-      name_kind: "your_role",
-      name: MyLang.getMsg('TXT_YOUR_ROLE'),
-      icon: accountCircleIconUrl,
-      options: [
-        {
-          value: '',
-          name: '---',
-          display: `---`
-        },
-        {
-          value: 'leader',
-          name: MyLang.getMsg('TXT_LEADER'),
-          display: MyLang.getMsg('TXT_LEADER'),
-        },
-        {
-          value: 'subordinate',
-          name: MyLang.getMsg('TXT_SUBORDINATE'),
-          display: MyLang.getMsg('TXT_SUBORDINATE'),
-        },
-        {
-          value: 'colleague',
-          name: MyLang.getMsg('TXT_COLLEAGUE'),
-          display: MyLang.getMsg('TXT_COLLEAGUE'),
-        },
-        {
-          value: 'sales representative',
-          name: MyLang.getMsg('TXT_SALES_REPRESENTATIVE'),
-          display: MyLang.getMsg('TXT_SALES_REPRESENTATIVE'),
-        },
-        {
-          value: 'applicant',
-          name: MyLang.getMsg('TXT_APPLICANT'),
-          display: MyLang.getMsg('TXT_APPLICANT'),
-        },
-        {
-          value: 'customer service staff',
-          name: MyLang.getMsg('TXT_CUSTOMER_SERVICE_STAFF'),
-          display: MyLang.getMsg('TXT_CUSTOMER_SERVICE_STAFF'),
-        },
-        {
-          value: 'project manager',
-          name: MyLang.getMsg('TXT_PROJECT_MANAGER'),
-          display: MyLang.getMsg('TXT_PROJECT_MANAGER'),
-        },
-        {
-          value: 'human resources',
-          name: MyLang.getMsg('TXT_HUMAN_RESOURCES'),
-          display: MyLang.getMsg('TXT_HUMAN_RESOURCES'),
-        },
-      ],
-    },
-  ];
-  const LANGUAGE_SETTING_DATA = [
-    {
-      value: 'english',
-      name: 'English',
-      sub: MyLang.getMsg('TXT_ENGLISH'),
-    },
-    {
-      value: 'vietnamese',
-      name: 'Tiếng Việt',
-      sub: MyLang.getMsg('TXT_VIETNAMESE'),
-    },
-    {
-      value: 'japanese',
-      name: '日本語',
-      sub: MyLang.getMsg('TXT_JAPANESE'),
-    },
-    {
-      value: 'korean',
-      name: '한국어',
-      sub: MyLang.getMsg('TXT_KOREAN'),
-    },
-  ];
 
   let FoDoc;
   let FBoolMail;
@@ -226,11 +41,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
     if (DEBUG_MODE === true) {
       console.log(chrome.i18n.getMessage('@@extension_id') + ' ' + (new Date()).toLocaleString() + ':' + strMsg);
     }
-  }
-
-  const getTabId = async () => {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    return tab.id;
   }
 
   const randomId = () => {
@@ -339,16 +149,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
         email: current_user,
       };
     }
-  }
-
-  /**
-   * Handler when has message send from background or another
-   * 
-   * @param {Event} event 
-   */
-  function onMessage(message, sender, sendResponse) {
-
-
   }
 
   /**
@@ -1590,34 +1390,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       }
     }
 
-    chrome.storage.sync.get('user_setting').then(value => {
-      USER_SETTING = value.user_setting;
-    })
-
-    chrome.runtime.onMessage.addListener(onMessage);
     chrome.storage.onChanged.addListener(storageOnChanged);
-
-    let quickRoot = document.createElement('div');
-    quickRoot.className = 'chat-gpt-quick-query-container';
-    quickRoot.innerHTML = `
-      <div class="ant-app">
-        <div class="quick-action-container">
-        </div>
-      </div>
-    `;
-    document.body.append(quickRoot);
-
-    document.addEventListener("mouseup", (event) => {
-      let clientY = event.clientY + 15;
-      let clientX = event.clientX + 10;
-
-      // setTimeout(() => {
-      //   let text_selected = document.getSelection().toString().trim();
-      //   chrome.storage.sync.set({ text_selected: text_selected });
-
-      //   _QuickActionPopup.showPopup(text_selected, clientX, clientY);
-      // }, 100)
-    });
 
     chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
       USER_ADDON_LOGIN = userInfo.email;
