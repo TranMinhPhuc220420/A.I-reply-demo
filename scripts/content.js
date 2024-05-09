@@ -25,29 +25,16 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
   let BTN_AI_REPLY_ID = 'SATERAITO_AI_REPLY_MAIL';
   let BTN_AI_REPLY_CLS = 'sateraito-ai-reply';
-  let BTN_BOX_AI_REPLY_CLS = 'bbar-sateraito-ai-reply wG J-Z-I';
-
-  let chat_gpt_api_key = null
-  let is_domain_regist = false
-  let is_not_access_list = false
+  let BTN_BOX_AI_REPLY_CLS = 'bbar-sateraito-ai-reply';
 
   let FoDoc;
   let FBoolMail;
 
   /**
-   * Debug log
-   * @param {string} strMsg
+   * Get new id popup
+   * 
+   * @returns {string}
    */
-  function debugLog(strMsg) {
-    if (DEBUG_MODE === true) {
-      console.log(chrome.i18n.getMessage('@@extension_id') + ' ' + (new Date()).toLocaleString() + ':' + strMsg);
-    }
-  }
-
-  const randomId = () => {
-    return Math.random().toString(36).slice(-8);
-  }
-
   const getNewIdPopup = function () {
     let idNew = randomId();
 
@@ -56,21 +43,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
     }
 
     return getNewIdPopup();
-  }
-
-  const renderTextStyleChatGPT = (elToRender, stringRender, callback) => {
-    let indexText = 0;
-    let timeT = setInterval(() => {
-      elToRender.innerHTML += stringRender[indexText];
-      indexText++;
-      if (indexText >= stringRender.length) {
-        clearInterval(timeT);
-
-        if (callback) {
-          callback(elToRender);
-        }
-      }
-    }, 5);
   }
 
   /**
@@ -91,6 +63,13 @@ document.addEventListener('RW759_connectExtension', function (e) {
     return false;
   }
 
+  /**
+   * Find to die element by query string
+   * 
+   * @param {string} queryFind 
+   * @param {Function} callback 
+   * @param {Number} time 
+   */
   function find(queryFind, callback, time) {
     let timeSetInterval = setInterval(() => {
       let elFind = document.body.querySelector(queryFind);
@@ -101,63 +80,13 @@ document.addEventListener('RW759_connectExtension', function (e) {
     }, time ? time : 0);
   }
 
-  function loadChatGPTAIKey() {
-    if (!chat_gpt_api_key) {
-      fetchChatGPTAIKey(function (api_key, version_ext) {
-        if (typeof (api_key) != "undefined") {
-          chat_gpt_api_key = api_key;
-        }
-      })
-    }
-  }
-
-  function getChatGPTAIKey(callback) {
-    if (!chat_gpt_api_key) {
-      fetchChatGPTAIKey(function (api_key, version_ext) {
-        if (typeof (api_key) != "undefined") {
-          chat_gpt_api_key = api_key;
-          callback(api_key)
-          return;
-        }
-        //fail
-        callback()
-      })
-    } else {
-      // exist key
-      callback(chat_gpt_api_key)
-    }
-  }
-
-  function getCurrentUser() {
-    if (USER_ADDON_LOGIN != '') {
-      return {
-        id: ID_USER_ADDON_LOGIN,
-        email: USER_ADDON_LOGIN,
-      }
-    } else {
-      var current_user = '';
-      if (GLOBALS_GMAIL != null) {
-        if (typeof (GLOBALS_GMAIL) != "undefined") {
-          if (GLOBALS_GMAIL.length > 10) {
-            current_user = GLOBALS_GMAIL[10];
-            if (typeof (current_user) == "undefined") current_user = '';
-          }
-        }
-      }
-
-      return {
-        id: '',
-        email: current_user,
-      };
-    }
-  }
-
   /**
    * Handler when storage has value change
    * 
    * @param {Event} event 
    */
   function storageOnChanged(payload, type) {
+    // on has result send from side panel to add to reply or compose box
     if ('side_panel_send_result' in payload) {
       const newValue = payload.side_panel_send_result.newValue;
       if (newValue.title && newValue.body) {
@@ -168,11 +97,27 @@ document.addEventListener('RW759_connectExtension', function (e) {
       }, 1000);
     }
 
-    else if ('user_setting' in payload) {
-      USER_SETTING = payload.user_setting.newValue;
+    // on list language user config has changed
+    else if ('write_language_output_list' in payload) {
+      _MyPopup.language_output_list_config = payload.write_language_output_list.newValue;
+      _MyPopup.loadLangConfig();
+    }
+
+    // on language (your_lang) user config has changed
+    else if ('write_language_output_active' in payload) {
+      let record = payload.write_language_output_active.newValue;
+
+      _MyPopup.formData.voice_setting['your_lang'] = record.value;
+      USER_SETTING.language_write_active = record;
+
+      _MyPopup.reLoadVoiceConfig();
     }
   }
 
+  /**
+   * Send message manager
+   * 
+   */
   const _SendMessageManager = {
     /**
      * Get data json to show popup in mail
@@ -222,6 +167,10 @@ document.addEventListener('RW759_connectExtension', function (e) {
     }
   };
 
+  /**
+   * My popup
+   * 
+   */
   const _MyPopup = {
     _list_popup_el: {},
     stillBoxReplyIntervalRealtime: null,
@@ -244,8 +193,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
      */
     getVHtml: function () {
       let transformX = window.innerWidth - 800;
-      let transformY = window.innerHeight - 575;
+      let transformY = window.innerHeight - 700;
 
+      // process when box reply is type pop out
       let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
       for (let i = 0; i < listAllBoxCompose.length; i++) {
         const item = listAllBoxCompose[i];
@@ -255,7 +205,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
         isReplyInBox = ($(elContainerReply).find('.aoP .I5 .bAs table[role="presentation"]').length > 0)
 
         if (isReplyInBox) {
-          transformX = transformX - (elContainerReply.offsetWidth - 120);
+          transformX -= (elContainerReply.offsetWidth - 120);
+          transformY += 125;
         }
       }
 
@@ -437,8 +388,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * 
      */
     fixPosition: function () {
-      let transformX = window.innerWidth - 800;
-      let transformY = window.innerHeight - 575;
+      let transformX = window.innerWidth - 750;
+      let transformY = window.innerHeight - 700;
 
       let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
       for (let i = 0; i < listAllBoxCompose.length; i++) {
@@ -450,6 +401,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
         if (isReplyInBox) {
           transformX = transformX - (elContainerReply.offsetWidth - 70);
+          transformY += 125;
         }
       }
 
@@ -491,6 +443,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
           elFind.append(textEl);
         }
       });
+
       find('.result-generate .body-mail', elFind => {
         elFind.innerHTML = '';
 
@@ -613,11 +566,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
       $(document).off('click', clsTemplate, self.onClickItemCombobox);
       $(document).on('click', clsTemplate, self.onClickItemCombobox);
 
-      // For items options voice config
-      clsTemplate = '.popup-voice-config .your-language.config .options .item';
-      $(document).off('click', clsTemplate, self.onClickConfigItem);
-      $(document).on('click', clsTemplate, self.onClickConfigItem);
-
       clsTemplate = '#ai_reply_popup .option';
       $(document).off('click', clsTemplate, self.onClickOptionItem);
       $(document).on('click', clsTemplate, self.onClickOptionItem);
@@ -693,7 +641,12 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       // Voice-config
       $('.reply-suggestions .voice-config').click((event) => {
-        $('#ai_reply_popup').addClass('show-voice-config');
+        let clsToAdd = 'show-voice-config';
+        if ($('#ai_reply_popup').hasClass(clsToAdd)) {
+          $('#ai_reply_popup').removeClass(clsToAdd);
+        } else {
+          $('#ai_reply_popup').addClass(clsToAdd);
+        }
       });
       // Button close voice-config
       $('.popup-voice-config button.close').click((event) => {
@@ -812,7 +765,13 @@ document.addEventListener('RW759_connectExtension', function (e) {
       self.stillBoxReplyIntervalRealtime = setInterval(() => {
         let boxReply = document.body.querySelector('.LW-avf.tS-tW');
         if (!boxReply) {
-          self.closePopup(idPopup);
+          setTimeout(() => {
+            if (_MailAIGenerate.isReplyBoxClose()) {
+              self.closePopup(idPopup);
+            } else {
+              self.fixPosition();
+            }
+          }, 50);
         }
       });
     },
@@ -832,6 +791,11 @@ document.addEventListener('RW759_connectExtension', function (e) {
         for (let i = 0; i < list_name_kind.length; i++) {
           const kindNameItem = list_name_kind[i];
 
+          // Not use kind formality_reply
+          if (kindNameItem == 'formality_reply') {
+            continue;
+          }
+
           let voiceConfig = self.formData.voice_setting[kindNameItem];
           if (!voiceConfig) {
             continue
@@ -840,15 +804,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
           let record;
           if (kindNameItem != 'your_lang') {
             let kind = VOICE_SETTING_DATA.find(kindItem => kindItem.name_kind == kindNameItem);
-            if (kind) {
-              record = kind.options.find(item => item.value == voiceConfig);
-
-              if (!record) {
-                continue
-              }
-            } else {
-              continue
-            }
+            record = kind.options.find(item => item.value == voiceConfig);
           } else {
             record = LANGUAGE_SETTING_DATA.find(langItem => langItem.value == voiceConfig);
           }
@@ -923,8 +879,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
       find('.popup-voice-config .body', (elFind) => {
         for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
           const config_item = VOICE_SETTING_DATA[i];
-          // important
-          if (config_item.name_kind == 'formality') continue;
+
+          // Not use kind formality_reply
+          if (config_item.name_kind == 'formality_reply') continue;
 
           const configEl = document.createElement('div');
           configEl.className = `${config_item.name_kind} config`;
@@ -969,6 +926,10 @@ document.addEventListener('RW759_connectExtension', function (e) {
       _MyPopup.is_loading = false;
     },
 
+    /**
+     * Load data lang config before
+     * 
+     */
     loadLangConfig: () => {
       const self = _MyPopup;
 
@@ -1014,15 +975,13 @@ document.addEventListener('RW759_connectExtension', function (e) {
       }
 
       // Button combobox
-      let vHtml_init = `
-      ${lang_config}
-      <button class="item text combobox" id="language_cbx">
-          <span class="space">...</span>
-          <ul class="popover-cbx wrap-item">
-            ${lang_option}
-          </ul>
-      </button>
-    `
+      let vHtml_init = `${lang_config}
+                        <button class="item text combobox" id="language_cbx">
+                            <span class="space">...</span>
+                            <ul class="popover-cbx wrap-item">
+                              ${lang_option}
+                            </ul>
+                        </button>`
 
       // Add to html side panel
       $(`.popup-voice-config .your-language .options`).html(vHtml_init);
@@ -1119,6 +1078,11 @@ document.addEventListener('RW759_connectExtension', function (e) {
       });
     },
 
+    /**
+     * Handler on click combobox
+     * 
+     * @param {event} event 
+     */
     onClickCombobox: (event) => {
       const self = _MyPopup;
 
@@ -1137,6 +1101,11 @@ document.addEventListener('RW759_connectExtension', function (e) {
       }, 100)
     },
 
+    /**
+     * Handler on select item in combobox
+     * 
+     * @param {event} event 
+     */
     onClickItemCombobox: (event) => {
       const self = _MyPopup;
 
@@ -1147,6 +1116,11 @@ document.addEventListener('RW759_connectExtension', function (e) {
       }
     },
 
+    /**
+     * Handler on click options suggest from gpt in popup
+     *  
+     * @param {event} event 
+     */
     onClickOptionItem: (event) => {
       const self = _MyPopup;
       if (self.is_loading) return;
@@ -1162,6 +1136,11 @@ document.addEventListener('RW759_connectExtension', function (e) {
       })
     },
 
+    /**
+     * Handler on click item options in voice config for write
+     * 
+     * @param {event} event 
+     */
     onClickOptionVoiceConfigItem: (event) => {
       const self = _MyPopup;
       const kind = event.target.getAttribute('kind');
@@ -1170,14 +1149,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       if (!kind || !value) return;
 
       if (kind == 'your_lang') {
-        let recordLang = LANGUAGE_SETTING_DATA.find(item => item.value == value);
-        if (!recordLang) return;
-
-        USER_SETTING.language_write_active = recordLang;
-        _StorageManager.setLanguageWrite(recordLang);
-        
-        self.formData.voice_setting[kind] = recordLang.value;
-
+        _StorageManager.setLanguageWrite(value);
       } else {
         let options = VOICE_SETTING_DATA.find(item => item.name_kind == kind).options;
         if (!options) return;
@@ -1187,9 +1159,18 @@ document.addEventListener('RW759_connectExtension', function (e) {
       self.reLoadVoiceConfig();
     },
 
+    /**
+     * Handler on click remove language at list language use to voice config
+     * 
+     * @param {event} event 
+     */
     onClickRemoveLanguageConfig: (event) => {
       const self = _MyPopup;
       const targetEl = event.target;
+
+      // There is always an optional language
+      if ((self.language_output_list_config.length - 1) == 0) return;
+      let listLangClone = [...self.language_output_list_config];
 
       const parentBtnEl = $(targetEl).parents('button.item.text');
       const value = parentBtnEl.attr('value');
@@ -1197,26 +1178,25 @@ document.addEventListener('RW759_connectExtension', function (e) {
       _StorageManager.removeLanguageWriteList(value);
 
       parentBtnEl.remove();
-
       $(`#language_cbx .combobox-item[value="${value}"]`).removeClass('hidden');
       $(`.reply-suggestions #language_cbx`).removeClass('hidden');
+
+      // Reset to default
+      for (let i = 0; i < listLangClone.length; i++) {
+        if (listLangClone[i].value == value) {
+          listLangClone.splice(i, 1);
+        }
+      }
+      _StorageManager.setLanguageWrite(listLangClone[0].value);
     },
 
-    onClickConfigItem: (event) => {
-      const self = _MyPopup;
-
-      const targetEl = event.target;
-      const kind = event.target.getAttribute('kind');
-      const value = event.target.getAttribute('value');
-
-      if (!value || !kind) return;
-      self.formData.voice_setting[kind] = value;
-
-      const parent = $(targetEl).parents('.options')[0];
-      $(parent).children('.item').removeClass('active');
-      $(targetEl).addClass('active');
-    },
-
+    /**
+     * Handler on select item in language combobox
+     * 
+     * @param {Element} comboboxEl 
+     * @param {Element} itemEl 
+     * @param {string} value 
+     */
     onSelectLanguageConfig: (comboboxEl, itemEl, value) => {
       const self = _MyPopup;
 
@@ -1239,16 +1219,16 @@ document.addEventListener('RW759_connectExtension', function (e) {
         closeBtnEl.className = 'close';
         closeBtnEl.innerHTML = '<img class="icon" src="' + cancelIconUrl + '">';
 
-        $(buttonEl).click(self.onClickConfigItem);
+        $(buttonEl).click(self.onClickOptionVoiceConfigItem);
 
         buttonEl.append(closeBtnEl);
         $(buttonEl).insertBefore(comboboxEl);
 
         setTimeout(() => {
-          self.formData.voice_setting['your_lang'] = value;
           $(buttonEl).addClass('active');
         }, 100);
 
+        _StorageManager.setLanguageWrite(value);
         _StorageManager.addLanguageWriteList(value);
       }
 
@@ -1260,6 +1240,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
   /**
    * Mail Add-on
+   * 
    */
   const _MailAIGenerate = {
     actionsMailEl: null,
@@ -1280,19 +1261,26 @@ document.addEventListener('RW759_connectExtension', function (e) {
     },
 
     // Setter
+
+    /**
+     * Set title and body to box reply opening
+     * 
+     * @param {json} params 
+     */
     setMailReply: function (params) {
       const { title, body } = params;
 
       let isAdded = false;
 
+      // This handle for popup out reply
       let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
       if (listAllBoxCompose.length > 0) {
-        // This handle for popup out reply
         for (let i = 0; i < listAllBoxCompose.length; i++) {
           const item = listAllBoxCompose[i];
 
           let isCompose = ($(item).parents('.AD').find('.aoP .I5 .bAs table[role="presentation"]').length == 0)
           if (!isCompose) {
+
             let findEl = $(item).find('.Am.Al.editable.LW-avf')[0];
             findEl.innerHTML = body.replaceAll('\n', '</br>');
             findEl.focus();
@@ -1302,8 +1290,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
         }
       }
 
+      // This handle for popup normal reply
       if (!isAdded) {
-        // This handle for popup normal reply
         find('.Am.Al.editable.LW-avf', (findEl) => {
           findEl.innerHTML = body.replaceAll('\n', '</br>');
           findEl.focus();
@@ -1311,24 +1299,52 @@ document.addEventListener('RW759_connectExtension', function (e) {
       }
     },
 
+    /**
+     * Set title and body to box compose opening
+     * 
+     * @param {json} params 
+     */
     setMailCompose: function (params) {
       const { title, body } = params;
 
+      // This handle for popup out reply
       let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
       for (let i = 0; i < listAllBoxCompose.length; i++) {
         const item = listAllBoxCompose[i];
 
         let isCompose = ($(item).parents('.AD').find('.aoP .I5 .bAs table[role="presentation"]').length == 0)
         if (isCompose) {
+          // Set title
           let findEl = $(item).find('.aoD input[name="subjectbox"]');
           findEl.val(title)
 
+          // Set body
           findEl = $(item).find('.iN .Am.Al.editable.LW-avf');
           findEl.html(body.replaceAll('\n', '</br>'));
           findEl.focus();
         }
       }
+    },
 
+    /**
+     * Check is popup reply is closed
+     * 
+     * @returns {boolean}
+     */
+    isReplyBoxClose: () => {
+      let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
+      if (listAllBoxCompose.length > 0) {
+        // This handle for popup out reply
+        for (let i = 0; i < listAllBoxCompose.length; i++) {
+          const item = listAllBoxCompose[i];
+          let isReplyBoxClose = ($(item).parents('.AD').find('.aoP .I5 .bAs table[role="presentation"]').length == 0)
+          if (!isReplyBoxClose) {
+            return false
+          }
+        }
+      }
+
+      return $('.Am.Al.editable.LW-avf').length == 0;
     },
 
     // Getter
@@ -1386,7 +1402,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
       return contentMail;
     },
 
-
     /**
      * Get title mail
      * 
@@ -1438,7 +1453,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
         elmBtn.setAttribute('data-tooltip', MyLang.getMsg('TXT_AI_REPLY'));
         elmBtn.setAttribute('data-label', MyLang.getMsg('TXT_AI_REPLY'));
         elmBtn.setAttribute('role_btn', 'reply');
-        elmBtn.className = BTN_BOX_AI_REPLY_CLS
+        elmBtn.className = BTN_BOX_AI_REPLY_CLS + ' wG J-Z-I'
 
         let vHtml = `
           <img style="pointer-events:none" src="${FAVICON_URL}">
@@ -1460,10 +1475,15 @@ document.addEventListener('RW759_connectExtension', function (e) {
       }
     },
 
+    /**
+     * Process add button A.I reply to bottom bar and menu for all box compose mail
+     * 
+     */
     processAddAIReplyBtnForListBoxCompose: function () {
       let self = _MailAIGenerate;
-      let lisBBarComposeEl = FoDoc.querySelectorAll('.nH .aaZ .btC');
 
+      // process for add button to bottom bar
+      let lisBBarComposeEl = FoDoc.querySelectorAll('.nH .aaZ .btC');
       for (let i = 0; i < lisBBarComposeEl.length; i++) {
         let itemBBarEl = lisBBarComposeEl[i];
 
@@ -1477,7 +1497,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
         let is_really_compose = ($(itemBBarEl).parents('.AD').find('.aoP .I5 .bAs table[role="presentation"]').length == 0)
         elmBtn.setAttribute('role_btn', is_really_compose ? 'compose' : 'reply');
 
-        elmBtn.className = BTN_BOX_AI_REPLY_CLS
+        elmBtn.className = BTN_BOX_AI_REPLY_CLS + ' wG J-Z-I'
 
         let vHtml = `
           <img style="pointer-events:none" src="${FAVICON_URL}">
@@ -1497,8 +1517,40 @@ document.addEventListener('RW759_connectExtension', function (e) {
           itemBBarEl.append(elmBtn);
         }
       }
+
+      // process for add button to menu bar
+      let lisMenuReplyEl = FoDoc.querySelectorAll('.J-M.Gj.jQjAxd .SK.AX');
+      for (let i = 0; i < lisMenuReplyEl.length; i++) {
+        let itemBBarEl = lisMenuReplyEl[i];
+
+        if (itemBBarEl.querySelector('.bbar-sateraito-ai-reply')) continue;
+
+        let elmBtn = document.createElement('div');
+        elmBtn.addEventListener('click', self.handlerReplyBoxBtnClick);
+
+        let is_really_reply = ($(itemBBarEl).parents('.M9').find('.aoP .I5 .bAs table[role="presentation"]').length > 0)
+        elmBtn.setAttribute('role_btn', is_really_reply ? 'reply' : 'compose');
+
+        elmBtn.className = BTN_BOX_AI_REPLY_CLS + ' J-N'
+
+        let vHtml = `
+            <div class="J-N-Jz">
+              <img class="nF-aMA-ato-Kp-JX J-N-JX" src="${FAVICON_URL}">
+              ${MyLang.getMsg('TXT_AI_REPLY')}
+            </div>
+          `;
+        elmBtn.innerHTML = vHtml;
+
+        itemBBarEl.append(elmBtn);
+      }
     },
 
+    /**
+     * Process request to show popup
+     * 
+     * @param {string} titleMail 
+     * @param {string} contentMail 
+     */
     processRequestToShowPopup: function (titleMail, contentMail) {
       let btnReplyMailEl = FoDoc.body.querySelector('.ams.bkH');
       if (btnReplyMailEl) {
@@ -1549,26 +1601,30 @@ document.addEventListener('RW759_connectExtension', function (e) {
       self.processAddAIReplyBtnForListBoxCompose();
     },
 
+    /**
+     * Handler reply button click
+     * 
+     * @param {Event} event 
+     */
     handlerReplyBtnClick: function (event) {
       const self = _MailAIGenerate;
-
-      let current_user = getCurrentUser();
-      //addon setting
-      loadAddOnSetting(current_user.email, function (result) {
-        is_domain_regist = result.is_domain_regist
-        is_not_access_list = result.is_not_access_list
-        console.log(`auto summary chat GPT: domain regist:[${is_domain_regist}], permission deny:[${is_not_access_list}]`)
-      })
 
       let titleMail = _MailAIGenerate.getTitleMail();
       let contentMail = _MailAIGenerate.getContentBodyMail();
       self.processRequestToShowPopup(titleMail, contentMail);
     },
 
+    /**
+     * Handler reply box button click
+     * 
+     * @param {Event} event 
+     */
     handlerReplyBoxBtnClick: function (event) {
       const self = _MailAIGenerate;
 
       if (event.target.getAttribute('role_btn') == 'reply') {
+        // Check and show popup when action for reply
+
         let mainContentEl = FoDoc.body.querySelector('.G3.G2');
         const idPopup = mainContentEl.getAttribute('s_popup_id');
 
@@ -1579,7 +1635,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
           let contentMail = _MailAIGenerate.getContentBodyMail();
           self.processRequestToShowPopup(titleMail, contentMail);
         }
+
       } else {
+        // open side panel when action for compose
         chrome.runtime.sendMessage({
           method: 'open_side_panel',
         })
@@ -1600,56 +1658,61 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       FBoolMail = (strUrl.indexOf('//mail.google.com/') >= 0);
       if (FBoolMail) {
+
         _MailAIGenerate._init();
+
+        chrome.storage.onChanged.addListener(storageOnChanged);
+
+        // Load the language the user previously used
+        _StorageManager.getLanguageWrite(recordLang => {
+          if (!recordLang) {
+            recordLang = LANGUAGE_SETTING_DATA[0]
+          }
+          USER_SETTING.language_write_active = recordLang;
+        })
+
+        // Load the voice config write the user previously used
+        _StorageManager.getVoiceConfigWrite(voiceConfig => {
+          if (!voiceConfig) {
+            voiceConfig = {}
+            voiceConfig.your_lang = 'english';
+            voiceConfig.gpt_version = GPT_VERSION_SETTING_DATA[0].value;
+            for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
+              const item = VOICE_SETTING_DATA[i];
+
+              // Not use kind formality_reply
+              if (item.name_kind == 'formality_reply') continue;
+
+              voiceConfig[item.name_kind] = item.options[0].value;
+            }
+          }
+
+          // Remove unnecessary params
+          delete voiceConfig.gpt_ai_key
+          delete voiceConfig.gpt_version
+          delete voiceConfig.type_generate
+          delete voiceConfig.topic_compose
+          delete voiceConfig.original_text_reply
+          delete voiceConfig.general_content_reply
+
+          // Init voice config
+          _MyPopup.formData.voice_setting = voiceConfig;
+        })
+
+        chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
+          ID_USER_ADDON_LOGIN = userInfo.id;
+          USER_ADDON_LOGIN = userInfo.email;
+
+          //addon setting
+          loadAddOnSetting(userInfo.email, function (result) {
+            is_domain_regist = result.is_domain_regist
+            is_not_access_list = result.is_not_access_list
+            debugLog(`auto summary chat GPT: domain regist:[${is_domain_regist}], permission deny:[${is_not_access_list}]`)
+          });
+
+        });
       }
     }
-
-    chrome.storage.onChanged.addListener(storageOnChanged);
-
-    _StorageManager.getLanguageWrite(recordLang => {
-      if (!recordLang) {
-        recordLang = LANGUAGE_SETTING_DATA[0]
-      }
-      USER_SETTING.language_write_active = recordLang;
-    })
-
-    _StorageManager.getVoiceConfigWrite(voiceConfig => {
-      if (!voiceConfig) {
-        voiceConfig = {}
-        voiceConfig.your_lang = 'english';
-        voiceConfig.gpt_version = GPT_VERSION_SETTING_DATA[0].value;
-        for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
-          const item = VOICE_SETTING_DATA[i];
-          // important
-          if (item.name_kind == 'formality') continue;
-
-          voiceConfig[item.name_kind] = item.options[0].value;
-        }
-      }
-
-      delete voiceConfig.gpt_ai_key
-      delete voiceConfig.gpt_version
-      delete voiceConfig.type_generate
-      delete voiceConfig.topic_compose
-      delete voiceConfig.original_text_reply
-      delete voiceConfig.general_content_reply
-
-      // Init voice config
-      _MyPopup.formData.voice_setting = voiceConfig;
-    })
-
-    chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
-      ID_USER_ADDON_LOGIN = userInfo.id;
-      USER_ADDON_LOGIN = userInfo.email;
-
-      //addon setting
-      loadAddOnSetting(userInfo.email, function (result) {
-        is_domain_regist = result.is_domain_regist
-        is_not_access_list = result.is_not_access_list
-        console.log(`auto summary chat GPT: domain regist:[${is_domain_regist}], permission deny:[${is_not_access_list}]`)
-      });
-
-    });
 
     debugLog('▲▲▲ initilize ended ! ');
   }

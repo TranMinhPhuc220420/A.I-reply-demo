@@ -1,3 +1,11 @@
+.J-M.Gj .bbar-sateraito-ai-reply .J-N-Jz, .J-M.Gj .bbar-sateraito-ai-reply img {
+  pointer-events: none !important;
+}
+.J-M.Gj .bbar-sateraito-ai-reply:hover {
+  background-color: #eee;
+  color: #202124;
+}
+
 .sateraito-ai-reply {
   border: 1px solid;
   border-radius: 30px;
@@ -58,7 +66,7 @@
   background-color: #fff;
   width: 600px;
   border-radius: 15px;
-  box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
   display: flex;
   justify-content: space-between;
   flex-direction: column;
@@ -132,6 +140,8 @@
   z-index: 2147483647;
   transform: translateX(0px);
   opacity: 1;
+  height: auto;
+  overflow: unset;
 }
 #ai_reply_popup.form-loading .title .wrap-title .right button.close,
 #ai_reply_popup.form-loading .title .wrap-title .right button.reload {
@@ -401,7 +411,8 @@
   color: #575757;
   border: none;
   width: 100%;
-  height: 200px;
+  height: 160px;
+  max-height: 160px;
   resize: none;
   display: none;
   outline: transparent solid 2px;
@@ -424,13 +435,15 @@
 }
 #ai_reply_popup .body .main .popup-voice-config {
   position: absolute;
-  top: -190px;
+  top: -127px;
   left: -415px;
   z-index: -1;
   opacity: 0;
+  height: 0;
+  overflow: hidden;
   transform: translateX(235px);
   background-color: #fff;
-  box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
   border-radius: 15px;
   width: 400px;
   transition: 0.25s all;

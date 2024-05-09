@@ -1,25 +1,4 @@
 const _SendMessageManager = {
-  chat_gpt_api_key: null,
-
-  getChatGPTAIKey: (callback) => {
-    const self = _SendMessageManager;
-
-    if (!self.chat_gpt_api_key) {
-      fetchChatGPTAIKey(function (api_key, version_ext) {
-        if (typeof (api_key) != "undefined") {
-          self.chat_gpt_api_key = api_key;
-          callback(api_key)
-          return;
-        }
-        //fail
-        callback()
-      })
-    } else {
-      // exist key
-      callback(self.chat_gpt_api_key)
-    }
-  },
-
   generateContentCompose: function (params, callback) {
     chrome.runtime.sendMessage({
       method: 'generate_content_compose_mail',
@@ -35,8 +14,7 @@ const _SendMessageManager = {
     const self = _SendMessageManager;
 
     // Get open ai KEY
-    self.getChatGPTAIKey((gptAiKey) => {
-
+    getChatGPTAIKey((gptAiKey) => {
       params.gpt_ai_key = gptAiKey;
 
       generateContentRequest(params, (response) => {
@@ -237,9 +215,14 @@ const TabWriteManager = {
       let vHtmlOption = ``;
       for (let j = 0; j < config_item.options.length; j++) {
         const optionItem = config_item.options[j];
+        const voiceConfigItem = self.formData[config_item.name_kind];
 
         let isActive = false;
-        if (self.formData[config_item.name_kind] == optionItem.value) {
+        if (!voiceConfigItem && j == 0) {
+          self.formData[config_item.name_kind] = optionItem.value;
+          isActive = true;
+        }
+        if (voiceConfigItem == optionItem.value) {
           isActive = true;
         }
 
@@ -472,6 +455,10 @@ const TabWriteManager = {
     $(document).on('click', `#${self.idTab} .form-config .your-language .item .close`, (event) => {
       const targetEl = event.target;
 
+      // There is always an optional language
+      if ((self.language_output_list_config.length - 1) == 0) return;
+      let listLangClone = [...self.language_output_list_config];
+
       const parentBtnEl = $(targetEl).parents('button.item.text');
       const value = parentBtnEl.attr('value');
 
@@ -481,6 +468,14 @@ const TabWriteManager = {
 
       $(`#language_cbx .combobox-item[value="${value}"]`).removeClass('hidden');
       $(`#${self.idTab} #language_cbx`).removeClass('hidden');
+
+      // Reset to default
+      for (let i = 0; i < listLangClone.length; i++) {
+        if (listLangClone[i].value == value) {
+          listLangClone.splice(i, 1);
+        }
+      }
+      _StorageManager.setLanguageWrite(listLangClone[0].value);
     });
 
     // For action button session result footer
@@ -689,6 +684,10 @@ const TabWriteManager = {
     if (!value || !kind) return;
     self.formData[kind] = value;
 
+    if (kind == 'your_lang') {
+      _StorageManager.setLanguageWrite(value);
+    }
+
     const parent = $(targetEl).parents('.options')[0];
     $(parent).children('.item').removeClass('active');
     $(targetEl).addClass('active');
@@ -726,6 +725,7 @@ const TabWriteManager = {
         $(buttonEl).addClass('active');
       }, 100);
 
+      _StorageManager.setLanguageWrite(value);
       _StorageManager.addLanguageWriteList(value);
     }
 
@@ -816,7 +816,7 @@ const WrapperManager = {
 
     LIST_TAB.forEach((item, index) => {
       const itemEl = document.createElement('div');
-      itemEl.className = `title`;
+      itemEl.className = `title d-flex content-center align-center`;
       itemEl.setAttribute('tab_id', item.id)
 
       itemEl.innerHTML = `
@@ -845,6 +845,9 @@ const WrapperManager = {
             `
       $('.sidebar .menu').append(itemEl);
     });
+
+    $('.sidebar .btn.collapse .label').html(MyLang.getMsg('TXT_COLLAPSE_NAVBAR'))
+    $('.sidebar .footer .setting .label').html(MyLang.getMsg('TXT_SETTING'))
   },
 
   // Event
@@ -896,12 +899,35 @@ const WrapperManager = {
   },
 };
 
+/**
+ * Handler when storage has value change
+ * 
+ * @param {Event} event 
+ */
+const storageOnChanged = (payload, type) => {
+  if ('write_language_output_list' in payload) {
+    TabWriteManager.language_output_list_config = payload.write_language_output_list.newValue;
+    TabWriteManager.loadLangConfig();
+  }
+
+  else if ('write_language_output_active' in payload) {
+    let record = payload.write_language_output_active.newValue;
+
+    TabWriteManager.formData['your_lang'] = record.value;
+    USER_SETTING.language_write_active = record;
+
+    $('.your-language .item').removeClass('active');
+    $('.your-language .item[value="' + record.value + '"]').addClass('active');
+  }
+}
+
 const getCurrentUser = () => {
   return {
     id: ID_USER_ADDON_LOGIN,
     email: USER_ADDON_LOGIN,
   }
 }
+
 const getIconGptVersion = (keyGet, gptVersion) => {
   for (let i = 0; i < GPT_VERSION_SETTING_DATA.length; i++) {
     const element = GPT_VERSION_SETTING_DATA[i];
@@ -911,6 +937,7 @@ const getIconGptVersion = (keyGet, gptVersion) => {
     }
   }
 }
+
 const initialize_side = async () => {
   let pallaFinishedCount = 0;
   let NUM_PROCEED_PALLA_FINISHED_COUNT = 3;
@@ -946,6 +973,8 @@ const initialize_side = async () => {
 
     proceedByPallaFinishedCount();
   })
+
+  chrome.storage.onChanged.addListener(storageOnChanged);
 
   chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
     ID_USER_ADDON_LOGIN = userInfo.id;

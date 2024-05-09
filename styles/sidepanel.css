@@ -31,7 +31,7 @@ body ul li {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 9999px;
 }
 
@@ -42,6 +42,15 @@ body ul li {
   width: 100%;
   background-color: #f7f7f7;
   position: relative;
+}
+.gpt-layout .d-flex {
+  display: flex !important;
+}
+.gpt-layout .content-center {
+  justify-content: center !important;
+}
+.gpt-layout .align-center {
+  align-items: center !important;
 }
 .gpt-layout .hidden {
   display: none !important;
@@ -61,7 +70,7 @@ body ul li {
   max-height: 300px;
   border-radius: 10px;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
-  transition: 0.25s all;
+  transition: 0.15s all;
 }
 .gpt-layout .popover-cbx.show {
   display: block;
@@ -70,7 +79,7 @@ body ul li {
 .gpt-layout .popover-cbx li {
   padding: 5px 0px 5px 10px;
   margin-bottom: 3px;
-  transition: 0.25s all;
+  transition: 0.15s all;
   border-radius: 10px;
   text-align: start;
   cursor: pointer;
@@ -121,7 +130,7 @@ body ul li {
 }
 .gpt-layout.ui-001 .sidebar .body .action {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
 }
 .gpt-layout.ui-001 .sidebar .body .action .btn {
   background-color: #e8e8e8;
@@ -130,7 +139,7 @@ body ul li {
   align-items: center;
   padding: 2px;
   border-radius: 3px;
-  transition: 0.25s all;
+  transition: 0.15s all;
   cursor: pointer;
 }
 .gpt-layout.ui-001 .sidebar .body .action .btn:first-child {
@@ -138,10 +147,6 @@ body ul li {
 }
 .gpt-layout.ui-001 .sidebar .body .action .btn:hover {
   background-color: #dedede;
-}
-.gpt-layout.ui-001 .sidebar .body .action .btn svg {
-  width: 13px;
-  height: 13px;
 }
 .gpt-layout.ui-001 .sidebar .body .menu {
   margin-top: 10px;
@@ -156,7 +161,8 @@ body ul li {
   border-radius: 5px;
   margin-bottom: 10px;
   cursor: pointer;
-  transition: 0.25s all;
+  transition: 0.15s all;
+  position: relative;
 }
 .gpt-layout.ui-001 .sidebar .body .menu .item:hover {
   background-color: #ededed;
@@ -164,17 +170,25 @@ body ul li {
 .gpt-layout.ui-001 .sidebar .body .menu .item:hover svg {
   transform: scale(1.2);
 }
+.gpt-layout.ui-001 .sidebar .body .menu .item:hover .label {
+  opacity: 1;
+  right: 110%;
+}
 .gpt-layout.ui-001 .sidebar .body .menu .item.active {
   background-color: #fff;
 }
-.gpt-layout.ui-001 .sidebar .body .menu .item svg {
-  height: 19px;
-  width: 19px;
-  fill: #2a2a2a;
-  transition: 0.25s all;
-}
 .gpt-layout.ui-001 .sidebar .body .menu .item .label {
-  display: none;
+  text-wrap: nowrap;
+  transition: 0.15s all;
+  opacity: 0;
+  position: absolute;
+  pointer-events: none;
+  background-color: #2a2a2a;
+  color: #fff;
+  right: 50%;
+  top: 3px;
+  padding: 5px 10px;
+  border-radius: 10px;
 }
 .gpt-layout.ui-001 .sidebar .footer {
   height: 30%;
@@ -193,13 +207,7 @@ body ul li {
   border-radius: 5px;
   margin-bottom: 10px;
   cursor: pointer;
-  transition: 0.25s all;
-}
-.gpt-layout.ui-001 .sidebar .footer .left .item svg {
-  height: 15px;
-  width: 15px;
-  fill: #2a2a2a;
-  transition: 0.25s all;
+  transition: 0.15s all;
 }
 .gpt-layout.ui-001 .sidebar .footer .left .item:hover {
   background-color: #ededed;
@@ -226,19 +234,23 @@ body ul li {
   width: 100%;
   border-radius: 10px;
 }
+.gpt-layout.ui-002 main .wrap-content .title .right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .gpt-layout.ui-002 .sidebar {
   position: absolute;
   background-color: #f7f7f7;
-  width: 0;
+  display: none;
   border-radius: 10px;
   top: 25px;
   right: 25px;
-  overflow: hidden;
-  display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 .gpt-layout.ui-002 .sidebar.show {
+  display: flex;
   width: 35%;
   min-width: 150px;
   padding: 5px;
@@ -261,12 +273,6 @@ body ul li {
 }
 .gpt-layout.ui-002 .sidebar .body .menu .item:hover {
   background-color: #fff;
-}
-.gpt-layout.ui-002 .sidebar .body .menu .item svg {
-  height: 20px;
-  width: 20px;
-  fill: #2a2a2a;
-  transition: 0.25s all;
 }
 .gpt-layout.ui-002 .sidebar .body .menu .item .label {
   font-size: 12px;
@@ -308,14 +314,14 @@ body ul li {
 .gpt-layout main .title {
   display: flex;
   justify-content: space-between;
-  padding: 5px 0 10px 10px;
+  padding: 5px 10px 10px 10px;
 }
 .gpt-layout main .title .left .title {
-  display: none;
+  display: none !important;
   padding: 0;
 }
 .gpt-layout main .title .left .title.active {
-  display: block;
+  display: flex !important;
 }
 .gpt-layout main .title .left .title span {
   font-size: 28px;
@@ -325,9 +331,12 @@ body ul li {
   margin-right: 5px;
   height: 32px;
 }
-.gpt-layout main .title .right .btn svg {
-  width: 18px;
-  height: 18px;
+.gpt-layout main .title .right svg {
+  height: 20px;
+  width: 20px;
+  fill: #2a2a2a;
+  transition: 0.15s all;
+  pointer-events: none;
 }
 .gpt-layout main .title .right .collapse-navbar {
   display: flex;
@@ -365,6 +374,13 @@ body ul li {
   font-weight: 600;
   color: #575757;
 }
+.gpt-layout .sidebar svg {
+  height: 20px;
+  width: 20px;
+  fill: #2a2a2a;
+  transition: 0.15s all;
+  pointer-events: none;
+}
 .gpt-layout .sidebar .body .action {
   display: flex;
 }
@@ -375,8 +391,9 @@ body ul li {
   align-items: center;
   padding: 2px;
   border-radius: 3px;
-  transition: 0.25s all;
+  transition: 0.15s all;
   cursor: pointer;
+  position: relative;
 }
 .gpt-layout .sidebar .body .action .btn:first-child {
   margin-right: 2px;
@@ -384,10 +401,23 @@ body ul li {
 .gpt-layout .sidebar .body .action .btn:hover {
   background-color: #dedede;
 }
-.gpt-layout .sidebar .body .action .btn svg {
-  width: 13px;
-  height: 13px;
+.gpt-layout .sidebar .body .action .btn:hover .label {
+  opacity: 1;
+  right: 130%;
+}
+.gpt-layout .sidebar .body .action .btn .label {
+  text-wrap: nowrap;
+  transition: 0.15s all;
+  text-align: right;
+  position: absolute;
   pointer-events: none;
+  opacity: 0;
+  right: 50%;
+  top: 0;
+  background-color: #2a2a2a;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 10px;
 }
 .gpt-layout .sidebar .body .menu {
   margin-top: 10px;
@@ -400,13 +430,7 @@ body ul li {
   border-radius: 5px;
   margin-bottom: 10px;
   cursor: pointer;
-  transition: 0.25s all;
-}
-.gpt-layout .sidebar .body .menu .item svg {
-  height: 19px;
-  width: 19px;
-  fill: #2a2a2a;
-  transition: 0.25s all;
+  transition: 0.15s all;
 }
 .gpt-layout .sidebar .body .menu .item:hover svg {
   transform: scale(1.2);
@@ -423,16 +447,28 @@ body ul li {
   border-radius: 5px;
   margin-bottom: 10px;
   cursor: pointer;
-  transition: 0.25s all;
-}
-.gpt-layout .sidebar .footer .item svg {
-  height: 15px;
-  width: 15px;
-  fill: #2a2a2a;
-  transition: 0.25s all;
+  transition: 0.15s all;
+  position: relative;
 }
 .gpt-layout .sidebar .footer .item:hover {
   background-color: #ededed;
+}
+.gpt-layout .sidebar .footer .item:hover .label {
+  opacity: 1;
+  right: 110%;
+}
+.gpt-layout .sidebar .footer .item .label {
+  text-wrap: nowrap;
+  transition: 0.15s all;
+  opacity: 0;
+  position: absolute;
+  pointer-events: none;
+  background-color: #2a2a2a;
+  color: #fff;
+  right: 50%;
+  top: 3px;
+  padding: 5px 10px;
+  border-radius: 10px;
 }
 .gpt-layout .alert .item {
   padding: 0.5rem;
@@ -485,6 +521,10 @@ body ul li {
 .gpt-layout #write_tab .tab .tab-body .tab-item.active {
   display: block;
 }
+.gpt-layout #write_tab .tab .tab-body .tab-item#compose_tab textarea {
+  height: 100px;
+  min-height: 100px;
+}
 .gpt-layout #write_tab .tab .tab-body .tab-item span {
   margin-right: 3px;
   height: auto;
@@ -502,8 +542,8 @@ body ul li {
 .gpt-layout #write_tab .tab .tab-body .tab-item textarea {
   overflow-y: auto;
   resize: none;
-  height: 90px;
-  min-height: 90px;
+  height: 80px;
+  min-height: 80px;
   max-height: 244px;
   border: none;
   outline: none;
@@ -516,10 +556,7 @@ body ul li {
   position: relative;
 }
 .gpt-layout #write_tab .tab .tab-body .tab-item textarea:nth-child(2) {
-  margin-top: 10px;
-}
-.gpt-layout #write_tab .form-config {
-  margin-bottom: 105px;
+  margin-top: 5px;
 }
 .gpt-layout #write_tab .form-config .voice-config {
   margin-top: 10px;
@@ -534,9 +571,13 @@ body ul li {
   padding: 0 0 0 0;
   margin-bottom: 5px;
 }
+.gpt-layout #write_tab .form-config .voice-config .config .title .icon {
+  width: 20px;
+}
 .gpt-layout #write_tab .form-config .voice-config .config .title .text {
   margin-left: 4px;
   color: #9c9c9c;
+  font-size: 17px;
 }
 .gpt-layout #write_tab .form-config .voice-config .config .options .combobox .item {
   text-align: start;
@@ -552,7 +593,7 @@ body ul li {
   margin-right: 5px;
   color: #575757;
   font-size: 15px;
-  transition: 0.25s all;
+  transition: 0.15s all;
   border: #fff 1px solid;
   position: relative;
 }
@@ -589,17 +630,19 @@ body ul li {
   height: 18px;
   width: 18px;
 }
-.gpt-layout #write_tab .form-config .your-language {
-  margin-bottom: 10px;
-}
 .gpt-layout #write_tab .form-config .your-language .title {
   display: flex;
   align-items: center;
   justify-content: start;
   margin-bottom: 5px;
+  padding: 0 0 0 0;
+}
+.gpt-layout #write_tab .form-config .your-language .title .icon {
+  width: 20px;
 }
 .gpt-layout #write_tab .form-config .your-language .title .text {
   margin-left: 4px;
+  font-size: 17px;
   color: #9c9c9c;
 }
 .gpt-layout #write_tab .form-config .your-language .options .combobox .item {
@@ -615,7 +658,7 @@ body ul li {
   margin-right: 5px;
   color: #575757;
   font-size: 15px;
-  transition: 0.25s all;
+  transition: 0.15s all;
   border: #fff 1px solid;
   position: relative;
   margin-bottom: 5px;
@@ -654,7 +697,7 @@ body ul li {
   width: 18px;
 }
 .gpt-layout #write_tab .form-config .version {
-  margin-top: 20px;
+  margin-top: 15px;
   display: flex;
   justify-content: start;
   align-items: center;
@@ -670,7 +713,7 @@ body ul li {
   color: #fff;
   background-color: #471aa1;
   cursor: pointer;
-  transition: 0.25s all;
+  transition: 0.15s all;
 }
 .gpt-layout #write_tab .form-config .version button.submit-generate:hover {
   background-color: #6135bb;
@@ -681,8 +724,12 @@ body ul li {
   justify-content: start;
   margin-bottom: 5px;
 }
+.gpt-layout #write_tab .form-config .version .title .icon {
+  width: 20px;
+}
 .gpt-layout #write_tab .form-config .version .title .text {
   margin-left: 4px;
+  font-size: 17px;
   color: #9c9c9c;
 }
 .gpt-layout #write_tab .form-config .version .options .combobox .content {
@@ -708,7 +755,7 @@ body ul li {
   margin-right: 5px;
   color: #575757;
   font-size: 15px;
-  transition: 0.25s all;
+  transition: 0.15s all;
   border: #fff 1px solid;
   position: relative;
 }
@@ -746,7 +793,7 @@ body ul li {
   width: 18px;
 }
 .gpt-layout #write_tab #result {
-  margin-top: 50px;
+  margin-top: 105px;
   height: 100%;
 }
 .gpt-layout #write_tab #result.is-loading .result-generate {
@@ -872,7 +919,7 @@ body ul li {
 }
 .gpt-layout #write_tab #result .result-footer .btn img {
   width: 15px;
-  transition: 0.25s all;
+  transition: 0.15s all;
 }
 .gpt-layout #write_tab #result .result-footer .btn:hover img {
   transform: scale(1.2);

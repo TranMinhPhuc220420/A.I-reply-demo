@@ -215,13 +215,20 @@ async function getDataToShowPopupInMailRequest(params, callback, retry) {
     if (typeof retry == 'undefined') retry = 0;
     if (retry > 3) {
         callback({
-            summary: '',
-            reply_suggestions: [],
+            summarize: '',
+            answer_suggest: [],
             language: '',
             key_points: [],
         })
         return false;
     }
+    callback({
+        summarize: 'adsf asdf asdfl naldsf blasdfn lasdkfn alksdnf lkasndf klasdnf laksdnf klasdnflakdnf alksdf',
+        answer_suggest: ['asfd asdf ads asdf ', 'asdf adsf adf asdf asdf'],
+        language: 'adsf',
+        key_points: ['asfd asdf ads asdf ', 'asdf adsf adf asdf asdf'],
+    })
+    return
 
     let is_use_prompt = (retry % 2) == 1;
 
@@ -283,13 +290,18 @@ async function generateContentReplyMailRequest(params, callback, retry) {
 Title: ${title_mail}
 Body: ${content_mail}`
 
+    let promptForMess = `Write a ${voice_config.formality} `;
+    if (voice_config.your_role.trim() != '') {
+        promptForMess = `Write an ${voice_config.formality} as a ${voice_config.your_role} `
+    }
+    promptForMess += `to reply to the original text. Ensure your response has a ${voice_config.tone} tone with and a ${voice_config.email_length} length. The key points of the write is "${reply_suggested}"\nOutput in ${voice_config.your_lang}`
     const messages = [
         { role: "system", content: "You are a helpful assistant designed to output JSON" },
         { role: 'user', content: `Language in ${voice_config.your_lang}.\nFormat: {title: "", body: ""}` },
         { role: 'assistant', content: 'Ok' },
         { role: 'user', content: content_user },
         { role: 'assistant', content: 'Ok' },
-        { role: 'user', content: `${voice_config.your_role ? `I'm the ${voice_config.your_role}` : ''}. Help me write a ${voice_config.formality_reply} to reply. Ensure your response has a ${voice_config.tone} tone with and a ${voice_config.email_length} length. The key points of the write is "${reply_suggested}"\nOutput in ${voice_config.your_lang}` },
+        { role: 'user', content: promptForMess },
     ];
 
     let anOra = 'a', prompt = '', prompt_start = '';
@@ -297,9 +309,10 @@ Body: ${content_mail}`
         prompt_start = `as a ${voice_config.your_role}`
         anOra = 'an'
     }
-    prompt_start = `Write ${anOra} ${voice_config.formality_reply} ${prompt_start}`;
-    prompt = `${prompt_start} to reply to the original text. Ensure your response has a ${voice_config.tone} tone with and a ${voice_config.email_length} length. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.\nRespond in the ${voice_config.your_lang} language.\n\n-----\n\nOriginal text:\n\"\"\"\n${content_user}\n\"\"\"\n\nThe key points of the reply:\n\"\"\"\n${reply_suggested}\n\"\"\"\n\nOutput in ${voice_config.your_lang}`
-    prompt += '\n\njson:\n\"\"\"\n{title: "", body: ""}\n\"\"\"\n\n'
+
+    prompt_start = `Write ${anOra} ${voice_config.formality} ${prompt_start}`;
+    prompt = `${prompt_start} to reply to the original text. Ensure your response has a ${voice_config.tone} tone with and a ${voice_config.email_length} length. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.\nRespond in the ${voice_config.your_lang} language.\n\n-----\n\nOriginal text:\n\"\"\"\n${content_user}\n\"\"\"\n\nThe key points of the reply:\n\"\"\"\n${reply_suggested}\n\"\"\"`
+    prompt += `\n\njson:\n\"\"\"\n{title: "", body: ""}\n\"\"\"\n\nOutput in ${voice_config.your_lang}`
 
     try {
         const response = await callGPT(gpt_ai_key, (is_use_prompt ? prompt : messages), gpt_model, false, null, { "type": "json_object" })

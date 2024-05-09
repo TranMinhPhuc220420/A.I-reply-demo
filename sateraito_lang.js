@@ -6,6 +6,8 @@ const MyLang = {
         "TXT_AI_REPLY": chrome.i18n.getMessage('txt_ai_reply'),
         "TXT_RESULT": chrome.i18n.getMessage('txt_result'),
         "TXT_INSERT": chrome.i18n.getMessage('txt_insert'),
+        "TXT_SETTING": chrome.i18n.getMessage('txt_setting'),
+        "TXT_COLLAPSE_NAVBAR": chrome.i18n.getMessage('txt_collapse_navbar'),
         "TXT_CONTINUE_IMPROVING": chrome.i18n.getMessage('txt_continue_improving'),
         "DES_TELL_SIDER_TO_REPLY": chrome.i18n.getMessage('des_tell_sider_to_reply'),
 

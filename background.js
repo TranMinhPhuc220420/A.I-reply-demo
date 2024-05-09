@@ -33,6 +33,13 @@ let DEBUG_MODE = true;
     return true;
   }
 
+  function saveUserInfo() {
+    chrome.identity.getProfileUserInfo(function (userInfo) {
+      USER_ADDON_LOGIN = userInfo.email;
+      ID_USER_ADDON_LOGIN = userInfo.id;
+    });
+  }
+
   function initializeApp() {
     chrome.sidePanel
       .setPanelBehavior({ openPanelOnActionClick: true })
@@ -40,15 +47,12 @@ let DEBUG_MODE = true;
 
     chrome.tabs.onActivated.addListener((event) => {
       TAB_ID_ACTIVE = event.tabId;
+      saveUserInfo();
     })
     chrome.tabs.onUpdated.addListener((tabId) => {
       TAB_ID_ACTIVE = tabId;
+      saveUserInfo();
     })
-
-    chrome.identity.getProfileUserInfo(function (userInfo) {
-      USER_ADDON_LOGIN = userInfo.email;
-      ID_USER_ADDON_LOGIN = userInfo.id;
-    });
   }
 
   chrome.runtime.onMessage.addListener(onRequest);

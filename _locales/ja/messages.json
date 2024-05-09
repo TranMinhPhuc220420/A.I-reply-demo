@@ -14,6 +14,12 @@
   "txt_insert": {
     "message": "入れる"
   },
+  "txt_setting": {
+    "message": "設定"
+  },
+  "txt_collapse_navbar": {
+    "message": "ナビゲーションバーを折りたたむ"
+  },
   "txt_continue_improving": {
     "message": "改善を続ける"
   },

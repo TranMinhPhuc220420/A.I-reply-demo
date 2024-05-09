@@ -1,5 +1,3 @@
-
-
 let write_icon = `  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                         <path d="M0 0h24v24H0z" fill="none" />
                         <path d="M18.41 5.8L17.2 4.59c-.78-.78-2.05-.78-2.83 0l-2.68 2.68L3 15.96V20h4.04l8.74-8.74 2.63-2.63c.79-.78.79-2.05 0-2.83zM6.21 18H5v-1.21l8.66-8.66 1.21 1.21L6.21 18zM11 20l4-4h6v4H11z" />
@@ -22,6 +20,10 @@ let descriptionIconUrl = chrome.runtime.getURL("icons/description-icon.svg");
 let emojiIconUrl = chrome.runtime.getURL("icons/emoji-emotions-icon.svg");
 let formatAlignIconUrl = chrome.runtime.getURL("icons/format-align-icon.svg");
 let accountCircleIconUrl = chrome.runtime.getURL("icons/account-circle-icon.svg");
+
+let chat_gpt_api_key = null;
+let is_domain_regist = false;
+let is_not_access_list = false;
 
 let TAB_ID, WINDOW_ID, ID_USER_ADDON_LOGIN, USER_ADDON_LOGIN = '';
 
@@ -169,11 +171,11 @@ const VOICE_SETTING_DATA = [
         name: MyLang.getMsg('TXT_MESSAGE'),
         display: MyLang.getMsg('TXT_MESSAGE'),
       },
-      {
-        value: 'twitter',
-        name: MyLang.getMsg('TXT_TWITTER'),
-        display: MyLang.getMsg('TXT_TWITTER'),
-      },
+      // {
+      //   value: 'twitter',
+      //   name: MyLang.getMsg('TXT_TWITTER'),
+      //   display: MyLang.getMsg('TXT_TWITTER'),
+      // },
     ]
   },
   {
@@ -499,7 +501,6 @@ const _StorageManager = {
         if (config[i].value == value) {
           config.splice(i, 1);
           chrome.storage.sync.set({ write_language_output_list: config });
-          console.log(config);
           break;
         }
       }
@@ -510,7 +511,7 @@ const _StorageManager = {
     const record = LANGUAGE_SETTING_DATA.find(item => {
       return value == item.value
     });
-
+    console.log(record);
     if (record) {
       USER_SETTING.language_write_active = record;
       chrome.storage.sync.set({ write_language_output_active: record });
@@ -532,4 +533,60 @@ const _StorageManager = {
       callback(payload.write_voice_config)
     });
   },
+}
+
+/**
+ * Debug log
+ * @param {string} strMsg
+ */
+const debugLog = (strMsg) => {
+  if (DEBUG_MODE === true) {
+    console.log(chrome.i18n.getMessage('@@extension_id') + ' ' + (new Date()).toLocaleString() + ':' + strMsg);
+  }
+}
+
+const renderTextStyleChatGPT = (elToRender, stringRender, callback) => {
+  let indexText = 0;
+  let timeT = setInterval(() => {
+    elToRender.innerHTML += stringRender[indexText];
+    indexText++;
+    if (indexText >= stringRender.length) {
+      clearInterval(timeT);
+
+      if (callback) {
+        callback(elToRender);
+      }
+    }
+  }, 5);
+}
+
+const randomId = () => {
+  return Math.random().toString(36).slice(-8);
+}
+
+const loadChatGPTAIKey = () => {
+  if (!chat_gpt_api_key) {
+    fetchChatGPTAIKey(function (api_key, version_ext) {
+      if (typeof (api_key) != "undefined") {
+        chat_gpt_api_key = api_key;
+      }
+    })
+  }
+}
+
+const getChatGPTAIKey = (callback) => {
+  if (!chat_gpt_api_key) {
+    fetchChatGPTAIKey(function (api_key, version_ext) {
+      if (typeof (api_key) != "undefined") {
+        chat_gpt_api_key = api_key;
+        callback(api_key)
+        return;
+      }
+      //fail
+      callback()
+    })
+  } else {
+    // exist key
+    callback(chat_gpt_api_key)
+  }
 }

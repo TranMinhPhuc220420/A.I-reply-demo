@@ -1,3 +1,16 @@
+.J-M.Gj {
+  .bbar-sateraito-ai-reply {
+    .J-N-Jz, img {
+      pointer-events: none !important;
+    }
+
+    &:hover {
+      background-color: #eee;
+      color: #202124;
+    }
+  }
+}
+
 .sateraito-ai-reply {
   border: 1px solid;
   border-radius: 30px;
@@ -85,7 +98,8 @@
   // height: 0px;
   // min-height: 555px;
   border-radius: 15px;
-  box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;
+  // box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
 
   display: flex;
   justify-content: space-between;
@@ -177,6 +191,8 @@
           z-index: 2147483647;
           transform: translateX(0px);
           opacity: 1;
+          height: auto;
+          overflow: unset;
         }
       }
     }
@@ -533,7 +549,8 @@
             color: #575757;
             border: none;
             width: 100%;
-            height: 200px;
+            height: 160px;
+            max-height: 160px;
             resize: none;
             display: none;
 
@@ -566,13 +583,16 @@
         position: absolute;
         // left: -50%;
         // top: -10%;
-        top: -190px;
+        top: -127px;
         left: -415px;
         z-index: -1;
         opacity: 0;
+        height: 0;
+        overflow: hidden;
         transform: translateX(235px);
         background-color: #fff;
-        box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;
+        // box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;
+        box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
         border-radius: 15px;
         width: 400px;
         transition: 0.25s all;
