@@ -84,7 +84,7 @@
     "message": "共感的な"
   },
   "txt_email_length": {
-    "message": "メールの長さ:"
+    "message": "メールの長さ"
   },
   "txt_medium": {
     "message": "中くらい"
@@ -194,6 +194,12 @@
   "txt_english": {
     "message": "英語"
   },
+  "txt_simplified_chinese": {
+    "message": "中文(简体)"
+  },
+  "txt_traditional_chinese": {
+    "message": "中文(繁體)"
+  },
   "txt_vietnamese": {
     "message": "ベトナム語"
   },
@@ -220,5 +226,8 @@
   },
   "des_error_gemini_not_released": {
     "message": "「おっと！Gemini 1.0 Proはまだリリースされていません」"
+  },
+  "des_error_gpt4_not_released": {
+    "message": "「おっと！ GPT-4 Turboはまだリリースされていません」"
   }
 }

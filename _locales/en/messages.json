@@ -194,6 +194,12 @@
   "txt_english": {
     "message": "English"
   },
+  "txt_simplified_chinese": {
+    "message": "Simplified Chinese"
+  },
+  "txt_traditional_chinese": {
+    "message": "Traditional Chinese"
+  },
   "txt_vietnamese": {
     "message": "Tiếng Việt"
   },
@@ -220,5 +226,8 @@
   },
   "des_error_gemini_not_released": {
     "message": "Opps! Gemini 1.0 Pro has not been released yet"
+  },
+  "des_error_gpt4_not_released": {
+    "message": "Opps! GPT-4 Turbo has not been released yet"
   }
 }

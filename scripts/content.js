@@ -74,8 +74,10 @@ document.addEventListener('RW759_connectExtension', function (e) {
     let timeSetInterval = setInterval(() => {
       let elFind = document.body.querySelector(queryFind);
       if (elFind) {
-        clearInterval(timeSetInterval);
         callback(elFind);
+      }
+      if (_MyPopup.is_closed || elFind) {
+        clearInterval(timeSetInterval);
       }
     }, time ? time : 0);
   }
@@ -111,6 +113,16 @@ document.addEventListener('RW759_connectExtension', function (e) {
       USER_SETTING.language_write_active = record;
 
       _MyPopup.reLoadVoiceConfig();
+    }
+  }
+
+  /**
+   * Debug log
+   * @param {string} strMsg
+   */
+  const debugLog = (strMsg) => {
+    if (DEBUG_MODE === true) {
+      console.log(chrome.i18n.getMessage('@@extension_id') + ' ' + (new Date()).toLocaleString() + ':', strMsg);
     }
   }
 
@@ -177,6 +189,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
     combobox_flag: false,
 
+    is_closed: false,
     is_loading: false,
 
     formData: {
@@ -501,6 +514,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
     showPopup: function (idPopup) {
       const self = _MyPopup;
 
+      self.is_closed = false;
       self.result_active = 0;
       self.generate_result_list = [];
       // for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
@@ -513,9 +527,12 @@ document.addEventListener('RW759_connectExtension', function (e) {
         return;
       }
 
+      let lang = LOCALE_CODES.getLangUI();
+
       let root = document.createElement('div');
       root.id = 'root_ai_reply_popup'
       root.innerHTML = self.getVHtml();
+      root.className = lang;
       root.setAttribute('s_popup_id', idPopup);
       FoDoc.body.append(root);
 
@@ -546,6 +563,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
         self._list_popup_el[idPopup].remove();
         delete self._list_popup_el[idPopup];
       }
+
+      self.is_closed = true;
     },
 
     /**
@@ -1219,7 +1238,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
         closeBtnEl.className = 'close';
         closeBtnEl.innerHTML = '<img class="icon" src="' + cancelIconUrl + '">';
 
-        $(buttonEl).click(self.onClickOptionVoiceConfigItem);
+        // $(buttonEl).click(self.onClickOptionVoiceConfigItem);
 
         buttonEl.append(closeBtnEl);
         $(buttonEl).insertBefore(comboboxEl);
@@ -1359,7 +1378,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       let regex = /\/([^\/#\?]+)$/; // Matches any characters after the last "/", but before "#" or "?"
       let match = url.match(regex);
       let desiredSubstring = match ? match[1] : null;
-      console.log(desiredSubstring);
+      debugLog(desiredSubstring);
 
       return desiredSubstring;
     },
@@ -1675,7 +1694,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
         _StorageManager.getVoiceConfigWrite(voiceConfig => {
           if (!voiceConfig) {
             voiceConfig = {}
-            voiceConfig.your_lang = 'english';
+            voiceConfig.your_lang = 'japanese';
             voiceConfig.gpt_version = GPT_VERSION_SETTING_DATA[0].value;
             for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
               const item = VOICE_SETTING_DATA[i];
@@ -1689,7 +1708,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
           // Remove unnecessary params
           delete voiceConfig.gpt_ai_key
-          delete voiceConfig.gpt_version
+          // delete voiceConfig.gpt_version
           delete voiceConfig.type_generate
           delete voiceConfig.topic_compose
           delete voiceConfig.original_text_reply

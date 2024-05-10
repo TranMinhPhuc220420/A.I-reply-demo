@@ -93,6 +93,10 @@ const LOCALE_CODES = {
       return LOCALE_CODES[USER_SETTING.language] || 'Japanese';
     }
     return LOCALE_CODES[chrome.i18n.getUILanguage().replaceAll('-', '_')] || 'Japanese';
+  },
+
+  getLangUI: () => {
+    return chrome.i18n.getUILanguage().replaceAll('-', '_');
   }
 };
 
@@ -126,28 +130,28 @@ const LIST_TAB = [
 const VOICE_SETTING_DATA = [
   {
     name_kind: "formality",
-    name: MyLang.getMsg('TXT_FORMALITY'),
+    name: MyLang.getMsg('TXT_FORMAT'),
     icon: descriptionIconUrl,
     options: [
       {
+        value: 'email',
+        name: MyLang.getMsg('TXT_EMAIL'),
+        display: MyLang.getMsg('TXT_EMAIL'),
+      },
+      {
         value: 'casual',
         name: MyLang.getMsg('TXT_CASUAL'),
-        display: '📝 ' + MyLang.getMsg('TXT_CASUAL'),
+        display: MyLang.getMsg('TXT_CASUAL'),
       },
       {
         value: 'neutral',
         name: MyLang.getMsg('TXT_NEUTRAL'),
-        display: '📑 ' + MyLang.getMsg('TXT_NEUTRAL'),
+        display: MyLang.getMsg('TXT_NEUTRAL'),
       },
       {
         value: 'formal',
         name: MyLang.getMsg('TXT_FORMAL'),
-        display: '✉️ ' + MyLang.getMsg('TXT_FORMAL'),
-      },
-      {
-        value: 'email',
-        name: MyLang.getMsg('TXT_EMAIL'),
-        display: '✉️ ' + MyLang.getMsg('TXT_EMAIL'),
+        display: MyLang.getMsg('TXT_FORMAL'),
       },
     ]
   },
@@ -157,25 +161,25 @@ const VOICE_SETTING_DATA = [
     icon: descriptionIconUrl,
     options: [
       {
-        value: 'comment',
-        name: MyLang.getMsg('TXT_COMMENT'),
-        display: MyLang.getMsg('TXT_COMMENT'),
-      },
-      {
         value: 'email',
         name: MyLang.getMsg('TXT_EMAIL'),
         display: MyLang.getMsg('TXT_EMAIL'),
+      },
+      {
+        value: 'comment',
+        name: MyLang.getMsg('TXT_COMMENT'),
+        display: MyLang.getMsg('TXT_COMMENT'),
       },
       {
         value: 'message',
         name: MyLang.getMsg('TXT_MESSAGE'),
         display: MyLang.getMsg('TXT_MESSAGE'),
       },
-      // {
-      //   value: 'twitter',
-      //   name: MyLang.getMsg('TXT_TWITTER'),
-      //   display: MyLang.getMsg('TXT_TWITTER'),
-      // },
+      {
+        value: 'twitter',
+        name: MyLang.getMsg('TXT_TWITTER'),
+        display: MyLang.getMsg('TXT_TWITTER'),
+      },
     ]
   },
   {
@@ -184,44 +188,54 @@ const VOICE_SETTING_DATA = [
     icon: emojiIconUrl,
     options: [
       {
-        value: 'friendly',
-        name: MyLang.getMsg('TXT_FRIENDLY'),
-        display: '😀 ' + MyLang.getMsg('TXT_FRIENDLY'),
-      },
-      {
-        value: 'personable',
-        name: MyLang.getMsg('TXT_PERSONABLE'),
-        display: '🧐 ' + MyLang.getMsg('TXT_PERSONABLE'),
-      },
-      {
-        value: 'informational',
-        name: MyLang.getMsg('TXT_INFORMATIONAL'),
-        display: '🤓 ' + MyLang.getMsg('TXT_INFORMATIONAL'),
-      },
-      {
-        value: 'witty',
-        name: MyLang.getMsg('TXT_WITTY'),
-        display: '😉 ' + MyLang.getMsg('TXT_WITTY'),
+        value: 'professional',
+        name: MyLang.getMsg('TXT_PROFESSIONAL'),
+        display: MyLang.getMsg('TXT_PROFESSIONAL'),
       },
       {
         value: 'confident',
         name: MyLang.getMsg('TXT_CONFIDENT'),
-        display: '😎 ' + MyLang.getMsg('TXT_CONFIDENT'),
+        display: MyLang.getMsg('TXT_CONFIDENT'),
+      },
+      {
+        value: 'formal',
+        name: MyLang.getMsg('TXT_FORMAL'),
+        display: MyLang.getMsg('TXT_FORMAL'),
+      },
+      {
+        value: 'friendly',
+        name: MyLang.getMsg('TXT_FRIENDLY'),
+        display: MyLang.getMsg('TXT_FRIENDLY'),
+      },
+      {
+        value: 'personable',
+        name: MyLang.getMsg('TXT_PERSONABLE'),
+        display: MyLang.getMsg('TXT_PERSONABLE'),
+      },
+      {
+        value: 'informational',
+        name: MyLang.getMsg('TXT_INFORMATIONAL'),
+        display: MyLang.getMsg('TXT_INFORMATIONAL'),
+      },
+      {
+        value: 'witty',
+        name: MyLang.getMsg('TXT_WITTY'),
+        display: MyLang.getMsg('TXT_WITTY'),
       },
       {
         value: 'direct',
         name: MyLang.getMsg('TXT_DIRECT'),
-        display: '😲 ' + MyLang.getMsg('TXT_DIRECT'),
+        display: MyLang.getMsg('TXT_DIRECT'),
       },
       {
         value: 'enthusiastic',
         name: MyLang.getMsg('TXT_ENTHUSIASTIC'),
-        display: '🥰 ' + MyLang.getMsg('TXT_ENTHUSIASTIC'),
+        display: MyLang.getMsg('TXT_ENTHUSIASTIC'),
       },
       {
         value: 'empathetic',
         name: MyLang.getMsg('TXT_EMPATHETIC'),
-        display: '🥺 ' + MyLang.getMsg('TXT_EMPATHETIC'),
+        display: MyLang.getMsg('TXT_EMPATHETIC'),
       },
     ],
   },
@@ -231,14 +245,14 @@ const VOICE_SETTING_DATA = [
     icon: formatAlignIconUrl,
     options: [
       {
-        value: 'medium',
-        name: MyLang.getMsg('TXT_MEDIUM'),
-        display: MyLang.getMsg('TXT_MEDIUM'),
-      },
-      {
         value: 'short',
         name: MyLang.getMsg('TXT_SHORT'),
         display: MyLang.getMsg('TXT_SHORT'),
+      },
+      {
+        value: 'medium',
+        name: MyLang.getMsg('TXT_MEDIUM'),
+        display: MyLang.getMsg('TXT_MEDIUM'),
       },
       {
         value: 'long',
@@ -426,19 +440,29 @@ const VOICE_SETTING_DATA_1 = [
 
 const LANGUAGE_SETTING_DATA = [
   {
+    value: 'japanese',
+    name: '日本語',
+    sub: MyLang.getMsg('TXT_JAPANESE'),
+  },
+  {
     value: 'english',
     name: 'English',
     sub: MyLang.getMsg('TXT_ENGLISH'),
   },
   {
+    value: 'simplified chinese',
+    name: '中文(简体)',
+    sub: MyLang.getMsg('TXT_S_CHINESE'),
+  },
+  {
+    value: 'traditional chinese',
+    name: '中文(繁體)',
+    sub: MyLang.getMsg('TXT_T_CHINESE'),
+  },
+  {
     value: 'vietnamese',
     name: 'Tiếng Việt',
     sub: MyLang.getMsg('TXT_VIETNAMESE'),
-  },
-  {
-    value: 'japanese',
-    name: '日本語',
-    sub: MyLang.getMsg('TXT_JAPANESE'),
   },
   {
     value: 'korean',
@@ -511,7 +535,6 @@ const _StorageManager = {
     const record = LANGUAGE_SETTING_DATA.find(item => {
       return value == item.value
     });
-    console.log(record);
     if (record) {
       USER_SETTING.language_write_active = record;
       chrome.storage.sync.set({ write_language_output_active: record });
@@ -536,15 +559,12 @@ const _StorageManager = {
 }
 
 /**
- * Debug log
- * @param {string} strMsg
+ * Render text to element style chat GPT
+ * 
+ * @param {element} elToRender 
+ * @param {string} stringRender 
+ * @param {Function} callback 
  */
-const debugLog = (strMsg) => {
-  if (DEBUG_MODE === true) {
-    console.log(chrome.i18n.getMessage('@@extension_id') + ' ' + (new Date()).toLocaleString() + ':' + strMsg);
-  }
-}
-
 const renderTextStyleChatGPT = (elToRender, stringRender, callback) => {
   let indexText = 0;
   let timeT = setInterval(() => {
@@ -560,10 +580,36 @@ const renderTextStyleChatGPT = (elToRender, stringRender, callback) => {
   }, 5);
 }
 
+/**
+ * Get radom string
+ * 
+ * @returns {string}
+ */
 const randomId = () => {
   return Math.random().toString(36).slice(-8);
 }
 
+/**
+ * Get properties in gpt record by gpt version
+ * 
+ * @param {string} keyGet 
+ * @param {string} gptVersion 
+ * @returns string
+ */
+const getPropGptByVersion = (keyGet, gptVersion) => {
+  for (let i = 0; i < GPT_VERSION_SETTING_DATA.length; i++) {
+    const element = GPT_VERSION_SETTING_DATA[i];
+
+    if (element.value == gptVersion) {
+      return element[keyGet];
+    }
+  }
+}
+
+/**
+ * Load chat GPT AI key
+ * 
+ */
 const loadChatGPTAIKey = () => {
   if (!chat_gpt_api_key) {
     fetchChatGPTAIKey(function (api_key, version_ext) {
@@ -574,6 +620,11 @@ const loadChatGPTAIKey = () => {
   }
 }
 
+/**
+ * Get chat GPT AI key
+ * 
+ * @param {Function} callback 
+ */
 const getChatGPTAIKey = (callback) => {
   if (!chat_gpt_api_key) {
     fetchChatGPTAIKey(function (api_key, version_ext) {

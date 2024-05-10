@@ -59,6 +59,10 @@
   top: 0;
   left: 0;
   position: absolute;
+
+  &.ja {
+    font-family: 'メイリオ',Meiryo,arial,sans-serif;
+  }
 }
 
 .hidden {
@@ -583,8 +587,9 @@
         position: absolute;
         // left: -50%;
         // top: -10%;
-        top: -127px;
-        left: -415px;
+        top: -60px;
+        left: -365px;
+        width: 350px;
         z-index: -1;
         opacity: 0;
         height: 0;
@@ -594,7 +599,6 @@
         // box-shadow: rgba(0, 0, 0, 0.18) 0px 2px 4px;
         box-shadow: rgba(50, 50, 93, 0.25) 0px 13px 27px -5px, rgba(0, 0, 0, 0.3) 0px 8px 16px -8px;
         border-radius: 15px;
-        width: 400px;
         transition: 0.25s all;
 
         .title {
@@ -625,7 +629,7 @@
               align-items: end;
 
               .icon {
-                width: 15px;
+                width: 18px;
               }
 
               .text {
@@ -643,10 +647,10 @@
                 border: none;
                 background-color: #f4f4f4;
                 border-radius: 7px;
-                padding: 7px 8px;
+                padding: 3px 8px;
                 margin-right: 5px;
                 color: #575757;
-                font-size: 15px;
+                font-size: 14px;
                 transition: 0.25s all;
                 border: #fff 1px solid;
 
@@ -657,6 +661,7 @@
                 &.active {
                   color: #471aa1;
                   border: #471aa1 1px solid;
+                  background-color: #f6f2ff;
                 }
 
                 &.text {
@@ -688,7 +693,7 @@
           position: absolute;
           padding: 3px 3px;
           overflow: auto;
-          min-width: 110px;
+          min-width: 120px;
           max-height: 300px;
           border-radius: 10px;
           box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
@@ -755,7 +760,7 @@
             margin-bottom: 5px;
 
             .icon {
-              width: 15px;
+              width: 18px;
             }
 
             .text {
@@ -780,9 +785,9 @@
               background-color: #f4f4f4;
               border-radius: 7px;
               padding: 7px 8px;
-              margin-right: 5px;
+              padding: 3px 8px;
               color: #575757;
-              font-size: 15px;
+              font-size: 14px;
               transition: 0.25s all;
               border: #fff 1px solid;
               position: relative;
@@ -799,6 +804,7 @@
               &.active {
                 color: #471aa1;
                 border: #471aa1 1px solid;
+                background-color: #f6f2ff;
               }
 
               &.text {

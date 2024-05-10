@@ -1,6 +1,8 @@
+@charset "UTF-8";
 body {
   margin: 0;
   padding: 0;
+  font-family: "メイリオ", Meiryo, arial, sans-serif;
 }
 body h1,
 body h2,
@@ -18,6 +20,9 @@ body ul {
 }
 body ul li {
   list-style: none;
+}
+body.ja #write_tab .form-config .version button.submit-generate {
+  padding: 5px 0;
 }
 
 ::-webkit-scrollbar {
@@ -66,7 +71,7 @@ body ul li {
   position: absolute;
   padding: 3px 3px;
   overflow: auto;
-  min-width: 110px;
+  min-width: 120px;
   max-height: 300px;
   border-radius: 10px;
   box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
@@ -324,12 +329,12 @@ body ul li {
   display: flex !important;
 }
 .gpt-layout main .title .left .title span {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 600;
 }
 .gpt-layout main .title .left .title svg {
   margin-right: 5px;
-  height: 32px;
+  height: 24px;
 }
 .gpt-layout main .title .right svg {
   height: 20px;
@@ -577,7 +582,7 @@ body ul li {
 .gpt-layout #write_tab .form-config .voice-config .config .title .text {
   margin-left: 4px;
   color: #9c9c9c;
-  font-size: 17px;
+  font-size: 15px;
 }
 .gpt-layout #write_tab .form-config .voice-config .config .options .combobox .item {
   text-align: start;
@@ -589,10 +594,10 @@ body ul li {
   border: none;
   background-color: #f4f4f4;
   border-radius: 7px;
-  padding: 7px 8px;
+  padding: 3px 8px;
   margin-right: 5px;
   color: #575757;
-  font-size: 15px;
+  font-size: 14px;
   transition: 0.15s all;
   border: #fff 1px solid;
   position: relative;
@@ -605,7 +610,8 @@ body ul li {
 }
 .gpt-layout #write_tab .form-config .voice-config .config .options .item.active {
   color: #471aa1;
-  border: #471aa1 1px solid;
+  border: #d5bfff 1px solid;
+  background-color: #f6f2ff;
 }
 .gpt-layout #write_tab .form-config .voice-config .config .options .item.text {
   padding-left: 15px;
@@ -642,7 +648,7 @@ body ul li {
 }
 .gpt-layout #write_tab .form-config .your-language .title .text {
   margin-left: 4px;
-  font-size: 17px;
+  font-size: 15px;
   color: #9c9c9c;
 }
 .gpt-layout #write_tab .form-config .your-language .options .combobox .item {
@@ -654,10 +660,10 @@ body ul li {
   border: none;
   background-color: #f4f4f4;
   border-radius: 7px;
-  padding: 7px 8px;
+  padding: 3px 8px;
   margin-right: 5px;
   color: #575757;
-  font-size: 15px;
+  font-size: 14px;
   transition: 0.15s all;
   border: #fff 1px solid;
   position: relative;
@@ -671,7 +677,8 @@ body ul li {
 }
 .gpt-layout #write_tab .form-config .your-language .options .item.active {
   color: #471aa1;
-  border: #471aa1 1px solid;
+  border: #d5bfff 1px solid;
+  background-color: #f6f2ff;
 }
 .gpt-layout #write_tab .form-config .your-language .options .item.text {
   padding-left: 15px;
@@ -705,11 +712,11 @@ body ul li {
 .gpt-layout #write_tab .form-config .version button.submit-generate {
   width: 100%;
   max-width: 250px;
-  padding: 10px 0;
+  padding: 8px 0;
   border-radius: 10px;
   border: none;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 14px;
   color: #fff;
   background-color: #471aa1;
   cursor: pointer;
@@ -729,7 +736,7 @@ body ul li {
 }
 .gpt-layout #write_tab .form-config .version .title .text {
   margin-left: 4px;
-  font-size: 17px;
+  font-size: 15px;
   color: #9c9c9c;
 }
 .gpt-layout #write_tab .form-config .version .options .combobox .content {
@@ -751,13 +758,16 @@ body ul li {
   border: none;
   background-color: #f4f4f4;
   border-radius: 7px;
-  padding: 7px 8px;
+  padding: 3px 8px;
   margin-right: 5px;
   color: #575757;
-  font-size: 15px;
+  font-size: 14px;
   transition: 0.15s all;
   border: #fff 1px solid;
   position: relative;
+}
+.gpt-layout #write_tab .form-config .version .options .item.version-gpt {
+  padding: 5px;
 }
 .gpt-layout #write_tab .form-config .version .options .item:hover {
   background-color: #ececec;
@@ -767,7 +777,8 @@ body ul li {
 }
 .gpt-layout #write_tab .form-config .version .options .item.active {
   color: #471aa1;
-  border: #471aa1 1px solid;
+  border: #d5bfff 1px solid;
+  background-color: #f6f2ff;
 }
 .gpt-layout #write_tab .form-config .version .options .item.text {
   padding-left: 15px;

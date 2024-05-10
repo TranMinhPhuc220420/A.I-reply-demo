@@ -24,14 +24,14 @@
                 "styles/style.css"
             ],
             "js": [
-                "crypto/core.min.js",
-                "crypto/crypto-js.min.js",
-                "crypto/md5.js",
-                "jquery-1.10.2.min.js",
-                "sateraito_lang.js",
-                "common.js",
-                "server_request.js",
-                "util.js",
+                "third-party/crypto/core.min.js",
+                "third-party/crypto/crypto-js.min.js",
+                "third-party/crypto/md5.js",
+                "third-party/jquery-1.10.2.min.js",
+                "scripts/sateraito_lang.js",
+                "scripts/common.js",
+                "scripts/server_request.js",
+                "scripts/util.js",
                 "scripts/content.js"
             ],
             "run_at": "document_end",
@@ -39,7 +39,7 @@
         }
     ],
     "background": {
-        "service_worker": "background.js",
+        "service_worker": "scripts/background.js",
         "type": "module"
     },
     "icons": {
