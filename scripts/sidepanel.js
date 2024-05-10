@@ -471,6 +471,7 @@ let DEBUG_MODE = true;
         }, 100)
       });
       $(document).on('click', `#${self.idTab} .popover-cbx.wrap-item .combobox-item`, function (event) {
+        if (self.is_loading) return;
         const value = event.target.getAttribute('value');
 
         const comboboxEl = $(event.target).parents('button.combobox')[0];
@@ -509,6 +510,7 @@ let DEBUG_MODE = true;
         self.handlerUpdatePaging();
       };
       $(`#${self.idTab} #result .result-title .right .prev`).click((event) => {
+        if (self.is_loading) return;
         if (event.target.className.baseVal.indexOf('disable') != -1) {
           return;
         }
@@ -516,6 +518,7 @@ let DEBUG_MODE = true;
         handlerActive();
       })
       $(`#${self.idTab} #result .result-title .right .next`).click((event) => {
+        if (self.is_loading) return;
         if (event.target.className.baseVal.indexOf('disable') != -1) {
           return;
         }
@@ -531,6 +534,7 @@ let DEBUG_MODE = true;
 
       // Remove and save language config
       $(document).on('click', `#${self.idTab} .form-config .your-language .item .close`, (event) => {
+        if (self.is_loading) return;
         const targetEl = event.target;
 
         // There is always an optional language
@@ -608,6 +612,7 @@ let DEBUG_MODE = true;
       $(`#${self.idTab} #result .result-generate`).css('height', `${resultActiveEl.offsetHeight}px`)
 
       self.handlerUpdatePaging();
+
       self.is_loading = false;
     },
 
@@ -617,6 +622,8 @@ let DEBUG_MODE = true;
      */
     handlerUpdatePaging: function () {
       const self = TabWriteManager;
+      if (self.is_loading) return;
+
       const result_list = self.generate_result_list;
 
       $(`#${self.idTab} #result .result-title .right .text`).html(`${self.result_active + 1}/${result_list.length}`)
@@ -718,7 +725,6 @@ let DEBUG_MODE = true;
      */
     onSubmitGenerate: (event) => {
       const self = TabWriteManager;
-
       if (self.is_loading) return;
 
       let messValidate = self.isValidateToCallGPT();
@@ -750,6 +756,7 @@ let DEBUG_MODE = true;
      */
     onClickCopyContentResult: (event) => {
       const self = TabWriteManager;
+      if (self.is_loading) return;
 
       $(event.target).addClass('done');
       navigator.clipboard.writeText(self.generate_result_list[self.result_active].body);
@@ -766,6 +773,8 @@ let DEBUG_MODE = true;
      */
     onClickSendContentResultToBrowserPage: (event) => {
       const self = TabWriteManager;
+      if (self.is_loading) return;
+
       let itemActive = self.generate_result_list[self.result_active];
 
       let params = {
@@ -782,6 +791,7 @@ let DEBUG_MODE = true;
      */
     onClickConfigItem: (event) => {
       const self = TabWriteManager;
+      if (self.is_loading) return;
 
       const targetEl = event.target;
       const kind = event.target.getAttribute('kind');
@@ -808,6 +818,7 @@ let DEBUG_MODE = true;
      */
     onSelectLanguageConfig: (comboboxEl, itemEl, value) => {
       const self = TabWriteManager;
+      if (self.is_loading) return;
 
       let record = LANGUAGE_SETTING_DATA.find(item => {
         return value == item.value
@@ -856,6 +867,7 @@ let DEBUG_MODE = true;
      */
     onSelectVersionGptConfig: (comboboxEl, itemEl, value) => {
       const self = TabWriteManager;
+      if (self.is_loading) return;
 
       let record = GPT_VERSION_SETTING_DATA.find(item => {
         return value == item.value
