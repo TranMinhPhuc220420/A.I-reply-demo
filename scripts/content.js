@@ -89,7 +89,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       if (elFind) {
         callback(elFind);
       }
-      if (_MyPopup.is_closed || elFind) {
+      if (!_MyPopup.getRootPopupEl() || elFind) {
         clearInterval(timeSetInterval);
       }
     }, time ? time : 0);
@@ -115,7 +115,10 @@ document.addEventListener('RW759_connectExtension', function (e) {
     // on list language user config has changed
     else if ('write_language_output_list' in payload) {
       _MyPopup.language_output_list_config = payload.write_language_output_list.newValue;
-      _MyPopup.loadLangConfig();
+
+      if (_MyPopup.getRootPopupEl()) {
+        _MyPopup.loadLangConfig();
+      }
     }
 
     // on language (your_lang) user config has changed
@@ -124,8 +127,10 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       _MyPopup.formData.voice_setting['your_lang'] = record.value;
       USER_SETTING.language_write_active = record;
-
-      _MyPopup.reLoadVoiceConfig();
+      
+      if (_MyPopup.getRootPopupEl()) {
+        _MyPopup.reLoadVoiceConfig();
+      }
     }
   }
 
@@ -202,7 +207,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
     combobox_flag: false,
 
-    is_closed: false,
     is_loading: false,
 
     formData: {
@@ -527,7 +531,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
     showPopup: function (idPopup) {
       const self = _MyPopup;
 
-      self.is_closed = false;
       self.result_active = 0;
       self.generate_result_list = [];
       // for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
@@ -576,12 +579,10 @@ document.addEventListener('RW759_connectExtension', function (e) {
         self._list_popup_el[idPopup].remove();
         delete self._list_popup_el[idPopup];
       }
+    },
 
-      self.is_closed = true;
-      // Refresh flag for other popup
-      setTimeout(() => {
-        self.is_closed = false;
-      }, 2000);
+    getRootPopupEl: function () {
+      return document.getElementById('root_ai_reply_popup');
     },
 
     /**
@@ -1613,8 +1614,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
           }
         };
 
-        chrome.storage.onChanged.addListener(storageOnChanged);
-
         // Load the language the user previously used
         _StorageManager.getLanguageWrite(recordLang => {
           if (!recordLang) {
@@ -1765,8 +1764,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       FBoolMail = (strUrl.indexOf('//mail.google.com/') >= 0);
       if (FBoolMail) {
-
         _MailAIGenerate._init();
+
+        chrome.storage.onChanged.addListener(storageOnChanged);
       }
     }
 
