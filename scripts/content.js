@@ -565,6 +565,10 @@ document.addEventListener('RW759_connectExtension', function (e) {
       }
 
       self.is_closed = true;
+      // Refresh flag for other popup
+      setTimeout(() => {
+        self.is_closed = false;
+      }, 2000);
     },
 
     /**
@@ -1056,7 +1060,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       if (self.is_loading) return;
 
       self.is_loading = true;
-      $('#ai_reply_popup').addClass('form-loading');
+      $('#ai_reply_popup').addClass('form-loading').removeClass('show-voice-config');
 
       $('.result-generate .title-email').addClass('loading');
       $('.result-generate .body-mail').addClass('loading');
