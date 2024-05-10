@@ -1,9 +1,12 @@
 {
   "extension_name": {
-    "message": "A.I Reply - Sateraito"
+    "message": "AI Reply - Sateraito AI"
   },
   "extension_description": {
     "message": "Extension AI development by Sateraito Office"
+  },
+  "extension_action_default_title": {
+    "message": "Open side panel | AI Reply"
   },
   "txt_ai_reply": {
     "message": "AI Reply"

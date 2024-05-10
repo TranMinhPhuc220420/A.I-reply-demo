@@ -49,7 +49,7 @@
         "128": "images/icon-128.png"
     },
     "action": {
-        "default_title": "Click to open panel"
+        "default_title": "__MSG_extension_action_default_title__"
     },
     "side_panel": {
         "default_path": "sidepanel.html"

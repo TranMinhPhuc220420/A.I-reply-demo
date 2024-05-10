@@ -32,9 +32,26 @@ body {
 
   &.ja {
     #write_tab {
-      .form-config .version {
-        button.submit-generate {
-          padding: 5px 0;
+      .form-config {
+
+        .your_role {
+          .options {
+            .item[value=" "] {
+              padding: 5px 10px;
+          }
+          }
+        }
+
+        .your-language {
+          #language_cbx {
+            padding: 6px 15px;
+          }
+        }
+
+        .version {
+          button.submit-generate {
+            padding: 5px 0;
+          }
         }
       }
     }

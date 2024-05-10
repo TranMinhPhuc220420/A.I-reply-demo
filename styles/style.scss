@@ -62,6 +62,23 @@
 
   &.ja {
     font-family: 'メイリオ',Meiryo,arial,sans-serif;
+
+    .popup-voice-config {
+
+      .your_role {
+        .options {
+          .item[value=" "] {
+            padding: 4px 8px !important;
+        }
+        }
+      }
+
+      .your-language {
+        #language_cbx {
+          padding: 4px 15px !important;
+        }
+      }
+    }
   }
 }
 

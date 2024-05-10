@@ -58,6 +58,12 @@
 #root_ai_reply_popup.ja {
   font-family: "メイリオ", Meiryo, arial, sans-serif;
 }
+#root_ai_reply_popup.ja .popup-voice-config .your_role .options .item[value=" "] {
+  padding: 4px 8px !important;
+}
+#root_ai_reply_popup.ja .popup-voice-config .your-language #language_cbx {
+  padding: 4px 15px !important;
+}
 
 .hidden {
   display: none !important;

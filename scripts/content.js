@@ -45,6 +45,19 @@ document.addEventListener('RW759_connectExtension', function (e) {
     return getNewIdPopup();
   }
 
+  function getCurrentUser() {
+    var current_user = '';
+    if (GLOBALS_GMAIL != null) {
+      if (typeof (GLOBALS_GMAIL) != "undefined") {
+        if (GLOBALS_GMAIL.length > 10) {
+          current_user = GLOBALS_GMAIL[10];
+          if (typeof (current_user) == "undefined") current_user = '';
+        }
+      }
+    }
+    return current_user;
+  }
+
   /**
    *
    * @return {boolean} 拡張機能がインストール済みかを返す
@@ -664,6 +677,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       // Voice-config
       $('.reply-suggestions .voice-config').click((event) => {
+        if (self.is_loading) return;
+
         let clsToAdd = 'show-voice-config';
         if ($('#ai_reply_popup').hasClass(clsToAdd)) {
           $('#ai_reply_popup').removeClass(clsToAdd);
@@ -1582,14 +1597,83 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       const idPopup = getNewIdPopup();
       find('.LW-avf.tS-tW', (elFind) => {
-        _MyPopup.is_loading = true;
-        _MyPopup.showPopup(idPopup);
+        let pallaFinishedCount = 0;
+        let NUM_PROCEED_PALLA_FINISHED_COUNT = 3;
+        let proceedByPallaFinishedCount = function () {
+          pallaFinishedCount++;
+          if (pallaFinishedCount >= NUM_PROCEED_PALLA_FINISHED_COUNT) {
 
-        _SendMessageManager.getDataToShowPopup(titleMail, contentMail, (data) => {
-          _MyPopup.loadData(idPopup, data);
+            _MyPopup.is_loading = true;
+            _MyPopup.showPopup(idPopup);
+
+            _SendMessageManager.getDataToShowPopup(titleMail, contentMail, (data) => {
+              _MyPopup.loadData(idPopup, data);
+            });
+
+          }
+        };
+
+        chrome.storage.onChanged.addListener(storageOnChanged);
+
+        // Load the language the user previously used
+        _StorageManager.getLanguageWrite(recordLang => {
+          if (!recordLang) {
+            recordLang = LANGUAGE_SETTING_DATA[0]
+          }
+          USER_SETTING.language_write_active = recordLang;
+
+          proceedByPallaFinishedCount();
+
+          elFind.focus();
+        })
+
+        // Load the voice config write the user previously used
+        _StorageManager.getVoiceConfigWrite(voiceConfig => {
+          if (!voiceConfig) {
+            voiceConfig = {}
+            voiceConfig.your_lang = 'japanese';
+            voiceConfig.gpt_version = GPT_VERSION_SETTING_DATA[0].value;
+            for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
+              const item = VOICE_SETTING_DATA[i];
+
+              // Not use kind formality_reply
+              if (item.name_kind == 'formality_reply') continue;
+
+              voiceConfig[item.name_kind] = item.options[0].value;
+            }
+          }
+
+          // Remove unnecessary params
+          delete voiceConfig.gpt_ai_key
+          // delete voiceConfig.gpt_version
+          delete voiceConfig.type_generate
+          delete voiceConfig.topic_compose
+          delete voiceConfig.original_text_reply
+          delete voiceConfig.general_content_reply
+
+          // Init voice config
+          _MyPopup.formData.voice_setting = voiceConfig;
+
+          proceedByPallaFinishedCount();
+        })
+
+        chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
+          ID_USER_ADDON_LOGIN = userInfo.id;
+          USER_ADDON_LOGIN = userInfo.email;
+
+          if (USER_ADDON_LOGIN == '') {
+            USER_ADDON_LOGIN = getCurrentUser();
+          }
+
+          //addon setting
+          loadAddOnSetting(USER_ADDON_LOGIN, function (result) {
+            is_domain_regist = result.is_domain_regist
+            is_not_access_list = result.is_not_access_list
+            debugLog(`auto summary chat GPT: domain regist:[${is_domain_regist}], permission deny:[${is_not_access_list}]`)
+          });
+
+          proceedByPallaFinishedCount();
         });
-
-        elFind.focus();
       });
 
       find('.G3.G2', (elFind) => {
@@ -1683,57 +1767,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
       if (FBoolMail) {
 
         _MailAIGenerate._init();
-
-        chrome.storage.onChanged.addListener(storageOnChanged);
-
-        // Load the language the user previously used
-        _StorageManager.getLanguageWrite(recordLang => {
-          if (!recordLang) {
-            recordLang = LANGUAGE_SETTING_DATA[0]
-          }
-          USER_SETTING.language_write_active = recordLang;
-        })
-
-        // Load the voice config write the user previously used
-        _StorageManager.getVoiceConfigWrite(voiceConfig => {
-          if (!voiceConfig) {
-            voiceConfig = {}
-            voiceConfig.your_lang = 'japanese';
-            voiceConfig.gpt_version = GPT_VERSION_SETTING_DATA[0].value;
-            for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
-              const item = VOICE_SETTING_DATA[i];
-
-              // Not use kind formality_reply
-              if (item.name_kind == 'formality_reply') continue;
-
-              voiceConfig[item.name_kind] = item.options[0].value;
-            }
-          }
-
-          // Remove unnecessary params
-          delete voiceConfig.gpt_ai_key
-          // delete voiceConfig.gpt_version
-          delete voiceConfig.type_generate
-          delete voiceConfig.topic_compose
-          delete voiceConfig.original_text_reply
-          delete voiceConfig.general_content_reply
-
-          // Init voice config
-          _MyPopup.formData.voice_setting = voiceConfig;
-        })
-
-        chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
-          ID_USER_ADDON_LOGIN = userInfo.id;
-          USER_ADDON_LOGIN = userInfo.email;
-
-          //addon setting
-          loadAddOnSetting(userInfo.email, function (result) {
-            is_domain_regist = result.is_domain_regist
-            is_not_access_list = result.is_not_access_list
-            debugLog(`auto summary chat GPT: domain regist:[${is_domain_regist}], permission deny:[${is_not_access_list}]`)
-          });
-
-        });
       }
     }
 
