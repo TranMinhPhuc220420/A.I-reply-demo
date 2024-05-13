@@ -92,7 +92,7 @@ let DEBUG_MODE = true;
 
       return `
             <div class="form-config">
-              <div class="tab">
+              <div class="tab content-config">
                 <div class="tab-title">
                   <div class="item" key_tab="compose_tab">
                     <span>${MyLang.getMsg('TXT_COMPOSE')}</span>
@@ -118,7 +118,7 @@ let DEBUG_MODE = true;
               <div class="your-language config">
                 <div class="title">
                   <img class="icon" src="./icons/translate.svg" alt="account-circle-icon">
-                  <span class="text">${MyLang.getMsg('TXT_LANGUAGE')}:</span>
+                  <span class="text">${MyLang.getMsg('TXT_LANGUAGE')}</span>
                 </div>
                 <div class="options">
                 </div>
@@ -292,7 +292,7 @@ let DEBUG_MODE = true;
         }
         let vHtml = `<div class="title">
                       <img class="icon" src="${config_item.icon}" alt="${config_item.name_kind}">
-                      <span class="text">${config_item.name}:</span>
+                      <span class="text">${config_item.name}</span>
                     </div>
                     <div class="options">
                       ${vHtmlOption}
@@ -498,6 +498,11 @@ let DEBUG_MODE = true;
 
         $(`#${self.idTab} .tab .tab-body .tab-item`).removeClass('active');
         $(`#${self.idTab} .tab .tab-body #${keyTab}.tab-item`).addClass('active');
+
+        setTimeout(() => {
+          let inputFocusEl = document.body.querySelector(`#${self.idTab} .tab.content-config .tab-item.active textarea`);
+          $(inputFocusEl).focus();
+        });
       });
 
       const handlerActive = () => {

@@ -23,6 +23,9 @@ const MyLang = {
     "TXT_CASUAL": chrome.i18n.getMessage('txt_casual'),
     "TXT_NEUTRAL": chrome.i18n.getMessage('txt_neutral'),
     "TXT_FORMAL": chrome.i18n.getMessage('txt_formal'),
+    "TXT_REPORT": chrome.i18n.getMessage('txt_report'),
+    "TXT_DAILY_REPORT": chrome.i18n.getMessage('txt_daily_report'),
+    "TXT_TODO": chrome.i18n.getMessage('txt_todo'),
 
     "TXT_TONE": chrome.i18n.getMessage('txt_tone'),
     "TXT_FRIENDLY": chrome.i18n.getMessage('txt_friendly'),

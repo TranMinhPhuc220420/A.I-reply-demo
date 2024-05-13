@@ -558,16 +558,21 @@ body.ja #write_tab .form-config .version button.submit-generate {
   max-height: 244px;
   border: none;
   outline: none;
-  background-color: #f7f7f7 !important;
+  background-color: #f7f7f7;
   padding: 12px;
   border-radius: 12px;
   box-sizing: border-box;
   width: 100%;
   max-width: 100%;
   position: relative;
+  transition: 0.25s all;
 }
 .gpt-layout #write_tab .tab .tab-body .tab-item textarea:nth-child(2) {
   margin-top: 5px;
+}
+.gpt-layout #write_tab .tab .tab-body .tab-item textarea:focus {
+  background-color: #fff;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
 }
 .gpt-layout #write_tab .form-config .voice-config {
   margin-top: 10px;
@@ -587,7 +592,7 @@ body.ja #write_tab .form-config .version button.submit-generate {
 }
 .gpt-layout #write_tab .form-config .voice-config .config .title .text {
   margin-left: 4px;
-  color: #9c9c9c;
+  color: #000;
   font-size: 15px;
 }
 .gpt-layout #write_tab .form-config .voice-config .config .options .combobox .item {
@@ -602,7 +607,7 @@ body.ja #write_tab .form-config .version button.submit-generate {
   border-radius: 7px;
   padding: 3px 8px;
   margin-right: 5px;
-  color: #575757;
+  color: #676767;
   font-size: 14px;
   transition: 0.15s all;
   border: #fff 1px solid;
@@ -655,7 +660,7 @@ body.ja #write_tab .form-config .version button.submit-generate {
 .gpt-layout #write_tab .form-config .your-language .title .text {
   margin-left: 4px;
   font-size: 15px;
-  color: #9c9c9c;
+  color: #000;
 }
 .gpt-layout #write_tab .form-config .your-language .options .combobox .item {
   text-align: start;

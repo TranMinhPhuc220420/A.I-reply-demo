@@ -153,6 +153,46 @@ const VOICE_SETTING_DATA = [
         name: MyLang.getMsg('TXT_FORMAL'),
         display: MyLang.getMsg('TXT_FORMAL'),
       },
+      {
+        value: 'paragraph',
+        name: MyLang.getMsg('TXT_PARAGRAPH'),
+        display: MyLang.getMsg('TXT_PARAGRAPH'),
+      },
+      {
+        value: 'blog post',
+        name: MyLang.getMsg('TXT_BLOG_POST'),
+        display: MyLang.getMsg('TXT_BLOG_POST'),
+      },
+      {
+        value: 'idea',
+        name: MyLang.getMsg('TXT_IDEA'),
+        display: MyLang.getMsg('TXT_IDEA'),
+      },
+      {
+        value: 'essay',
+        name: MyLang.getMsg('TXT_ESSAY'),
+        display: MyLang.getMsg('TXT_ESSAY'),
+      },
+      {
+        value: 'summary',
+        name: MyLang.getMsg('TXT_SUMMARY'),
+        display: MyLang.getMsg('TXT_SUMMARY'),
+      },
+      {
+        value: 'report',
+        name: MyLang.getMsg('TXT_REPORT'),
+        display: MyLang.getMsg('TXT_REPORT'),
+      },
+      {
+        value: 'daily report',
+        name: MyLang.getMsg('TXT_DAILY_REPORT'),
+        display: MyLang.getMsg('TXT_DAILY_REPORT'),
+      },
+      {
+        value: 'todo',
+        name: MyLang.getMsg('TXT_TODO'),
+        display: MyLang.getMsg('TXT_TODO'),
+      },
     ]
   },
   {
@@ -188,44 +228,19 @@ const VOICE_SETTING_DATA = [
     icon: emojiIconUrl,
     options: [
       {
-        value: 'professional',
-        name: MyLang.getMsg('TXT_PROFESSIONAL'),
-        display: MyLang.getMsg('TXT_PROFESSIONAL'),
-      },
-      {
-        value: 'confident',
-        name: MyLang.getMsg('TXT_CONFIDENT'),
-        display: MyLang.getMsg('TXT_CONFIDENT'),
-      },
-      {
         value: 'formal',
         name: MyLang.getMsg('TXT_FORMAL'),
         display: MyLang.getMsg('TXT_FORMAL'),
       },
       {
-        value: 'friendly',
-        name: MyLang.getMsg('TXT_FRIENDLY'),
-        display: MyLang.getMsg('TXT_FRIENDLY'),
+        value: 'casual',
+        name: MyLang.getMsg('TXT_CASUAL'),
+        display: MyLang.getMsg('TXT_CASUAL'),
       },
       {
-        value: 'personable',
-        name: MyLang.getMsg('TXT_PERSONABLE'),
-        display: MyLang.getMsg('TXT_PERSONABLE'),
-      },
-      {
-        value: 'informational',
-        name: MyLang.getMsg('TXT_INFORMATIONAL'),
-        display: MyLang.getMsg('TXT_INFORMATIONAL'),
-      },
-      {
-        value: 'witty',
-        name: MyLang.getMsg('TXT_WITTY'),
-        display: MyLang.getMsg('TXT_WITTY'),
-      },
-      {
-        value: 'direct',
-        name: MyLang.getMsg('TXT_DIRECT'),
-        display: MyLang.getMsg('TXT_DIRECT'),
+        value: 'professional',
+        name: MyLang.getMsg('TXT_PROFESSIONAL'),
+        display: MyLang.getMsg('TXT_PROFESSIONAL'),
       },
       {
         value: 'enthusiastic',
@@ -233,9 +248,14 @@ const VOICE_SETTING_DATA = [
         display: MyLang.getMsg('TXT_ENTHUSIASTIC'),
       },
       {
-        value: 'empathetic',
-        name: MyLang.getMsg('TXT_EMPATHETIC'),
-        display: MyLang.getMsg('TXT_EMPATHETIC'),
+        value: 'informational',
+        name: MyLang.getMsg('TXT_INFORMATIONAL'),
+        display: MyLang.getMsg('TXT_INFORMATIONAL'),
+      },
+      {
+        value: 'funny',
+        name: MyLang.getMsg('TXT_FUNNY'),
+        display: MyLang.getMsg('TXT_FUNNY'),
       },
     ],
   },

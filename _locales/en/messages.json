@@ -59,6 +59,15 @@
   "txt_formal": {
     "message": "Formal"
   },
+  "txt_report": {
+    "message": "Report"
+  },
+  "txt_daily_report": {
+    "message": "Daily report"
+  },
+  "txt_todo": {
+    "message": "TODO"
+  },
   "txt_tone": {
     "message": "Tone"
   },
@@ -87,7 +96,7 @@
     "message": "Empathetic"
   },
   "txt_email_length": {
-    "message": "Email length:"
+    "message": "Email length"
   },
   "txt_medium": {
     "message": "Medium"

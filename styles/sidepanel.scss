@@ -784,7 +784,7 @@ body {
             max-height: 244px;
             border: none;
             outline: none;
-            background-color: #f7f7f7 !important;
+            background-color: #f7f7f7;
 
             padding: 12px;
             border-radius: 12px;
@@ -792,9 +792,15 @@ body {
             width: 100%;
             max-width: 100%;
             position: relative;
+            transition: .25s all;
 
             &:nth-child(2) {
               margin-top: 5px;
+            }
+
+            &:focus {
+              background-color: #fff;
+              box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
             }
           }
         }
@@ -822,7 +828,7 @@ body {
 
             .text {
               margin-left: 4px;
-              color: #9c9c9c;
+              color: #000;
               font-size: 15px;
             }
           }
@@ -845,7 +851,7 @@ body {
               border-radius: 7px;
               padding: 3px 8px;
               margin-right: 5px;
-              color: #575757;
+              color: #676767;
               font-size: 14px;
               transition: .15s all;
               border: #fff 1px solid;
@@ -914,7 +920,7 @@ body {
           .text {
             margin-left: 4px;
             font-size: 15px;
-            color: #9c9c9c;
+            color: #000;
           }
         }
 

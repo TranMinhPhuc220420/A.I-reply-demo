@@ -59,6 +59,15 @@
   "txt_formal": {
     "message": "フォーマル"
   },
+  "txt_report": {
+    "message": "報告"
+  },
+  "txt_daily_report": {
+    "message": "日報"
+  },
+  "txt_todo": {
+    "message": "TODO"
+  },
   "txt_tone": {
     "message": "トーン"
   },
