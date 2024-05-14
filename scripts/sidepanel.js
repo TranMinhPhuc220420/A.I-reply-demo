@@ -77,6 +77,7 @@ let DEBUG_MODE = true;
     result_active: 0,
     generate_result_list: [],
     language_output_list_config: [],
+    voice_config_of_user: [],
 
     // Getter
 
@@ -113,15 +114,6 @@ let DEBUG_MODE = true;
               </div>
 
               <div class="voice-config">
-              </div>
-
-              <div class="your-language config">
-                <div class="title">
-                  <img class="icon" src="./icons/translate.svg" alt="account-circle-icon">
-                  <span class="text">${MyLang.getMsg('TXT_LANGUAGE')}</span>
-                </div>
-                <div class="options">
-                </div>
               </div>
 
               <div class="version config">
@@ -258,123 +250,6 @@ let DEBUG_MODE = true;
     // Setter
 
     /**
-     * Load and show data to panel
-     * 
-     */
-    loadData: () => {
-      const self = TabWriteManager;
-
-      $(`#${self.idTab} .voice-config .config`).remove();
-
-      for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
-        const config_item = VOICE_SETTING_DATA[i];
-
-        const configEl = document.createElement('div');
-        configEl.className = `${config_item.name_kind} config`;
-
-        let vHtmlOption = ``;
-        for (let j = 0; j < config_item.options.length; j++) {
-          const optionItem = config_item.options[j];
-          const voiceConfigItem = self.formData[config_item.name_kind];
-
-          let isActive = false;
-          if (!voiceConfigItem && j == 0) {
-            self.formData[config_item.name_kind] = optionItem.value;
-            isActive = true;
-          }
-          if (voiceConfigItem == optionItem.value) {
-            isActive = true;
-          }
-
-          vHtmlOption += `<button kind="${config_item.name_kind}" value="${optionItem.value}" class="item ${isActive ? 'active' : ''}">
-                            ${optionItem.name}
-                        </button>`
-        }
-        let vHtml = `<div class="title">
-                      <img class="icon" src="${config_item.icon}" alt="${config_item.name_kind}">
-                      <span class="text">${config_item.name}</span>
-                    </div>
-                    <div class="options">
-                      ${vHtmlOption}
-                    </div>`;
-
-        configEl.innerHTML = vHtml;
-        $(`#${self.idTab} .voice-config`).append(configEl);
-      }
-    },
-
-    /**
-     * Load and show list language user config
-     * 
-     */
-    loadLangConfig: () => {
-      const self = TabWriteManager;
-
-      let lang_default = LANGUAGE_SETTING_DATA[0];
-
-      // Get and set to your_lang with lang was used before
-      let langActive = USER_SETTING.language_write_active || lang_default;
-      self.formData.your_lang = langActive.value;
-
-      // User is begin open side panel or not generate before
-      if (self.language_output_list_config.length == 0) {
-        self.language_output_list_config.push(lang_default);
-        _StorageManager.addLanguageWriteList(lang_default.value);
-      }
-
-      // Shows all previously added langs
-      let lang_config = '';
-      for (let i = 0; i < self.language_output_list_config.length; i++) {
-        const configItem = self.language_output_list_config[i];
-
-        lang_config += `
-        <button kind="your_lang" value="${configItem.value}" class="item text ${langActive.value == configItem.value ? 'active' : ''}">
-          ${configItem.name}
-          <div class="close">
-            <img class="icon" src="./icons/cancel.svg">
-          </div>
-        </button>
-      `
-      }
-
-      // Add lang not use to option combobox
-      let lang_option = '';
-      for (let i = 0; i < LANGUAGE_SETTING_DATA.length; i++) {
-        const item = LANGUAGE_SETTING_DATA[i];
-
-        let hasInConfig = self.language_output_list_config.find(configItem => configItem.value == item.value);
-        lang_option += `
-          <li class="combobox-item ${hasInConfig ? 'hidden' : ''}" value="${item.value}">
-            <div class="name">${item.name}</div>
-            <div class="sub">${item.sub}</div>
-          </li>
-        `;
-      }
-
-      // Button combobox
-      let vHtml_init = `
-      ${lang_config}
-      <button class="item text combobox" id="language_cbx">
-          <span class="space">...</span>
-          <ul class="popover-cbx wrap-item">
-            ${lang_option}
-          </ul>
-      </button>
-    `
-
-      // Add to html side panel
-      $(`#${self.idTab} .your-language .options`).html(vHtml_init);
-
-      // Set event on select item in combobox language
-      document.body.querySelector(`#${self.idTab} #language_cbx`).onSelect = self.onSelectLanguageConfig;
-
-      // Hidden combobox language element when add all language to html side panel
-      if ($(`#${self.idTab} .your-language .combobox-item.hidden`).length == $(`#${self.idTab} .your-language .combobox-item`).length) {
-        $('#language_cbx').addClass('hidden');
-      }
-    },
-
-    /**
      * Load and show list option gpt version for user
      * 
      */
@@ -419,6 +294,150 @@ let DEBUG_MODE = true;
     `
 
       $(`#${self.idTab} .version .options`).html(vHtml_init);
+    },
+
+    /**
+     * Load and show voice config
+     * 
+     */
+    loadVoiceConfig: () => {
+      const self = TabWriteManager;
+
+      $(`#${self.idTab} .voice-config .wrap-config`).remove();
+
+      for (let i = 0; i < self.voice_config_of_user.length; i++) {
+        const configItem = self.voice_config_of_user[i];
+
+        // Shows all previously added
+        const optionsConfig = configItem.options;
+        let vHtmlItemConfig = '';
+        for (let i = 0; i < optionsConfig.length; i++) {
+          const optionConfigItem = optionsConfig[i];
+
+          vHtmlItemConfig += `
+          <button kind="${configItem.name_kind}" value="${optionConfigItem.value}" class="item text ${optionConfigItem.isActive ? 'active' : ''}">
+            ${optionConfigItem.display}
+            ${optionsConfig.length > 1 ?
+              `<div class="close">
+                <img class="icon" src="./icons/cancel.svg">
+              </div>` : ''
+            }
+          </button>
+          `
+        }
+
+        // Add options not use to option combobox
+        let optionsDefault = VOICE_SETTING_DATA_2.find(config => config.name_kind == configItem.name_kind).options;
+        let vHtmlOptionsConfig = '';
+        for (let i = 0; i < optionsDefault.length; i++) {
+          const item = optionsDefault[i];
+
+          let hasInConfig = optionsConfig.find(configItem => configItem.value == item.value);
+          vHtmlOptionsConfig += `
+            <li class="combobox-item ${hasInConfig ? 'hidden' : ''}" kind="${configItem.name_kind}" value="${item.value}">
+              <div class="name">${item.display}</div>
+              ${item.sub ? `<div class="sub">${item.sub}</div>` : ''}
+            </li>
+          `;
+        }
+
+        // Button combobox
+        let vHtml = ` <div class="title">
+                        <img class="icon" src="${configItem.icon}" alt="${configItem.name_kind}">
+                        <span class="text">${configItem.name}:</span>
+                      </div>
+                      <div class="options">
+                        ${vHtmlItemConfig}
+                        <button class="item text combobox" id="${configItem.name_kind}_cbx">
+                          <img class="icon" src="${moreHorizIconUrl}" />
+                          <ul class="popover-cbx wrap-item">
+                            ${vHtmlOptionsConfig}
+                          </ul>
+                        </button>
+                      </div>
+                    `
+
+        let wrap = document.createElement('div');
+        wrap.className = `wrap-config ${configItem.name_kind} ${configItem.name_kind == 'formality_reply' ? 'hidden' : ''}`
+        wrap.innerHTML = vHtml;
+
+        // Add to html side panel
+        $(`#${self.idTab} .voice-config`).append(wrap);
+
+        // Set event on select item in combobox
+        document.body.querySelector(`#${self.idTab} #${configItem.name_kind}_cbx`).onSelect = self.onSelectComboboxConfig;
+
+        // Hidden combobox element when add all to html side panel
+        if ($(`#${self.idTab} .wrap-config.${configItem.name_kind} .combobox-item.hidden`).length == $(`#${self.idTab} .wrap-config.${configItem.name_kind} .combobox-item`).length) {
+          $(`#${configItem.name_kind}_cbx`).addClass('hidden');
+        }
+      }
+    },
+
+    /**
+     * reload and re-show session voice config item
+     * 
+     */
+    reloadVoiceConfigItem: (nameKind) => {
+      const self = TabWriteManager;
+
+      $(`#${self.idTab} .voice-config .wrap-config.${nameKind} .options .item`).remove();
+
+      for (let i = 0; i < self.voice_config_of_user.length; i++) {
+        const configItem = self.voice_config_of_user[i];
+
+        if (configItem.name_kind == nameKind) {
+          // Shows all previously added
+          const optionsConfig = configItem.options;
+          let vHtmlItemConfig = '';
+          for (let i = 0; i < optionsConfig.length; i++) {
+            const optionConfigItem = optionsConfig[i];
+
+            vHtmlItemConfig += `<button kind="${configItem.name_kind}" value="${optionConfigItem.value}" class="item text ${optionConfigItem.isActive ? 'active' : ''}">
+                                  ${optionConfigItem.display}
+                                  ${optionsConfig.length > 1 ?
+                                    `<div class="close">
+                                      <img class="icon" src="./icons/cancel.svg">
+                                    </div>` : ''
+                                  }
+                                </button>
+                              `
+          }
+
+          // Add options not use to option combobox
+          let optionsDefault = VOICE_SETTING_DATA_2.find(config => config.name_kind == configItem.name_kind).options;
+          let vHtmlOptionsConfig = '';
+          for (let i = 0; i < optionsDefault.length; i++) {
+            const item = optionsDefault[i];
+
+            let hasInConfig = optionsConfig.find(configItem => configItem.value == item.value);
+            vHtmlOptionsConfig += ` <li class="combobox-item ${hasInConfig ? 'hidden' : ''}" kind="${configItem.name_kind}" value="${item.value}">
+                                      <div class="name">${item.display}</div>
+                                      ${item.sub ? `<div class="sub">${item.sub}</div>` : ''}
+                                    </li>`;
+          }
+
+          // Button combobox
+          let vHtml = ` ${vHtmlItemConfig}
+                        <button class="item text combobox" id="${configItem.name_kind}_cbx">
+                          <img class="icon" src="${moreHorizIconUrl}" />
+                          <ul class="popover-cbx wrap-item">
+                            ${vHtmlOptionsConfig}
+                          </ul>
+                        </button>`
+
+          // Add to html side panel
+          $(`#${self.idTab} .voice-config .wrap-config.${nameKind} .options`).html(vHtml);
+
+          // Set event on select item in combobox
+          document.body.querySelector(`#${self.idTab} #${configItem.name_kind}_cbx`).onSelect = self.onSelectComboboxConfig;
+
+          // Hidden combobox element when add all to html side panel
+          if ($(`#${self.idTab} .wrap-config.${configItem.name_kind} .combobox-item.hidden`).length == $(`#${self.idTab} .wrap-config.${configItem.name_kind} .combobox-item`).length) {
+            $(`#${configItem.name_kind}_cbx`).addClass('hidden');
+          }
+        }
+      }
     },
 
     /**
@@ -472,11 +491,12 @@ let DEBUG_MODE = true;
       });
       $(document).on('click', `#${self.idTab} .popover-cbx.wrap-item .combobox-item`, function (event) {
         if (self.is_loading) return;
+        const kind = event.target.getAttribute('kind');
         const value = event.target.getAttribute('value');
 
         const comboboxEl = $(event.target).parents('button.combobox')[0];
         if (comboboxEl.onSelect) {
-          comboboxEl.onSelect(comboboxEl, event.target, value);
+          comboboxEl.onSelect(comboboxEl, event.target, kind, value);
         }
       });
 
@@ -535,35 +555,10 @@ let DEBUG_MODE = true;
       $(`#${self.idTab} .submit-generate`).click(self.onSubmitGenerate);
 
       // For items options voice config
-      $(document).on('click', `#${self.idTab} .config .options .item`, self.onClickConfigItem);
+      $(document).on('click', `#${self.idTab} .form-config .wrap-config .item`, self.onClickConfigItem);
 
       // Remove and save language config
-      $(document).on('click', `#${self.idTab} .form-config .your-language .item .close`, (event) => {
-        if (self.is_loading) return;
-        const targetEl = event.target;
-
-        // There is always an optional language
-        if ((self.language_output_list_config.length - 1) == 0) return;
-        let listLangClone = [...self.language_output_list_config];
-
-        const parentBtnEl = $(targetEl).parents('button.item.text');
-        const value = parentBtnEl.attr('value');
-
-        _StorageManager.removeLanguageWriteList(value);
-
-        parentBtnEl.remove();
-
-        $(`#language_cbx .combobox-item[value="${value}"]`).removeClass('hidden');
-        $(`#${self.idTab} #language_cbx`).removeClass('hidden');
-
-        // Reset to default
-        for (let i = 0; i < listLangClone.length; i++) {
-          if (listLangClone[i].value == value) {
-            listLangClone.splice(i, 1);
-          }
-        }
-        _StorageManager.setLanguageWrite(listLangClone[0].value);
-      });
+      $(document).on('click', `#${self.idTab} .form-config .wrap-config .item .close`, self.handlerRemoveOptionVoiceConfig);
 
       // For action button session result footer
       $(`#${self.idTab} .result-footer .btn.re-generate`).click(self.onSubmitGenerate);
@@ -649,6 +644,61 @@ let DEBUG_MODE = true;
     },
 
     /**
+     * Handler remove option voice config
+     * 
+     * @param {Event} event 
+     */
+    handlerRemoveOptionVoiceConfig: (event) => {
+      const self = TabWriteManager;
+      const targetEl = event.target;
+      if (self.is_loading) return;
+
+      const parentBtnEl = $(targetEl).parents('button.item.text');
+      const kind = parentBtnEl.attr('kind');
+      const value = parentBtnEl.attr('value');
+
+      const configItemDefault = VOICE_SETTING_DATA_2.find(item => item.name_kind == kind);
+      let record = configItemDefault.options.find(item => {
+        return value == item.value
+      });
+
+      if (record) {
+        const voiceConfig = [...self.voice_config_of_user]
+
+        for (let i = 0; i < voiceConfig.length; i++) {
+          const configItem = voiceConfig[i];
+
+          if (configItem.name_kind == kind) {
+
+            if (configItem.options.length <= 1) {
+              return;
+            }
+
+
+            // Update all flag is active to false and save index item remove
+            let indexOfRemove = -1;
+            for (let j = 0; j < configItem.options.length; j++) {
+              const option = configItem.options[j];
+              configItem.options[j].isActive = false;
+
+              if (option.value == value) {
+                indexOfRemove = j;
+              }
+            }
+
+            configItem.options.splice(indexOfRemove, 1);
+            configItem.options[0].isActive = true;
+
+            voiceConfig[i] = configItem;
+          }
+        }
+
+        // Save to storage
+        _StorageManager.setVoiceConfigWrite(voiceConfig);
+      }
+    },
+
+    /**
      * Process add generate write
      * 
      */
@@ -713,9 +763,10 @@ let DEBUG_MODE = true;
       $('.tab .tab-body .tab-item').removeClass('active');
       $('.tab .tab-body #compose_tab').addClass('active');
 
-      self.loadData();
-      self.loadLangConfig();
+      // self.loadData();
+      // self.loadLangConfig();
       self.loadVersionGPTConfig();
+      self.loadVoiceConfig();
 
       self.resetEvent();
 
@@ -799,67 +850,87 @@ let DEBUG_MODE = true;
       if (self.is_loading) return;
 
       const targetEl = event.target;
-      const kind = event.target.getAttribute('kind');
-      const value = event.target.getAttribute('value');
+      const kind = targetEl.getAttribute('kind');
+      const value = targetEl.getAttribute('value');
+      if (!kind || !value) return;
 
-      if (!value || !kind) return;
-      self.formData[kind] = value;
+      const configItemDefault = VOICE_SETTING_DATA_2.find(item => item.name_kind == kind);
+      let record = configItemDefault.options.find(item => {
+        return value == item.value
+      });
 
-      if (kind == 'your_lang') {
-        _StorageManager.setLanguageWrite(value);
+      if (record) {
+        const voiceConfig = [...self.voice_config_of_user]
+
+        for (let i = 0; i < voiceConfig.length; i++) {
+          const configItem = voiceConfig[i];
+
+          if (configItem.name_kind == kind) {
+
+            for (let j = 0; j < configItem.options.length; j++) {
+              if(configItem.options[j].value == value) {
+                configItem.options[j].isActive = true;
+              } else {
+                configItem.options[j].isActive = false;
+              }
+            }
+
+            voiceConfig[i] = configItem;
+          }
+        }
+
+        // Save to storage
+        _StorageManager.setVoiceConfigWrite(voiceConfig);
       }
-
-      const parent = $(targetEl).parents('.options')[0];
-      $(parent).children('.item').removeClass('active');
-      $(targetEl).addClass('active');
     },
 
     /**
-     * On select language config
+     * On select combobox component config
      * 
      * @param {Element} comboboxEl 
      * @param {Element} itemEl 
      * @param {string} value 
      */
-    onSelectLanguageConfig: (comboboxEl, itemEl, value) => {
+    onSelectComboboxConfig: (comboboxEl, itemEl, kind, value) => {
       const self = TabWriteManager;
       if (self.is_loading) return;
 
-      let record = LANGUAGE_SETTING_DATA.find(item => {
+      const configItemDefault = VOICE_SETTING_DATA_2.find(item => item.name_kind == kind);
+      let record = configItemDefault.options.find(item => {
         return value == item.value
       });
 
       if (record) {
-        $(itemEl).addClass('hidden');
+        const voiceConfig = [...self.voice_config_of_user]
 
-        $(`#${self.idTab} .your-language .item`).removeClass('active');
+        for (let i = 0; i < voiceConfig.length; i++) {
+          const configItem = voiceConfig[i];
 
-        const buttonEl = document.createElement('button');
-        buttonEl.setAttribute('kind', 'your_lang');
-        buttonEl.setAttribute('value', record.value);
-        buttonEl.className = 'item text';
-        buttonEl.innerHTML = record.name;
+          if (configItem.name_kind == kind) {
 
-        const closeBtnEl = document.createElement('div');
-        closeBtnEl.className = 'close';
-        closeBtnEl.innerHTML = '<img class="icon" src="./icons/cancel.svg">';
+            if (configItem.options.length == MAX_VOICE_CONFIG_OPTIONS_SHOW) {
+              // Swap the record into the active option item
+              configItem.options = configItem.options.map(item => {
+                if (item.isActive) {
+                  return { ...record, isActive: true }
+                }
+                return item;
+              });
 
-        $(buttonEl).click(self.onClickConfigItem);
+            } else {
+              // Update all flag is active to false
+              configItem.options = configItem.options.map(item => {
+                return { ...item, isActive: false }
+              });
+              configItem.options.push({ ...record, isActive: true });
+            }
 
-        buttonEl.append(closeBtnEl);
-        $(buttonEl).insertBefore(comboboxEl);
+            voiceConfig[i] = configItem;
+          }
+        }
 
-        setTimeout(() => {
-          self.formData['your_lang'] = value;
-          $(buttonEl).addClass('active');
-        }, 100);
-
-        _StorageManager.setLanguageWrite(value);
-        _StorageManager.addLanguageWriteList(value);
-      }
-
-      if ($(`#${self.idTab} .your-language .combobox-item.hidden`).length == $(`#${self.idTab} .your-language .combobox-item`).length) {
-        $(comboboxEl).addClass('hidden');
+        // Save to storage
+        _StorageManager.setVoiceConfigWrite(voiceConfig);
       }
     },
 
@@ -1076,21 +1147,40 @@ let DEBUG_MODE = true;
    * @param {Event} event 
    */
   const storageOnChanged = (payload, type) => {
-    // on list language user config has changed
-    if ('write_language_output_list' in payload) {
-      TabWriteManager.language_output_list_config = payload.write_language_output_list.newValue;
-      TabWriteManager.loadLangConfig();
-    }
+    if ('write_voice_config' in payload) {
+      let configNew = payload.write_voice_config.newValue;
+      let configOld = payload.write_voice_config.oldValue;
 
-    // on language (your_lang) user config has changed
-    else if ('write_language_output_active' in payload) {
-      let record = payload.write_language_output_active.newValue;
+      for (let i = 0; i < configNew.length; i++) {
+        const itemConfigNew = configNew[i];
 
-      TabWriteManager.formData['your_lang'] = record.value;
-      USER_SETTING.language_write_active = record;
+        let kindOld = configOld.find(item => item.name_kind == itemConfigNew.name_kind);
+        if (!kindOld) {
+          // Updated when there is a different name kind
+          TabWriteManager.reloadVoiceConfigItem(itemConfigNew.name_kind);
 
-      $('.your-language .item').removeClass('active');
-      $('.your-language .item[value="' + record.value + '"]').addClass('active');
+        } else {
+          if (itemConfigNew.options.length != kindOld.options.length) {
+            // Updated when there is a different options length
+            TabWriteManager.reloadVoiceConfigItem(itemConfigNew.name_kind);
+
+          } else {
+
+            for (let j = 0; j < itemConfigNew.options.length; j++) {
+              const itemOptionNew = itemConfigNew.options[j];
+              let optionsOld = kindOld.options.find(item => (item.name_kind == itemOptionNew.name && item.value == itemOptionNew.value && item.isActive == itemOptionNew.isActive));
+
+              if (!optionsOld) {
+                // Updated when there is a different name and value options
+                TabWriteManager.reloadVoiceConfigItem(itemConfigNew.name_kind);
+              }
+            }
+
+          }
+        }
+      }
+
+      TabWriteManager.voice_config_of_user = configNew;
     }
   }
 
@@ -1119,17 +1209,25 @@ let DEBUG_MODE = true;
 
     _StorageManager.getVoiceConfigWrite(voiceConfig => {
       if (!voiceConfig) {
-        voiceConfig = {}
-        voiceConfig.your_lang = 'japanese';
-        for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
-          const item = VOICE_SETTING_DATA[i];
-          voiceConfig[item.name_kind] = item.options[0].value;
+        voiceConfig = [];
+      }
+
+      for (let i = 0; i < VOICE_SETTING_DATA_2.length; i++) {
+        const configItem = VOICE_SETTING_DATA_2[i];
+        const nameKind = configItem.name_kind, optionsConfig = [...configItem.options];
+
+        let hasConfig = voiceConfig.find(item => item.name_kind == nameKind);
+        if (!hasConfig) {
+          let optionsDefault = optionsConfig.splice(0, 3);
+          optionsDefault[0].isActive = true;
+          voiceConfig.push({
+            ...configItem,
+            options: optionsDefault
+          })
         }
       }
-      voiceConfig.gpt_version = GPT_VERSION_SETTING_DATA[0].value;
 
-      // when init tab write
-      TabWriteManager.formData = voiceConfig;
+      TabWriteManager.voice_config_of_user = voiceConfig;
 
       proceedByPallaFinishedCount();
     })

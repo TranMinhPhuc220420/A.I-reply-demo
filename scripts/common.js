@@ -20,12 +20,17 @@ let descriptionIconUrl = chrome.runtime.getURL("icons/description-icon.svg");
 let emojiIconUrl = chrome.runtime.getURL("icons/emoji-emotions-icon.svg");
 let formatAlignIconUrl = chrome.runtime.getURL("icons/format-align-icon.svg");
 let accountCircleIconUrl = chrome.runtime.getURL("icons/account-circle-icon.svg");
+let translateIconUrl = chrome.runtime.getURL("icons/translate.svg");
+let moreHorizIconUrl = chrome.runtime.getURL("icons/more_horiz.svg");
+let minimizeIconUrl = chrome.runtime.getURL("icons/minimize.svg");
 
 let chat_gpt_api_key = null;
 let is_domain_regist = false;
 let is_not_access_list = false;
 
 let TAB_ID, WINDOW_ID, ID_USER_ADDON_LOGIN, USER_ADDON_LOGIN = '';
+
+const MAX_VOICE_CONFIG_OPTIONS_SHOW = 3;
 
 const USER_SETTING = {
   language_write_active: {}
@@ -453,6 +458,250 @@ const VOICE_SETTING_DATA_1 = [
       {
         value: 'long',
         display: MyLang.getMsg('TXT_LONG'),
+      },
+    ],
+  },
+];
+
+const VOICE_SETTING_DATA_2 = [
+  {
+    name_kind: "formality",
+    name: MyLang.getMsg('TXT_FORMAT'),
+    icon: descriptionIconUrl,
+    options: [
+      {
+        value: 'email',
+        name: MyLang.getMsg('TXT_EMAIL'),
+        display: MyLang.getMsg('TXT_EMAIL'),
+      },
+      {
+        value: 'casual',
+        name: MyLang.getMsg('TXT_CASUAL'),
+        display: MyLang.getMsg('TXT_CASUAL'),
+      },
+      {
+        value: 'neutral',
+        name: MyLang.getMsg('TXT_NEUTRAL'),
+        display: MyLang.getMsg('TXT_NEUTRAL'),
+      },
+      {
+        value: 'formal',
+        name: MyLang.getMsg('TXT_FORMAL'),
+        display: MyLang.getMsg('TXT_FORMAL'),
+      },
+      {
+        value: 'paragraph',
+        name: MyLang.getMsg('TXT_PARAGRAPH'),
+        display: MyLang.getMsg('TXT_PARAGRAPH'),
+      },
+      {
+        value: 'blog post',
+        name: MyLang.getMsg('TXT_BLOG_POST'),
+        display: MyLang.getMsg('TXT_BLOG_POST'),
+      },
+      {
+        value: 'idea',
+        name: MyLang.getMsg('TXT_IDEA'),
+        display: MyLang.getMsg('TXT_IDEA'),
+      },
+      {
+        value: 'essay',
+        name: MyLang.getMsg('TXT_ESSAY'),
+        display: MyLang.getMsg('TXT_ESSAY'),
+      },
+      {
+        value: 'summary',
+        name: MyLang.getMsg('TXT_SUMMARY'),
+        display: MyLang.getMsg('TXT_SUMMARY'),
+      },
+      {
+        value: 'report',
+        name: MyLang.getMsg('TXT_REPORT'),
+        display: MyLang.getMsg('TXT_REPORT'),
+      },
+      {
+        value: 'daily report',
+        name: MyLang.getMsg('TXT_DAILY_REPORT'),
+        display: MyLang.getMsg('TXT_DAILY_REPORT'),
+      },
+      {
+        value: 'todo',
+        name: MyLang.getMsg('TXT_TODO'),
+        display: MyLang.getMsg('TXT_TODO'),
+      },
+    ]
+  },
+  {
+    name_kind: "formality_reply",
+    name: MyLang.getMsg('TXT_FORMAT'),
+    icon: descriptionIconUrl,
+    options: [
+      {
+        value: 'email',
+        name: MyLang.getMsg('TXT_EMAIL'),
+        display: MyLang.getMsg('TXT_EMAIL'),
+      },
+      {
+        value: 'comment',
+        name: MyLang.getMsg('TXT_COMMENT'),
+        display: MyLang.getMsg('TXT_COMMENT'),
+      },
+      {
+        value: 'message',
+        name: MyLang.getMsg('TXT_MESSAGE'),
+        display: MyLang.getMsg('TXT_MESSAGE'),
+      },
+      {
+        value: 'twitter',
+        name: MyLang.getMsg('TXT_TWITTER'),
+        display: MyLang.getMsg('TXT_TWITTER'),
+      },
+    ]
+  },
+  {
+    name_kind: "tone",
+    name: MyLang.getMsg('TXT_TONE'),
+    icon: emojiIconUrl,
+    options: [
+      {
+        value: 'professional',
+        display: MyLang.getMsg('TXT_PROFESSIONAL'),
+      },
+      {
+        value: 'confident',
+        display: MyLang.getMsg('TXT_CONFIDENT'),
+      },
+      {
+        value: 'formal',
+        display: MyLang.getMsg('TXT_FORMAL'),
+      },
+      {
+        value: 'friendly',
+        display: MyLang.getMsg('TXT_FRIENDLY'),
+      },
+      {
+        value: 'personable',
+        display: MyLang.getMsg('TXT_PERSONABLE'),
+      },
+      {
+        value: 'informational',
+        display: MyLang.getMsg('TXT_INFORMATIONAL'),
+      },
+      {
+        value: 'witty',
+        display: MyLang.getMsg('TXT_WITTY'),
+      },
+      {
+        value: 'direct',
+        display: MyLang.getMsg('TXT_DIRECT'),
+      },
+      {
+        value: 'enthusiastic',
+        display: MyLang.getMsg('TXT_ENTHUSIASTIC'),
+      },
+      {
+        value: 'empathetic',
+        display: MyLang.getMsg('TXT_EMPATHETIC'),
+      },
+    ],
+  },
+  {
+    name_kind: "email_length",
+    name: MyLang.getMsg('TXT_EMAIL_LENGTH'),
+    icon: formatAlignIconUrl,
+    options: [
+      {
+        value: 'short',
+        display: MyLang.getMsg('TXT_SHORT'),
+      },
+      {
+        value: 'medium',
+        display: MyLang.getMsg('TXT_MEDIUM'),
+      },
+      {
+        value: 'long',
+        display: MyLang.getMsg('TXT_LONG'),
+      },
+    ],
+  },
+  {
+    name_kind: "your_role",
+    name: MyLang.getMsg('TXT_YOUR_ROLE'),
+    icon: accountCircleIconUrl,
+    options: [
+      {
+        value: ' ',
+        display: `<img class="none-role" src=${minimizeIconUrl} />`
+      },
+      {
+        value: 'leader',
+        display: MyLang.getMsg('TXT_LEADER'),
+      },
+      {
+        value: 'subordinate',
+        display: MyLang.getMsg('TXT_SUBORDINATE'),
+      },
+      {
+        value: 'colleague',
+        display: MyLang.getMsg('TXT_COLLEAGUE'),
+      },
+      {
+        value: 'sales representative',
+        display: MyLang.getMsg('TXT_SALES_REPRESENTATIVE'),
+      },
+      {
+        value: 'applicant',
+        display: MyLang.getMsg('TXT_APPLICANT'),
+      },
+      {
+        value: 'customer service staff',
+        display: MyLang.getMsg('TXT_CUSTOMER_SERVICE_STAFF'),
+      },
+      {
+        value: 'project manager',
+        display: MyLang.getMsg('TXT_PROJECT_MANAGER'),
+      },
+      {
+        value: 'human resources',
+        display: MyLang.getMsg('TXT_HUMAN_RESOURCES'),
+      },
+    ],
+  },
+  {
+    xtype: 'combobox',
+    name_kind: "your_language",
+    name: MyLang.getMsg('TXT_LANGUAGE'),
+    icon: translateIconUrl,
+    options: [
+      {
+        value: 'japanese',
+        display: '日本語',
+        sub: MyLang.getMsg('TXT_JAPANESE'),
+      },
+      {
+        value: 'english',
+        display: 'English',
+        sub: MyLang.getMsg('TXT_ENGLISH'),
+      },
+      {
+        value: 'simplified chinese',
+        display: '中文(简体)',
+        sub: MyLang.getMsg('TXT_S_CHINESE'),
+      },
+      {
+        value: 'traditional chinese',
+        display: '中文(繁體)',
+        sub: MyLang.getMsg('TXT_T_CHINESE'),
+      },
+      {
+        value: 'vietnamese',
+        display: 'Tiếng Việt',
+        sub: MyLang.getMsg('TXT_VIETNAMESE'),
+      },
+      {
+        value: 'korean',
+        display: '한국어',
+        sub: MyLang.getMsg('TXT_KOREAN'),
       },
     ],
   },
