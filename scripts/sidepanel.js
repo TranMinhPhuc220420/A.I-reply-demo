@@ -1149,7 +1149,7 @@ let DEBUG_MODE = true;
   const storageOnChanged = (payload, type) => {
     if ('write_voice_config' in payload) {
       let configNew = payload.write_voice_config.newValue;
-      let configOld = payload.write_voice_config.oldValue;
+      let configOld = payload.write_voice_config.oldValue || [];
 
       for (let i = 0; i < configNew.length; i++) {
         const itemConfigNew = configNew[i];
