@@ -33,7 +33,6 @@ let TAB_ID, WINDOW_ID, ID_USER_ADDON_LOGIN, USER_ADDON_LOGIN = '';
 const MAX_VOICE_CONFIG_OPTIONS_SHOW = 3;
 
 const USER_SETTING = {
-  language_write_active: {}
 };
 
 const LOCALE_CODES = {
@@ -568,16 +567,16 @@ const VOICE_SETTING_DATA_2 = [
         display: MyLang.getMsg('TXT_PROFESSIONAL'),
       },
       {
-        value: 'confident',
-        display: MyLang.getMsg('TXT_CONFIDENT'),
+        value: 'friendly',
+        display: MyLang.getMsg('TXT_FRIENDLY'),
       },
       {
         value: 'formal',
         display: MyLang.getMsg('TXT_FORMAL'),
       },
       {
-        value: 'friendly',
-        display: MyLang.getMsg('TXT_FRIENDLY'),
+        value: 'confident',
+        display: MyLang.getMsg('TXT_CONFIDENT'),
       },
       {
         value: 'personable',
@@ -759,62 +758,6 @@ const GPT_VERSION_SETTING_DATA = [
 ];
 
 const _StorageManager = {
-  getLanguageWriteList: (callback) => {
-    chrome.storage.sync.get('write_language_output_list').then(payload => {
-      let config = payload.write_language_output_list;
-      if (!config) config = [];
-
-      callback(config);
-    });
-  },
-  addLanguageWriteList: (value) => {
-    chrome.storage.sync.get('write_language_output_list').then(payload => {
-      let config = payload.write_language_output_list;
-      if (!config) config = [];
-
-      const record = LANGUAGE_SETTING_DATA.find(item => {
-        return value == item.value
-      });
-      const record_in_config = config.find(item => {
-        return value == item.value
-      });
-
-      if (record && !record_in_config) {
-        config.push(record);
-        chrome.storage.sync.set({ write_language_output_list: config });
-      }
-    });
-  },
-  removeLanguageWriteList: (value) => {
-    chrome.storage.sync.get('write_language_output_list').then(payload => {
-      let config = payload.write_language_output_list;
-      if (!config) config = [];
-
-      for (let i = 0; i < config.length; i++) {
-        if (config[i].value == value) {
-          config.splice(i, 1);
-          chrome.storage.sync.set({ write_language_output_list: config });
-          break;
-        }
-      }
-    });
-  },
-
-  setLanguageWrite: (value) => {
-    const record = LANGUAGE_SETTING_DATA.find(item => {
-      return value == item.value
-    });
-    if (record) {
-      USER_SETTING.language_write_active = record;
-      chrome.storage.sync.set({ write_language_output_active: record });
-    }
-  },
-  getLanguageWrite: (callback) => {
-    chrome.storage.sync.get('write_language_output_active', payload => {
-      callback(payload.write_language_output_active)
-    });
-  },
-
   setVoiceConfigWrite: (voiceConfig) => {
     if (voiceConfig) {
       chrome.storage.sync.set({ write_voice_config: voiceConfig });
@@ -823,6 +766,15 @@ const _StorageManager = {
   getVoiceConfigWrite: (callback) => {
     chrome.storage.sync.get('write_voice_config', payload => {
       callback(payload.write_voice_config)
+    });
+  },
+
+  setTitleContentMailToWrite: (title, original_text) => {
+    chrome.storage.sync.set({ title_content_mail_to_write: { title, original_text } });
+  },
+  getTitleContentMailToWrite: (callback) => {
+    chrome.storage.sync.get('title_content_mail_to_write', payload => {
+      callback(payload.title_content_mail_to_write)
     });
   },
 }
@@ -909,4 +861,38 @@ const getChatGPTAIKey = (callback) => {
     // exist key
     callback(chat_gpt_api_key)
   }
+}
+
+const isTopOutOfViewport = (elem) => {
+  var bounding = elem.getBoundingClientRect();
+
+  let heightTitleWrap = 51;
+
+  return (bounding.top - heightTitleWrap < 0);
+}
+
+const isLeftOutOfViewport = (elem) => {
+  var bounding = elem.getBoundingClientRect();
+  return (bounding.left < 0);
+}
+
+const isRightSideOutOfViewport = (elem) => {
+  var bounding = elem.getBoundingClientRect();
+
+  let widthNavbar = 40;
+
+  if (bounding.right + widthNavbar > (window.innerWidth || document.documentElement.clientWidth)) {
+    return true;
+  }
+
+  return false;
+}
+
+const isBottomSideOutOfViewport = (elem) => {
+  var bounding = elem.getBoundingClientRect();
+
+  if (bounding.bottom > (window.innerHeight || document.documentElement.clientHeight)) {
+    return true;
+  }
+  return false;
 }
