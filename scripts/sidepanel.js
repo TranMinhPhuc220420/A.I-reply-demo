@@ -945,6 +945,8 @@ const TabWriteManager = {
       self.is_summarizing = false;
       $('#reply_tab').removeClass('is-loading');
     });
+
+    _StorageManager.setTitleContentMailToWrite(null, null, null);
   },
 
   clearTitleContentMailToWrite: () => {

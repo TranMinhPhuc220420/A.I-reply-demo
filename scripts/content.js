@@ -20,7 +20,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
   // ==== main ====
   let FAVICON_URL = chrome.runtime.getURL("images/favicon.png");
-  let cancelIconUrl = chrome.runtime.getURL("icons/cancel.svg");
   let NODE_ID_EXTENSION_INSTALLED = '__sateraito_import_file_is_installed';
 
   let BTN_AI_REPLY_ID = 'SATERAITO_AI_REPLY_MAIL';
@@ -29,6 +28,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
   let FoDoc;
   let FBoolMail;
+  let flagHasSetCloseSidePanel = false;
 
   /**
    * Get new id popup
@@ -85,7 +85,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
     // on has result send from side panel to add to reply or compose box
     if ('side_panel_send_result' in payload) {
       const newValue = payload.side_panel_send_result.newValue;
-      if (newValue.id_popup && newValue.title && newValue.body) {
+      if (newValue.title && newValue.body) {
         _MailAIGenerate.setTitleContentMail(newValue);
       }
       setTimeout(() => {
@@ -110,14 +110,14 @@ document.addEventListener('RW759_connectExtension', function (e) {
       method: 'open_side_panel',
     })
   };
-  let isHasSetting = false;
-  const setCloseSidePanel = (idTarget) => {
-    if (isHasSetting) return;
-    console.log('setCloseSidePanel');
 
-    isHasSetting = true;
+  const setCloseSidePanel = (idTarget) => {
+    if (flagHasSetCloseSidePanel) return;
+    debugLog('setCloseSidePanel');
+
+    flagHasSetCloseSidePanel = true;
     _StorageManager.setCloseSidePanel(idTarget, true, () => {
-      isHasSetting = false;
+      flagHasSetCloseSidePanel = false;
     });
   };
 
@@ -154,15 +154,52 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * @param {json} params 
      */
     setTitleContentMail: function (params) {
+      let self = _MailAIGenerate;
       const { id_popup, title, body } = params;
 
-      if ($(`.sateraito-${id_popup}`).length > 0) {
+      if (id_popup && $(`.sateraito-${id_popup}`).length > 0) {
         let bodyMailEl = $(`.sateraito-${id_popup}`)[0];
         let titleMailEl = $(bodyMailEl).parents('.AD').find('.aoD input[name="subjectbox"]');
 
         $(titleMailEl).val(title)
         $(bodyMailEl).html(body.replaceAll('\n', '</br>'));
         $(bodyMailEl).focus();
+      } else {
+        self.setTitleContentMailCompose(params);
+      }
+    },
+
+    /**
+     * Set title content mail compose first
+     * 
+     * @param {string} idTarget 
+     */
+    setTitleContentMailCompose: function (params) {
+      const { title, body } = params;
+
+      let bodyConvert = body.replaceAll('\n', '</br>');
+
+      // For popup full screen box reply/compose
+      if ($('.aSs .aSt .nH').length > 0) {
+        $('.aSs .aSt .nH .aoD input[name="subjectbox"]').val(title);
+        $('.aSs .aSt .nH .Am.Al.editable.LW-avf').html(bodyConvert);
+        $('.aSs .aSt .nH .Am.Al.editable.LW-avf').focus();
+      }
+      // For pop out box reply/compose
+      else if ($('.dw .nH.nn .AD').length > 0) {
+        $('.dw .nH.nn .AD .aoD input[name="subjectbox"]').val(title);
+        $('.dw .nH.nn .AD .Am.Al.editable.LW-avf').html(bodyConvert);
+        $('.dw .nH.nn .AD .Am.Al.editable.LW-avf').focus();
+      }
+      // For box reply
+      else if ($('.aoP.HM .iN .cf.An').length > 0) {
+        $('.aoP.HM .iN .cf.An .aoD input[name="subjectbox"]').val(title);
+        $('.aoP.HM .iN .cf.An .Am.Al.editable.LW-avf').html(bodyConvert);
+        $('.aoP.HM .iN .cf.An .Am.Al.editable.LW-avf').focus();
+      } else {
+        $('.aoD input[name="subjectbox"]').val(title);
+        $('.Am.Al.editable.LW-avf').html(bodyConvert);
+        $('.Am.Al.editable.LW-avf').focus();
       }
     },
 
@@ -285,7 +322,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
             if (self.isReplyBoxClose()) {
               // Process close side panel
               setCloseSidePanel(idTarget);
-              
+
               clearInterval(self.trackingBoxComposeInterval)
               self.trackingBoxComposeInterval = null;
             } else {
