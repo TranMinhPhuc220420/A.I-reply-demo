@@ -93,6 +93,7 @@ const TabWriteManager = {
   is_loading: false,
   is_summarizing: false,
   combobox_flag: false,
+  swap_original_text_flag: false,
 
   idTab: LIST_TAB[0].id,
   formData: {
@@ -137,12 +138,23 @@ const TabWriteManager = {
                   <span id="compose_tab" class="tab-item">
                     <textarea placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_TOPIC_COMPOSE')}"></textarea>
                   </span>
-                  <span id="reply_tab" class="tab-item ">
+                  <span id="reply_tab" class="tab-item">
+
                     <textarea class="original_text_reply" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_REPLY')}"></textarea>
                     <textarea class="general_content_reply" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_GENERAL_CONTENT_REPLY')}"></textarea>
 
                     <ul class="reply-suggestions">
                     </ul>
+
+                    <div class="loading-component">
+                      <div class="loading">
+                      </div>
+                      <div class="loading">
+                      </div>
+                      <div class="loading">
+                      </div>
+                    </div>
+
                   </span>
                 </div>
               </div>
@@ -502,19 +514,36 @@ const TabWriteManager = {
 
     const { summary, key_points_list, lang_content, suggestion_list } = self.summaryMailData;
 
-    let originalTextReplyEl = document.body.querySelector(`#${self.idTab} #reply_tab .original_text_reply`);
-    renderTextStyleChatGPT(originalTextReplyEl, summary);
+    let originalTextReplyEl = document.body.querySelector(`#reply_tab .original_text_reply`);
+    // renderTextStyleChatGPT(originalTextReplyEl, summary);
+    $(originalTextReplyEl).val(summary);
+
+    let swapTextEl = document.createElement('div');
+    swapTextEl.className = 'swap-text-original';
+    swapTextEl.innerHTML = `<div class="item show-summary"></div> <div class="item show-original-text"></div>`
+    $(`#${self.idTab} #reply_tab`).append(swapTextEl);
+
+    let iconEl = document.createElement('img');
+    iconEl.src = tipsIconUrl;
+    iconEl.className = 'tips-icon';
+    $(`#${self.idTab} #reply_tab .reply-suggestions`).append(iconEl);
 
     for (let i = 0; i < suggestion_list.length; i++) {
       const suggestItem = suggestion_list[i];
-      
+
       let pEl = document.createElement('p');
-      pEl.innerHTML = suggestItem;
       let suggestEl = document.createElement('li');
+      suggestEl.setAttribute('value', suggestItem);
       suggestEl.append(pEl);
 
       $(`#${self.idTab} #reply_tab .reply-suggestions`).append(suggestEl);
+
+      renderTextStyleChatGPT(pEl, suggestItem)
     }
+
+    setTimeout(() => {
+      $('.original_text_reply').focus();
+    }, 200);
   },
 
   /**
@@ -538,6 +567,18 @@ const TabWriteManager = {
     setTimeout(() => {
       alertEl.remove();
     }, 3000);
+  },
+
+  setActiveTab: (tabActive) => {
+    const self = TabWriteManager;
+    if (self.is_loading) return;
+    if (self.is_summarizing) return;
+
+    $(`#${self.idTab} .tab .tab-title .item`).removeClass('active');
+    $(`#${self.idTab} .tab .tab-title .item[key_tab="${tabActive}"]`).addClass('active');
+    $(`#${self.idTab} .tab .tab-body .tab-item`).removeClass('active');
+    $(`#${self.idTab} .tab .tab-body #${tabActive}`).addClass('active');
+    $(`#${self.idTab} .tab .tab-body #${tabActive} textarea`).focus();
   },
 
   /**
@@ -591,6 +632,8 @@ const TabWriteManager = {
       const targetEl = event.target;
       const keyTab = targetEl.getAttribute('key_tab');
 
+      if (self.is_summarizing) return;
+
       $(`#${self.idTab} .voice-config .formality`).removeClass('hidden');
       $(`#${self.idTab} .voice-config .formality_reply`).removeClass('hidden');
       if (keyTab == 'reply_tab') {
@@ -638,7 +681,7 @@ const TabWriteManager = {
     })
 
     // For button submit generate
-    $(`#${self.idTab} .submit-generate`).click(self.onSubmitGenerate);
+    $(document).on('click', `#${self.idTab} .submit-generate`, self.onSubmitGenerate);
 
     // For items options voice config
     $(document).on('click', `#${self.idTab} .form-config .wrap-config .item`, self.onClickConfigItem);
@@ -647,17 +690,70 @@ const TabWriteManager = {
     $(document).on('click', `#${self.idTab} .form-config .wrap-config .item .close`, self.handlerRemoveOptionVoiceConfig);
 
     // For action button session result footer
-    $(`#${self.idTab} .result-footer .btn.re-generate`).click(self.onSubmitGenerate);
-    $(`#${self.idTab} .result-footer .btn.copy-content`).click(self.onClickCopyContentResult);
-    $(`#${self.idTab} .result-footer .btn.send-to-site`).click(self.onClickSendContentResultToBrowserPage);
+    $(document).on('click', `#${self.idTab} .result-footer .btn.re-generate`, self.onSubmitGenerate);
+    $(document).on('click', `#${self.idTab} .result-footer .btn.copy-content`, self.onClickCopyContentResult);
+    $(document).on('click', `#${self.idTab} .result-footer .btn.send-to-site`, self.onClickSendContentResultToBrowserPage);
 
     document.body.querySelector(`#${self.idTab} #version_gpt`).onSelect = self.onSelectVersionGptConfig;
+
+    // For input original text
+    $(document).on('focus', `#${self.idTab} #reply_tab .original_text_reply`, event => {
+      setTimeout(() => {
+        if (self.swap_original_text_flag) {
+          self.swap_original_text_flag = false;
+        } else {
+          $('.swap-text-original').addClass('show');
+        }
+      }, 200);
+    })
+    $(document).on('focusout', `#${self.idTab} #reply_tab .original_text_reply`, event => {
+      setTimeout(() => {
+        if (self.swap_original_text_flag) {
+          self.swap_original_text_flag = false;
+        } else {
+          $('.swap-text-original').removeClass('show');
+        }
+      }, 200);
+    })
+    $(document).on('click', `#${self.idTab} .show-summary`, event => {
+      if (self.is_loading || self.is_summarizing) return;
+      $('.original_text_reply').val(self.summaryMailData.summary);
+
+      self.swap_original_text_flag = true;
+
+      $('.original_text_reply').focus();
+      $('#reply_tab .original_text_reply').scrollTop(0);
+    });
+    $(document).on('click', `#${self.idTab} .show-original-text`, event => {
+      if (self.is_loading || self.is_summarizing) return;
+      console.log(self.title_content_mail_to_write.original_text);
+      $('.original_text_reply').val(self.title_content_mail_to_write.original_text);
+
+      self.swap_original_text_flag = true;
+
+      $('.original_text_reply').focus();
+      $('#reply_tab .original_text_reply').scrollTop(0);
+    });
+
+    // For reply suggestions
+    $(document).on('mouseover', `#${self.idTab} #reply_tab .reply-suggestions li`, event => {
+      $('.general_content_reply').attr('placeholder', event.target.getAttribute('value'));
+    })
+    $(document).on('mouseleave', `#${self.idTab} #reply_tab .reply-suggestions li`, event => {
+      $('.general_content_reply').attr('placeholder', MyLang.getMsg('TXT_PLACEHOLDER_GENERAL_CONTENT_REPLY'));
+    })
+    $(document).on('click', `#${self.idTab} #reply_tab .reply-suggestions li`, event => {
+      if (self.is_loading || self.is_summarizing) return;
+
+      $('.general_content_reply').val(event.target.getAttribute('value'));
+      $('.general_content_reply').focus();
+    })
   },
 
   /**
-     * Handler show generate result
-     * 
-     */
+   * Handler show generate result
+   * 
+   */
   handlerShowGenerateResult: function () {
     const self = TabWriteManager;
 
@@ -695,11 +791,15 @@ const TabWriteManager = {
       $(`#${self.idTab} #result .result-generate`).append(resultDivEl);
     }
 
-    $(`#${self.idTab} #result .result-generate`).css('height', `${resultActiveEl.offsetHeight}px`)
-
-    self.handlerUpdatePaging();
+    let height = 0;
+    if (resultActiveEl) {
+      height = resultActiveEl.offsetHeight;
+    }
+    $(`#${self.idTab} #result .result-generate`).css('height', `${height}px`)
 
     self.is_loading = false;
+
+    self.handlerUpdatePaging();
   },
 
   /**
@@ -832,6 +932,10 @@ const TabWriteManager = {
     title = title.trim(), original_text = original_text.trim();
     if (title == '' || original_text == '') return;
 
+    $('#reply_tab').addClass('is-loading');
+
+    self.setActiveTab('reply_tab');
+
     self.is_summarizing = true;
     _SendMessageManager.getSummaryContentMail(title, original_text, (dataRes) => {
       self.summaryMailData = dataRes;
@@ -839,7 +943,24 @@ const TabWriteManager = {
       self.loadSummaryMailData();
 
       self.is_summarizing = false;
+      $('#reply_tab').removeClass('is-loading');
     });
+  },
+
+  clearTitleContentMailToWrite: () => {
+    const self = TabWriteManager;
+    if (self.is_loading) return;
+
+    self.summaryMailData = null;
+    self.generate_result_list = [];
+
+    $(`#${self.idTab} #result`).addClass('hidden');
+
+    $(`#${self.idTab} #reply_tab .original_text_reply`).val('');
+    $(`#${self.idTab} #reply_tab .general_content_reply`).val('');
+    $(`#${self.idTab} #reply_tab .swap-text-original`).remove();
+    $(`#${self.idTab} #reply_tab .reply-suggestions .tips-icon`).remove();
+    $(`#${self.idTab} #reply_tab .reply-suggestions li`).remove();
   },
 
   // Event
@@ -861,11 +982,7 @@ const TabWriteManager = {
     if (self.is_summarizing) {
       tabActive = 'reply_tab'
     }
-    $(`#${self.idTab} .tab .tab-title .item`).removeClass('active');
-    $(`#${self.idTab} .tab .tab-title .item[key_tab="${tabActive}"]`).addClass('active');
-    $(`#${self.idTab} .tab .tab-body .tab-item`).removeClass('active');
-    $(`#${self.idTab} .tab .tab-body #${tabActive}`).addClass('active');
-    $(`#${self.idTab} .tab .tab-body #${tabActive} textarea`).focus();
+    self.setActiveTab(tabActive);
 
     $(`#${self.idTab} .voice-config .formality`).removeClass('hidden');
     $(`#${self.idTab} .voice-config .formality_reply`).addClass('hidden');
@@ -931,6 +1048,7 @@ const TabWriteManager = {
     let itemActive = self.generate_result_list[self.result_active];
 
     let params = {
+      id_popup: self.title_content_mail_to_write.id_popup,
       title: itemActive.title,
       body: itemActive.body,
     }
@@ -1281,6 +1399,24 @@ const storageOnChanged = (payload, type) => {
 
     USER_SETTING.language_active = TabWriteManager.getLanguageFromConfig();
   }
+  if ('title_content_mail_to_write' in payload) {
+    let dataNew = payload.title_content_mail_to_write.newValue;
+
+    if (dataNew) {
+      TabWriteManager.clearTitleContentMailToWrite();
+      TabWriteManager.title_content_mail_to_write = { ...dataNew };
+      TabWriteManager.processTitleContentMailToWrite();
+    }
+  }
+  if ('trigger_close_side_panel' in payload) {
+    let { is_close, id_popup } = payload.trigger_close_side_panel.newValue;
+
+    if (is_close == true) {
+      _StorageManager.setCloseSidePanel(null, null, () => {
+        window.close();
+      });
+    }
+  }
 }
 
 /**
@@ -1288,6 +1424,8 @@ const storageOnChanged = (payload, type) => {
  * 
  */
 const initialize_side = async () => {
+  $('body').addClass(LOCALE_CODES.getLangUI());
+
   let pallaFinishedCount = 0;
   let NUM_PROCEED_PALLA_FINISHED_COUNT = 3;
   let proceedByPallaFinishedCount = function () {
@@ -1324,14 +1462,10 @@ const initialize_side = async () => {
   })
 
   _StorageManager.getTitleContentMailToWrite(titleContent => {
-    TabWriteManager.title_content_mail_to_write = titleContent;
+    TabWriteManager.title_content_mail_to_write = { ...titleContent };
 
     proceedByPallaFinishedCount();
   })
-
-  chrome.storage.onChanged.addListener(storageOnChanged);
-
-  $('body').addClass(LOCALE_CODES.getLangUI());
 
   chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
     ID_USER_ADDON_LOGIN = userInfo.id;
@@ -1346,6 +1480,8 @@ const initialize_side = async () => {
 
     proceedByPallaFinishedCount();
   });
+
+  chrome.storage.onChanged.addListener(storageOnChanged);
 }
 
 // __main__

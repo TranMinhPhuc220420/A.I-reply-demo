@@ -77,25 +77,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
   }
 
   /**
-   * Find to die element by query string
-   * 
-   * @param {string} queryFind 
-   * @param {Function} callback 
-   * @param {Number} time 
-   */
-  function find(queryFind, callback, time) {
-    let timeSetInterval = setInterval(() => {
-      let elFind = document.body.querySelector(queryFind);
-      if (elFind) {
-        callback(elFind);
-      }
-      if (!_MyPopup.getRootPopupEl() || elFind) {
-        clearInterval(timeSetInterval);
-      }
-    }, time ? time : 0);
-  }
-
-  /**
    * Handler when storage has value change
    * 
    * @param {Event} event 
@@ -104,33 +85,12 @@ document.addEventListener('RW759_connectExtension', function (e) {
     // on has result send from side panel to add to reply or compose box
     if ('side_panel_send_result' in payload) {
       const newValue = payload.side_panel_send_result.newValue;
-      if (newValue.title && newValue.body) {
-        _MailAIGenerate.setMailCompose(newValue);
+      if (newValue.id_popup && newValue.title && newValue.body) {
+        _MailAIGenerate.setTitleContentMail(newValue);
       }
       setTimeout(() => {
         chrome.storage.sync.set({ side_panel_send_result: {} });
       }, 1000);
-    }
-
-    // on list language user config has changed
-    else if ('write_language_output_list' in payload) {
-      _MyPopup.language_output_list_config = payload.write_language_output_list.newValue;
-
-      if (_MyPopup.getRootPopupEl()) {
-        _MyPopup.loadLangConfig();
-      }
-    }
-
-    // on language (your_lang) user config has changed
-    else if ('write_language_output_active' in payload) {
-      let record = payload.write_language_output_active.newValue;
-
-      _MyPopup.formData.voice_setting['your_lang'] = record.value;
-      USER_SETTING.language_write_active = record;
-      
-      if (_MyPopup.getRootPopupEl()) {
-        _MyPopup.reLoadVoiceConfig();
-      }
     }
   }
 
@@ -144,1139 +104,22 @@ document.addEventListener('RW759_connectExtension', function (e) {
     }
   }
 
-  /**
-   * Send message manager
-   * 
-   */
-  const _SendMessageManager = {
-    /**
-     * Get data json to show popup in mail
-     * 
-     * @param {string} titleMail 
-     * @param {string} contentMail 
-     * @param {Function} callback 
-     */
-    getDataToShowPopup: function (titleMail, contentMail, callback) {
-      // Get open ai KEY
-      getChatGPTAIKey((gptAiKey) => {
-        let params = {
-          title_mail: titleMail,
-          content_mail: contentMail,
-          gpt_ai_key: gptAiKey,
-          lang: USER_SETTING.language_write_active.value
-        };
-
-        // Call request get data to show popup in mail
-        getDataToShowPopupInMailRequest(params, (response) => {
-          callback({
-            summary: response.summarize,
-            key_points_list: response.key_points,
-            lang_content: response.language,
-            suggestion_list: response.answer_suggest,
-          });
-        })
-      })
-    },
-
-    /**
-     * Generate content reply mail with config
-     * 
-     * @param {JSON} params 
-     * @param {Function} callback 
-     */
-    generateContentReplyMail: function (params, callback) {
-      // Get open ai KEY
-      getChatGPTAIKey((gptAiKey) => {
-        params.gpt_ai_key = gptAiKey;
-
-        // Call request generate content reply mail with config
-        generateContentReplyMailRequest(params, (response) => {
-          callback(response);
-        })
-      })
-    }
+  const setOpenSidePanel = () => {
+    // open side panel when action for compose
+    chrome.runtime.sendMessage({
+      method: 'open_side_panel',
+    })
   };
-
-  // /**
-  //  * My popup
-  //  * 
-  //  * not use :(
-  //  */
-  // const _MyPopup = {
-  //   _list_popup_el: {},
-  //   stillBoxReplyIntervalRealtime: null,
-
-  //   combobox_flag: false,
-
-  //   is_loading: false,
-
-  //   formData: {
-  //     voice_setting: {},
-  //   },
-  //   result_active: 0,
-  //   generate_result_list: [],
-  //   language_output_list_config: [],
-
-  //   /**
-  //    * Get inner HTML in popup
-  //    * 
-  //    * @returns {string}
-  //    */
-  //   getVHtml: function () {
-  //     let transformX = window.innerWidth - 800;
-  //     let transformY = window.innerHeight - 700;
-
-  //     // process when box reply is type pop out
-  //     let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
-  //     for (let i = 0; i < listAllBoxCompose.length; i++) {
-  //       const item = listAllBoxCompose[i];
-
-  //       let isReplyInBox = false;
-  //       let elContainerReply = $(item).parents('.AD')[0];
-  //       isReplyInBox = ($(elContainerReply).find('.aoP .I5 .bAs table[role="presentation"]').length > 0)
-
-  //       if (isReplyInBox) {
-  //         transformX -= (elContainerReply.offsetWidth - 120);
-  //         transformY += 125;
-  //       }
-  //     }
-
-  //     let reloadIconUrl = chrome.runtime.getURL("icons/refresh-icon.png");
-  //     let closeIconUrl = chrome.runtime.getURL("icons/close-icon.png");
-  //     let sendIconUrl = chrome.runtime.getURL("icons/send-icon.png")
-  //     let translateIconUrl = chrome.runtime.getURL("icons/translate.svg")
-  //     let voidConfigIconUrl = chrome.runtime.getURL("icons/graphic-eq.svg");
-  //     let reGenerateIconUrl = chrome.runtime.getURL("icons/refresh-icon.png");
-  //     let copyIconUrl = chrome.runtime.getURL("icons/content-copy-icon.png");
-  //     let backIconUrl = chrome.runtime.getURL("icons/black-icon.png");
-
-  //     return `
-  //     <div id="ai_reply_popup" class="show-form form-loading" style="transform:translateX(${transformX}px) translateY(${transformY}px) translateZ(0px)">
-  //       <div class="title">
-  //         <div class="wrap-title">
-  //           <div class="left">
-  //             <img class="logo" src="${FAVICON_URL}" alt="logo">
-  //             <span class="name">${MyLang.getMsg('TXT_AI_REPLY')}</span>
-  //           </div>
-  //           <div class="right">
-  //             <button class="reload">
-  //               <img src="${reloadIconUrl}" alt="">
-  //             </button>
-  //             <button class="close">
-  //               <img src="${closeIconUrl}" alt="">
-  //             </button>
-  //           </div>
-  //         </div>
-  //       </div>
-
-  //       <div class="body">
-  //         <div class="main">
-  //           <div class="summary-content-mail">
-  //             <div class="top">
-  //               <div class="tab">
-  //                 <h5 data-key-tab="tab1" class="active">${MyLang.getMsg('TXT_SUMMARY')}</h5>
-  //                 <h5 data-key-tab="tab2">${MyLang.getMsg('TXT_KEY_POINTS')}</h5>
-  //               </div>
-  //               <div class="language">
-  //                 <span>${MyLang.getMsg('TXT_ORIGINAL_LANGUAGE')}:</span>
-  //               </div>
-  //             </div>
-
-  //             <div class="body-tab">
-  //               <div id="tab1" class="tab-item loading active">
-  //                 <p id="summary"></p>
-  //               </div>
-  //               <div id="tab2" class="tab-item loading">
-  //                 <ul id="key_points"></ul>
-  //               </div>
-  //             </div>
-  //           </div>
-
-  //           <div class="reply-suggestions">
-  //             <h5>${MyLang.getMsg('TXT_REPLY_SUGGESTIONS')}</h5>
-
-  //             <div class="voice-config" title="${MyLang.getMsg('DES_CLICK_TO_CONFIG_VOICE')}">
-  //               <div class="icon">
-  //                 <img src="${voidConfigIconUrl}" alt="">
-  //               </div>
-  //               <div class="config">
-  //               </div>
-  //             </div>
-
-  //             <div class="popup-voice-config">
-  //               <div class="title">
-  //                 <div class="wrap-title">
-  //                   <div class="left">
-  //                     <img src="${voidConfigIconUrl}">
-  //                     <span class="name">${MyLang.getMsg('TXT_VOICE_SETTING')}</span>
-  //                   </div>
-  //                   <div class="right">
-  //                     <button class="close">
-  //                       <img src="${closeIconUrl}" alt="">
-  //                     </button>
-  //                   </div>
-  //                 </div>
-  //               </div>
-
-  //               <div class="body">
-  //               </div>
-
-  //               <div class="your-language config">
-  //                 <div class="title">
-  //                   <img class="icon" src="${translateIconUrl}" alt="translate-icon">
-  //                   <span class="text">${MyLang.getMsg('TXT_LANGUAGE')}:</span>
-  //                 </div>
-  //                 <div class="options">
-  //                 </div>
-  //               </div>
-                
-  //             </div>
-
-  //             <div class="option loading">
-  //               <p></p>
-  //             </div>
-  //             <div class="option loading">
-  //               <p></p>
-  //             </div>
-  //             <div class="option loading">
-  //               <p></p>
-  //             </div>
-  //           </div>
-
-  //           <div class="result-generate">
-  //             <div class="top">
-  //               <div class="left">
-  //                 <h5>${MyLang.getMsg('TXT_RESULT')}</h5>
-  //               </div>
-
-  //               <div class="right">
-  //                 <div class="paging">
-  //                   <svg class="icon prev" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000">
-  //                     <path d="M0 0h24v24H0z" fill="none" />
-  //                     <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-  //                   </svg>
-  //                   <span class="text"> 1/3 </span>
-  //                   <svg class="icon next" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000">
-  //                     <path d="M0 0h24v24H0z" fill="none" />
-  //                     <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
-  //                   </svg>
-  //                 </div>
-  //               </div>
-  //             </div>
-
-  //             <div class="title-email"></div>
-
-  //             <div class="body-mail">
-  //               <textarea></textarea>
-  //             </div>
-  //           </div>
-
-  //         </div>
-
-  //         <form id="form_tell_sider">
-  //           <button class="back" type="button">
-  //             <img src="${backIconUrl}" alt="">
-  //           </button>
-  //           <input type="text" placeholder="${MyLang.getMsg('DES_TELL_SIDER_TO_REPLY')}">
-  //           <button type="submit">
-  //             <img src="${sendIconUrl}" alt="">
-  //           </button>
-  //         </form>
-  //         <div class="action-btn">
-  //           <div class="left">
-  //             <p>${MyLang.getMsg('TXT_CONTINUE_IMPROVING')}</p>
-  //           </div>
-  //           <div class="right">
-  //             <button class="re-generate icon">
-  //               <img src="${reGenerateIconUrl}" alt="">
-  //             </button>
-  //             <button class="copy-cotnent icon">
-  //               <img src="${copyIconUrl}" alt="">
-  //             </button>
-  //             <button class="insert-btn">
-  //               <span>${MyLang.getMsg('TXT_INSERT')}</span>
-  //             </button>
-  //           </div>
-  //         </div>
-          
-  //       </div>
-  //     </div>`;
-  //   },
-
-  //   /**
-  //    * Focus input
-  //    * 
-  //    * @param {string} idPopup id popup want to focus input
-  //    */
-  //   focusInput: function (idPopup) {
-  //     find(`#root_ai_reply_popup[s_popup_id="${idPopup}"] #form_tell_sider input`, (elFind) => {
-  //       elFind.focus();
-  //     });
-  //   },
-
-  //   /**
-  //    * Fix position popup when some action resize
-  //    * 
-  //    */
-  //   fixPosition: function () {
-  //     let transformX = window.innerWidth - 750;
-  //     let transformY = window.innerHeight - 700;
-
-  //     let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
-  //     for (let i = 0; i < listAllBoxCompose.length; i++) {
-  //       const item = listAllBoxCompose[i];
-
-  //       let isReplyInBox = false;
-  //       let elContainerReply = $(item).parents('.AD')[0];
-  //       isReplyInBox = ($(elContainerReply).find('.aoP .I5 .bAs table[role="presentation"]').length > 0)
-
-  //       if (isReplyInBox) {
-  //         transformX = transformX - (elContainerReply.offsetWidth - 70);
-  //         transformY += 125;
-  //       }
-  //     }
-
-  //     find('#ai_reply_popup', (elFind) => {
-  //       elFind.style.top = 'unset';
-  //       elFind.style.left = 'unset';
-  //       elFind.style.transform = `translateX(${transformX}px) translateY(${transformY}px) translateZ(0px)`;
-  //     });
-  //   },
-
-  //   /**
-  //    * Handler show generate result
-  //    * 
-  //    */
-  //   handlerShowGenerateResult: function () {
-  //     const self = _MyPopup;
-
-  //     $('#ai_reply_popup').removeClass('show-form');
-  //     $('#ai_reply_popup').removeClass('show-to-re-generate');
-  //     $('#ai_reply_popup').addClass('show-result');
-
-  //     const result = self.generate_result_list;
-  //     self.result_active = (result.length - 1);
-
-  //     find('.result-generate .title-email', elFind => {
-  //       elFind.innerHTML = '';
-
-  //       for (let i = 0; i < result.length; i++) {
-  //         const item = result[i];
-  //         let isActive = (i == self.result_active)
-  //         let textEl = document.createElement('p');
-  //         textEl.setAttribute('data-index', i);
-  //         if (isActive) {
-  //           textEl.className = 'active';
-  //           renderTextStyleChatGPT(textEl, item.title);
-  //         } else {
-  //           textEl.innerHTML = item.title;
-  //         }
-  //         elFind.append(textEl);
-  //       }
-  //     });
-
-  //     find('.result-generate .body-mail', elFind => {
-  //       elFind.innerHTML = '';
-
-  //       for (let i = 0; i < result.length; i++) {
-  //         const item = result[i];
-  //         let isActive = (i == self.result_active)
-  //         let textareaEl = document.createElement('textarea');
-  //         textareaEl.setAttribute('data-index', i);
-  //         if (isActive) {
-  //           textareaEl.className = 'active';
-  //           renderTextStyleChatGPT(textareaEl, item.body);
-  //         } else {
-  //           textareaEl.innerHTML = item.body;
-  //         }
-  //         elFind.append(textareaEl);
-  //       }
-  //     });
-
-  //     self.handlerUpdatePaging();
-  //     self.is_loading = false;
-  //   },
-
-  //   /**
-  //    * Handler update paging status
-  //    * 
-  //    */
-  //   handlerUpdatePaging: function () {
-  //     const self = _MyPopup;
-  //     const result_list = self.generate_result_list;
-
-  //     find('.result-generate .text', elFind => {
-  //       elFind.innerHTML = `${self.result_active + 1}/${result_list.length}`
-  //     });
-
-  //     // paging prev
-  //     if (self.result_active <= 0) {
-  //       FoDoc.body.querySelector('.result-generate .paging .prev').classList.add('disable');
-  //     } else {
-  //       FoDoc.body.querySelector('.result-generate .paging .prev').classList.remove('disable');
-  //     }
-
-  //     // paging next
-  //     if (self.result_active >= (result_list.length - 1)) {
-  //       FoDoc.body.querySelector('.result-generate .paging .next').classList.add('disable');
-  //     } else {
-  //       FoDoc.body.querySelector('.result-generate .paging .next').classList.remove('disable');
-  //     }
-  //   },
-
-  //   /**
-  //    * Show popup handler
-  //    * 
-  //    * @param {string} idPopup id popup
-  //    */
-  //   showPopup: function (idPopup) {
-  //     const self = _MyPopup;
-
-  //     self.result_active = 0;
-  //     self.generate_result_list = [];
-  //     // for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
-  //     //   const item = VOICE_SETTING_DATA[i];
-  //     //   self.formData.voice_setting[item.name_kind] = item.options[0];
-  //     // }
-
-  //     if (self._list_popup_el[idPopup]) {
-  //       self.focusInput(idPopup);
-  //       return;
-  //     }
-
-  //     let lang = LOCALE_CODES.getLangUI();
-
-  //     let root = document.createElement('div');
-  //     root.id = 'root_ai_reply_popup'
-  //     root.innerHTML = self.getVHtml();
-  //     root.className = lang;
-  //     root.setAttribute('s_popup_id', idPopup);
-  //     FoDoc.body.append(root);
-
-  //     self._list_popup_el[idPopup] = root;
-
-  //     self.reLoadVoiceConfig();
-  //     self.addEventUIForDialog(idPopup);
-
-  //     _StorageManager.getLanguageWriteList(config => {
-  //       _MyPopup.language_output_list_config = config;
-  //       self.loadLangConfig();
-  //     });
-  //   },
-
-  //   /**
-  //    * Close popup handler
-  //    * 
-  //    * @param {string} idPopup id popup
-  //    */
-  //   closePopup: function (idPopup) {
-  //     const self = _MyPopup;
-  //     // if (self.is_loading) return;
-
-  //     clearInterval(self.stillBoxReplyIntervalRealtime);
-  //     self.stillBoxReplyIntervalRealtime = null;
-
-  //     if (self._list_popup_el[idPopup]) {
-  //       self._list_popup_el[idPopup].remove();
-  //       delete self._list_popup_el[idPopup];
-  //     }
-  //   },
-
-  //   getRootPopupEl: function () {
-  //     return document.getElementById('root_ai_reply_popup');
-  //   },
-
-  //   /**
-  //    * Add event for action
-  //    * 
-  //    * @param {string} idPopup id popup
-  //    */
-  //   addEventForAction: function (idPopup) {
-  //     const self = _MyPopup;
-  //     let clsTemplate;
-
-  //     // For combobox component
-  //     clsTemplate = '.popup-voice-config .combobox';
-  //     $(document).off('click', clsTemplate, self.onClickCombobox);
-  //     $(document).on('click', clsTemplate, self.onClickCombobox);
-
-  //     clsTemplate = `.popup-voice-config .popover-cbx.wrap-item .combobox-item`;
-  //     $(document).off('click', clsTemplate, self.onClickItemCombobox);
-  //     $(document).on('click', clsTemplate, self.onClickItemCombobox);
-
-  //     clsTemplate = '#ai_reply_popup .option';
-  //     $(document).off('click', clsTemplate, self.onClickOptionItem);
-  //     $(document).on('click', clsTemplate, self.onClickOptionItem);
-
-  //     // Button voice-config
-  //     clsTemplate = '.reply-suggestions .popup-voice-config .config .options button.item';
-  //     $(document).off('click', clsTemplate, self.onClickOptionVoiceConfigItem);
-  //     $(document).on('click', clsTemplate, self.onClickOptionVoiceConfigItem);
-
-  //     // Remove and save language config
-  //     clsTemplate = `.reply-suggestions .popup-voice-config .your-language .item .close`;
-  //     $(document).off('click', clsTemplate, self.onClickRemoveLanguageConfig);
-  //     $(document).on('click', clsTemplate, self.onClickRemoveLanguageConfig);
-
-  //     $('.action-btn button.re-generate').click((event) => {
-  //       if (self.is_loading) return;
-
-  //       self.handlerReloadGenerateReplyAgain();
-  //     });
-
-  //     $('.action-btn button.copy-cotnent').click((event) => {
-  //       if (self.is_loading) return;
-
-  //       navigator.clipboard.writeText(self.generate_result_list[self.result_active].body);
-  //     });
-
-  //     $('.action-btn button.insert-btn').click((event) => {
-  //       if (self.is_loading) return;
-
-  //       _MailAIGenerate.setMailReply(self.generate_result_list[self.result_active]);
-  //       self.closePopup(idPopup);
-  //     });
-
-  //     find('form#form_tell_sider', (elFind) => {
-  //       elFind.addEventListener('submit', (event) => {
-  //         event.preventDefault();
-
-  //         if (self.is_loading) return;
-
-  //         self.handlerSubmitForm(idPopup);
-  //       })
-  //     });
-
-  //     // Close popup event
-  //     find('#ai_reply_popup .reload', (elFind) => {
-  //       elFind.addEventListener('click', () => {
-  //         if (self.is_loading) return;
-
-  //         self.closePopup(idPopup);
-  //         _MailAIGenerate.handlerReplyBtnClick();
-  //       })
-  //     });
-  //   },
-
-  //   /**
-  //    * Add event or UI
-  //    * 
-  //    * @param {string} idPopup id popup
-  //    */
-  //   addEventForUI: function (idPopup) {
-  //     const self = _MyPopup;
-
-  //     // Tab summary
-  //     $('.summary-content-mail h5').click((event) => {
-  //       const idItemTab = event.target.getAttribute('data-key-tab');
-
-  //       $('.summary-content-mail h5').removeClass('active');
-  //       $(event.target).addClass('active');
-
-  //       $('.summary-content-mail .body-tab .tab-item').removeClass('active');
-  //       $(`.summary-content-mail .body-tab #${idItemTab}`).addClass('active');
-  //     });
-
-  //     // Voice-config
-  //     $('.reply-suggestions .voice-config').click((event) => {
-  //       if (self.is_loading) return;
-
-  //       let clsToAdd = 'show-voice-config';
-  //       if ($('#ai_reply_popup').hasClass(clsToAdd)) {
-  //         $('#ai_reply_popup').removeClass(clsToAdd);
-  //       } else {
-  //         $('#ai_reply_popup').addClass(clsToAdd);
-  //       }
-  //     });
-  //     // Button close voice-config
-  //     $('.popup-voice-config button.close').click((event) => {
-  //       $('#ai_reply_popup').removeClass('show-voice-config');
-  //     });
-
-  //     // Button open re generate reply email
-  //     $('#form_tell_sider button.back').click((event) => {
-  //       $('#ai_reply_popup').removeClass('show-to-re-generate');
-  //     });
-  //     $('.action-btn .left p').click((event) => {
-  //       $('#ai_reply_popup').addClass('show-to-re-generate');
-  //     });
-
-  //     // Paging for generate list
-  //     find('.result-generate .paging', elFind => {
-  //       const handlerActive = () => {
-  //         $('.result-generate .title-email p').removeClass('active');
-  //         $(`.result-generate .title-email p[data-index="${self.result_active}"]`).addClass('active');
-
-  //         $('.result-generate .body-mail textarea').removeClass('active');
-  //         $(`.result-generate .body-mail textarea[data-index="${self.result_active}"]`).addClass('active');
-
-  //         self.handlerUpdatePaging();
-  //       };
-
-  //       $('.result-generate .paging .prev').click((event) => {
-  //         if (event.target.className.baseVal.indexOf('disable') != -1) {
-  //           return;
-  //         }
-  //         self.result_active--;
-  //         handlerActive();
-  //       })
-  //       $('.result-generate .paging .next').click((event) => {
-  //         if (event.target.className.baseVal.indexOf('disable') != -1) {
-  //           return;
-  //         }
-  //         self.result_active++;
-  //         handlerActive();
-  //       })
-  //     });
-  //   },
-
-  //   /**
-  //    * Add event UI for dialog
-  //    * 
-  //    * @param {string} idPopup id popup
-  //    */
-  //   addEventUIForDialog: (idPopup) => {
-  //     const self = _MyPopup;
-
-  //     find('form#form_tell_sider', (elFind) => {
-  //       elFind.addEventListener('submit', (event) => {
-  //         event.preventDefault();
-  //       })
-  //     });
-
-  //     // Down Drag event
-  //     find('#ai_reply_popup', (elFind) => {
-  //       let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-  //       if (elFind.querySelector(".title")) {
-  //         /* if present, the header is where you move the DIV from:*/
-  //         elFind.querySelector(".title").onmousedown = dragMouseDown;
-  //       } else {
-  //         /* otherwise, move the DIV from anywhere inside the DIV:*/
-  //         elFind.onmousedown = dragMouseDown;
-  //       }
-
-  //       function dragMouseDown(e) {
-  //         e = e || window.event;
-  //         e.preventDefault();
-  //         // get the mouse cursor position at startup:
-  //         pos3 = e.clientX;
-  //         pos4 = e.clientY;
-  //         document.onmouseup = closeDragElement;
-  //         // call a function whenever the cursor moves:
-  //         document.onmousemove = elementDrag;
-  //       }
-
-  //       function elementDrag(e) {
-  //         e = e || window.event;
-  //         e.preventDefault();
-  //         elFind.classList.add('move');
-  //         // calculate the new cursor position:
-  //         pos1 = pos3 - e.clientX;
-  //         pos2 = pos4 - e.clientY;
-  //         pos3 = e.clientX;
-  //         pos4 = e.clientY;
-  //         // set the element's new position:
-  //         elFind.style.top = (elFind.offsetTop - pos2) + "px";
-  //         elFind.style.left = (elFind.offsetLeft - pos1) + "px";
-  //       }
-
-  //       function closeDragElement() {
-  //         /* stop moving when mouse button is released:*/
-  //         document.onmouseup = null;
-  //         document.onmousemove = null;
-
-  //         elFind.classList.remove('move');
-  //       }
-  //     })
-  //     // Close popup event
-  //     find('#ai_reply_popup .close', (elFind) => {
-  //       elFind.addEventListener('click', () => {
-  //         if (self.is_loading) return;
-
-  //         self.closePopup(idPopup);
-  //       })
-  //     });
-  //     // Resize popup event
-  //     window.addEventListener("resize", (event) => {
-  //       self.fixPosition();
-  //     });
-
-  //     // Tracking to show popup event
-  //     self.stillBoxReplyIntervalRealtime = setInterval(() => {
-  //       let boxReply = document.body.querySelector('.LW-avf.tS-tW');
-  //       if (!boxReply) {
-  //         setTimeout(() => {
-  //           if (_MailAIGenerate.isReplyBoxClose()) {
-  //             self.closePopup(idPopup);
-  //           } else {
-  //             self.fixPosition();
-  //           }
-  //         }, 50);
-  //       }
-  //     });
-  //   },
-
-  //   /**
-  //    * Reload and show voice config to popup
-  //    *  
-  //    */
-  //   reLoadVoiceConfig: function () {
-  //     const self = _MyPopup;
-  //     find('.voice-config .config', (elFind) => {
-  //       elFind.innerHTML = '';
-
-  //       let list_name_kind = VOICE_SETTING_DATA.map(item => item.name_kind);
-  //       list_name_kind.push('your_lang');
-
-  //       for (let i = 0; i < list_name_kind.length; i++) {
-  //         const kindNameItem = list_name_kind[i];
-
-  //         // Not use kind formality_reply
-  //         if (kindNameItem == 'formality_reply') {
-  //           continue;
-  //         }
-
-  //         let voiceConfig = self.formData.voice_setting[kindNameItem];
-  //         if (!voiceConfig) {
-  //           continue
-  //         }
-
-  //         let record;
-  //         if (kindNameItem != 'your_lang') {
-  //           let kind = VOICE_SETTING_DATA.find(kindItem => kindItem.name_kind == kindNameItem);
-  //           record = kind.options.find(item => item.value == voiceConfig);
-  //         } else {
-  //           record = LANGUAGE_SETTING_DATA.find(langItem => langItem.value == voiceConfig);
-  //         }
-
-  //         $(`.popup-voice-config button.item[kind="${kindNameItem}"]`).removeClass('active');
-  //         $(`.popup-voice-config button.item[value="${record.value}"]`).addClass('active');
-
-  //         if (record.value.trim() != '') {
-  //           let spanEl = document.createElement('span');
-  //           spanEl.innerText = record.name;
-  //           elFind.append(spanEl);
-  //         }
-  //       }
-  //     });
-  //   },
-
-  //   /**
-  //    * Load data to popup
-  //    * 
-  //    * @param {string} idPopup id popup
-  //    * @param {object} data data need
-  //    */
-  //   loadData: function (idPopup, data) {
-  //     const self = _MyPopup;
-
-  //     // Show language of content email
-  //     find('#ai_reply_popup .summary-content-mail .language span', (elFind) => {
-  //       elFind.innerHTML = `${MyLang.getMsg('TXT_ORIGINAL_LANGUAGE')}: ${data.lang_content}`;
-  //     });
-
-  //     // Show text summary content email
-  //     find('#ai_reply_popup #summary', (elFind) => {
-  //       // elFind.innerHTML = data.summary;
-  //       renderTextStyleChatGPT(elFind, data.summary)
-  //     });
-
-  //     // Show key points of content mail
-  //     find('#ai_reply_popup #key_points', (elFind) => {
-  //       for (let i = 0; i < data.key_points_list.length; i++) {
-  //         const item = data.key_points_list[i];
-  //         const liEl = document.createElement('li');
-  //         liEl.textContent = item;
-  //         elFind.append(liEl);
-  //       }
-  //     });
-
-  //     // Show suggestion list to reply content mail
-  //     find('#ai_reply_popup .reply-suggestions', (elFind) => {
-  //       $('#ai_reply_popup .reply-suggestions .option').remove();
-
-  //       let suggestionList = data.suggestion_list;
-  //       for (let i = 0; i < suggestionList.length; i++) {
-  //         let itemSugg = suggestionList[i];
-
-  //         let optionEl = document.createElement('div');
-  //         optionEl.setAttribute('data-sugg', itemSugg)
-  //         optionEl.className = 'option'
-
-  //         let pEl = document.createElement('p');
-  //         renderTextStyleChatGPT(pEl, itemSugg, (elRendered) => {
-  //           let spanEl = document.createElement('span');
-  //           spanEl.innerHTML = '→'
-  //           elRendered.append(spanEl);
-  //         });
-
-  //         optionEl.append(pEl);
-  //         elFind.append(optionEl);
-  //       }
-  //     });
-
-  //     // Load data for voice setting
-  //     find('.popup-voice-config .body', (elFind) => {
-  //       for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
-  //         const config_item = VOICE_SETTING_DATA[i];
-
-  //         // Not use kind formality_reply
-  //         if (config_item.name_kind == 'formality_reply') continue;
-
-  //         const configEl = document.createElement('div');
-  //         configEl.className = `${config_item.name_kind} config`;
-
-  //         let vHtmlOption = ``;
-  //         for (let j = 0; j < config_item.options.length; j++) {
-  //           const optionItem = config_item.options[j];
-
-  //           let isActive = false;
-  //           if (self.formData.voice_setting[config_item.name_kind].value == optionItem.value) {
-  //             isActive = true;
-  //           }
-
-  //           vHtmlOption += `<button kind="${config_item.name_kind}" value="${optionItem.value}" class="item ${isActive ? 'active' : ''}">
-  //                             ${optionItem.display}
-  //                           </button>`
-  //         }
-  //         let vHtml = `
-  //           <div class="title">
-  //             <img class="icon" src="${config_item.icon}" alt="${config_item.name_kind}">
-  //             <span class="text">${config_item.name}:</span>
-  //           </div>
-  //           <div class="options">
-  //             ${vHtmlOption}
-  //           </div>
-  //         `;
-
-  //         configEl.innerHTML = vHtml;
-  //         elFind.append(configEl);
-  //       }
-
-  //     });
-
-  //     $('#ai_reply_popup').removeClass('form-loading');
-  //     $('.summary-content-mail .body-tab .tab-item').removeClass('loading');
-
-  //     // add event
-  //     self.addEventForUI(idPopup);
-  //     self.addEventForAction(idPopup);
-  //     self.reLoadVoiceConfig();
-
-  //     _MyPopup.is_loading = false;
-  //   },
-
-  //   /**
-  //    * Load data lang config before
-  //    * 
-  //    */
-  //   loadLangConfig: () => {
-  //     const self = _MyPopup;
-
-  //     let lang_default = LANGUAGE_SETTING_DATA[0];
-
-  //     // Get and set to your_lang with lang was used before
-  //     let langActive = USER_SETTING.language_write_active || lang_default;
-  //     self.formData.voice_setting.your_lang = langActive.value;
-
-  //     // User is begin open side panel or not generate before
-  //     if (self.language_output_list_config.length == 0) {
-  //       self.language_output_list_config.push(lang_default);
-  //       _StorageManager.addLanguageWriteList(lang_default.value);
-  //     }
-
-  //     // Shows all previously added langs
-  //     let lang_config = '';
-  //     for (let i = 0; i < self.language_output_list_config.length; i++) {
-  //       const configItem = self.language_output_list_config[i];
-
-  //       lang_config += `
-  //       <button kind="your_lang" value="${configItem.value}" class="item text ${langActive.value == configItem.value ? 'active' : ''}">
-  //         ${configItem.name}
-  //         <div class="close">
-  //           <img class="icon" src="${cancelIconUrl}">
-  //         </div>
-  //       </button>
-  //     `
-  //     }
-
-  //     // Add lang not use to option combobox
-  //     let lang_option = '';
-  //     for (let i = 0; i < LANGUAGE_SETTING_DATA.length; i++) {
-  //       const item = LANGUAGE_SETTING_DATA[i];
-
-  //       let hasInConfig = self.language_output_list_config.find(configItem => configItem.value == item.value);
-  //       lang_option += `
-  //         <li class="combobox-item ${hasInConfig ? 'hidden' : ''}" value="${item.value}">
-  //           <div class="name">${item.name}</div>
-  //           <div class="sub">${item.sub}</div>
-  //         </li>
-  //       `;
-  //     }
-
-  //     // Button combobox
-  //     let vHtml_init = `${lang_config}
-  //                       <button class="item text combobox" id="language_cbx">
-  //                           <span class="space">...</span>
-  //                           <ul class="popover-cbx wrap-item">
-  //                             ${lang_option}
-  //                           </ul>
-  //                       </button>`
-
-  //     // Add to html side panel
-  //     $(`.popup-voice-config .your-language .options`).html(vHtml_init);
-
-  //     // Set event on select item in combobox language
-  //     document.body.querySelector(`.popup-voice-config #language_cbx`).onSelect = self.onSelectLanguageConfig;
-
-  //     // Hidden combobox language element when add all language to html side panel
-  //     if ($(`.popup-voice-config .your-language .combobox-item.hidden`).length == $(`.popup-voice-config .your-language .combobox-item`).length) {
-  //       $('.popup-voice-config #language_cbx').addClass('hidden');
-  //     }
-  //   },
-
-  //   // Handler func
-
-  //   /**
-  //    * Handler submit form
-  //    * 
-  //    * @param {string} idPopup id popup
-  //    */
-  //   handlerSubmitForm: function (idPopup) {
-  //     const self = _MyPopup;
-  //     if (self.is_loading) return;
-
-  //     let contentMail = _MailAIGenerate.getContentBodyMail();
-
-  //     let suggestionReply = FoDoc.body.querySelector('form#form_tell_sider input').value.trim();
-  //     if (suggestionReply == '') return;
-
-  //     self.processAddGenerateReplyMail(contentMail, suggestionReply);
-  //   },
-
-  //   /**
-  //    * Handler reload generate reply again
-  //    * 
-  //    * @param {string} idPopup id popup
-  //    */
-  //   handlerReloadGenerateReplyAgain: function (idPopup) {
-  //     const self = _MyPopup;
-  //     if (self.is_loading) return;
-
-  //     self.processAddGenerateReplyMail(self.formData.content_mail, self.formData.suggestion_old);
-  //   },
-
-  //   /**
-  //    * Process add generate reply mail
-  //    * 
-  //    * @param {string} contentMail 
-  //    * @param {string} suggestionReply 
-  //    */
-  //   processAddGenerateReplyMail: function (contentMail, suggestionReply) {
-  //     const self = _MyPopup;
-  //     if (self.is_loading) return;
-
-  //     self.is_loading = true;
-  //     $('#ai_reply_popup').addClass('form-loading').removeClass('show-voice-config');
-
-  //     $('.result-generate .title-email').addClass('loading');
-  //     $('.result-generate .body-mail').addClass('loading');
-  //     $('#form_tell_sider').addClass('loading');
-
-  //     let voiceConfig = {};
-  //     for (const key in self.formData.voice_setting) {
-  //       if (Object.hasOwnProperty.call(self.formData.voice_setting, key)) {
-  //         const item = self.formData.voice_setting[key];
-  //         voiceConfig[key] = item;
-  //       }
-  //     }
-
-  //     // Save language used
-  //     _StorageManager.setLanguageWrite(voiceConfig.your_lang)
-  //     _StorageManager.setVoiceConfigWrite(voiceConfig);
-
-  //     self.formData.content_mail = contentMail;
-  //     self.formData.suggestion_old = suggestionReply;
-
-  //     const params = {
-  //       title_mail: _MailAIGenerate.getTitleMail(),
-  //       content_mail: contentMail,
-  //       voice_config: voiceConfig,
-  //       reply_suggested: suggestionReply,
-  //       // lang: LOCALE_CODES.getNameLocale(),
-  //     }
-
-  //     _SendMessageManager.generateContentReplyMail(params, (replyContent) => {
-  //       self.generate_result_list.push(replyContent);
-
-  //       self.handlerShowGenerateResult();
-
-  //       $('.result-generate .title-email').removeClass('loading');
-  //       $('.result-generate .body-mail').removeClass('loading');
-  //       $('#form_tell_sider').removeClass('loading');
-  //       $('#ai_reply_popup').removeClass('form-loading');
-  //     });
-  //   },
-
-  //   /**
-  //    * Handler on click combobox
-  //    * 
-  //    * @param {event} event 
-  //    */
-  //   onClickCombobox: (event) => {
-  //     const self = _MyPopup;
-
-  //     $(`.popup-voice-config .popover-cbx`).removeClass('show');
-  //     const popoverEl = event.target.querySelector(`.popup-voice-config .popover-cbx`);
-  //     if (!popoverEl) return;
-
-  //     self.combobox_flag = true;
-
-  //     popoverEl.classList.add('show');
-  //     popoverEl.style.top = `-${popoverEl.offsetHeight - 10}px`;
-  //     popoverEl.style.left = `${event.target.offsetWidth - 20}px`;
-
-  //     setTimeout(() => {
-  //       self.combobox_flag = false;
-  //     }, 100)
-  //   },
-
-  //   /**
-  //    * Handler on select item in combobox
-  //    * 
-  //    * @param {event} event 
-  //    */
-  //   onClickItemCombobox: (event) => {
-  //     const self = _MyPopup;
-
-  //     const value = event.target.getAttribute('value');
-  //     const comboboxEl = $(event.target).parents('button.combobox')[0];
-  //     if (comboboxEl.onSelect) {
-  //       comboboxEl.onSelect(comboboxEl, event.target, value);
-  //     }
-  //   },
-
-  //   /**
-  //    * Handler on click options suggest from gpt in popup
-  //    *  
-  //    * @param {event} event 
-  //    */
-  //   onClickOptionItem: (event) => {
-  //     const self = _MyPopup;
-  //     if (self.is_loading) return;
-
-  //     let contentMail = _MailAIGenerate.getContentBodyMail();
-  //     let suggestionReply = event.target.getAttribute('data-sugg');
-
-  //     event.target.classList.add('selected');
-
-  //     find('form#form_tell_sider input', (findEl) => {
-  //       findEl.value = suggestionReply;
-  //       self.processAddGenerateReplyMail(contentMail, suggestionReply);
-  //     })
-  //   },
-
-  //   /**
-  //    * Handler on click item options in voice config for write
-  //    * 
-  //    * @param {event} event 
-  //    */
-  //   onClickOptionVoiceConfigItem: (event) => {
-  //     const self = _MyPopup;
-  //     const kind = event.target.getAttribute('kind');
-  //     const value = event.target.getAttribute('value');
-
-  //     if (!kind || !value) return;
-
-  //     if (kind == 'your_lang') {
-  //       _StorageManager.setLanguageWrite(value);
-  //     } else {
-  //       let options = VOICE_SETTING_DATA.find(item => item.name_kind == kind).options;
-  //       if (!options) return;
-  //       self.formData.voice_setting[kind] = options.find(item => item.value == value).value;
-  //     }
-
-  //     self.reLoadVoiceConfig();
-  //   },
-
-  //   /**
-  //    * Handler on click remove language at list language use to voice config
-  //    * 
-  //    * @param {event} event 
-  //    */
-  //   onClickRemoveLanguageConfig: (event) => {
-  //     const self = _MyPopup;
-  //     const targetEl = event.target;
-
-  //     // There is always an optional language
-  //     if ((self.language_output_list_config.length - 1) == 0) return;
-  //     let listLangClone = [...self.language_output_list_config];
-
-  //     const parentBtnEl = $(targetEl).parents('button.item.text');
-  //     const value = parentBtnEl.attr('value');
-
-  //     _StorageManager.removeLanguageWriteList(value);
-
-  //     parentBtnEl.remove();
-  //     $(`#language_cbx .combobox-item[value="${value}"]`).removeClass('hidden');
-  //     $(`.reply-suggestions #language_cbx`).removeClass('hidden');
-
-  //     // Reset to default
-  //     for (let i = 0; i < listLangClone.length; i++) {
-  //       if (listLangClone[i].value == value) {
-  //         listLangClone.splice(i, 1);
-  //       }
-  //     }
-  //     _StorageManager.setLanguageWrite(listLangClone[0].value);
-  //   },
-
-  //   /**
-  //    * Handler on select item in language combobox
-  //    * 
-  //    * @param {Element} comboboxEl 
-  //    * @param {Element} itemEl 
-  //    * @param {string} value 
-  //    */
-  //   onSelectLanguageConfig: (comboboxEl, itemEl, value) => {
-  //     const self = _MyPopup;
-
-  //     let record = LANGUAGE_SETTING_DATA.find(item => {
-  //       return value == item.value
-  //     });
-
-  //     if (record) {
-  //       $(itemEl).addClass('hidden');
-
-  //       $(`.popup-voice-config .your-language .item`).removeClass('active');
-
-  //       const buttonEl = document.createElement('button');
-  //       buttonEl.setAttribute('kind', 'your_lang');
-  //       buttonEl.setAttribute('value', record.value);
-  //       buttonEl.className = 'item text';
-  //       buttonEl.innerHTML = record.name;
-
-  //       const closeBtnEl = document.createElement('div');
-  //       closeBtnEl.className = 'close';
-  //       closeBtnEl.innerHTML = '<img class="icon" src="' + cancelIconUrl + '">';
-
-  //       // $(buttonEl).click(self.onClickOptionVoiceConfigItem);
-
-  //       buttonEl.append(closeBtnEl);
-  //       $(buttonEl).insertBefore(comboboxEl);
-
-  //       setTimeout(() => {
-  //         $(buttonEl).addClass('active');
-  //       }, 100);
-
-  //       _StorageManager.setLanguageWrite(value);
-  //       _StorageManager.addLanguageWriteList(value);
-  //     }
-
-  //     if ($(`.popup-voice-config .your-language .combobox-item.hidden`).length == $(`.popup-voice-config .your-language .combobox-item`).length) {
-  //       $(comboboxEl).addClass('hidden');
-  //     }
-  //   },
-  // };
+  let isHasSetting = false;
+  const setCloseSidePanel = (idTarget) => {
+    if (isHasSetting) return;
+    console.log('setCloseSidePanel');
+
+    isHasSetting = true;
+    _StorageManager.setCloseSidePanel(idTarget, true, () => {
+      isHasSetting = false;
+    });
+  };
 
   /**
    * Mail Add-on
@@ -1287,6 +130,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
     AIReplyBtnEl: null,
     bodyMailEl: null,
     detectInterval_100: null,
+
+    trackingBoxReplyInterval: null,
+    trackingBoxComposeInterval: null,
 
     /**
      * Initialize the add-on when running in mail
@@ -1303,14 +149,86 @@ document.addEventListener('RW759_connectExtension', function (e) {
     // Setter
 
     /**
-     * Set title and body to box reply opening
+     * Set title and body to box compose opening
      * 
      * @param {json} params 
      */
-    setMailReply: function (params) {
-      const { title, body } = params;
+    setTitleContentMail: function (params) {
+      const { id_popup, title, body } = params;
+
+      if ($(`.sateraito-${id_popup}`).length > 0) {
+        let bodyMailEl = $(`.sateraito-${id_popup}`)[0];
+        let titleMailEl = $(bodyMailEl).parents('.AD').find('.aoD input[name="subjectbox"]');
+
+        $(titleMailEl).val(title)
+        $(bodyMailEl).html(body.replaceAll('\n', '</br>'));
+        $(bodyMailEl).focus();
+      }
+    },
+
+    /**
+     * Set id target mail reply
+     * 
+     * @param {string} idTarget 
+     */
+    setIDTargetMailReply: function (idTarget) {
+      let self = _MailAIGenerate;
+
+      if (self.trackingBoxReplyInterval != null) return;
+
+      if (!self.isHasElToSetIDTargetMailReply()) {
+        setTimeout(() => {
+          self.setIDTargetMailReply(idTarget);
+        }, 500);
+        return;
+      }
 
       let isAdded = false;
+
+      // This handle for popup out reply
+      let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
+      for (let i = 0; i < listAllBoxCompose.length; i++) {
+        const item = listAllBoxCompose[i];
+
+        let isCompose = ($(item).parents('.AD').find('.aoP .I5 .bAs table[role="presentation"]').length == 0)
+        if (!isCompose) {
+
+          $(item).find('.Am.Al.editable.LW-avf').addClass(`sateraito-${idTarget}`);
+
+          isAdded = true;
+        }
+      }
+
+      // This handle for popup normal reply
+      if (!isAdded) {
+        $('.Am.Al.editable.LW-avf').addClass(`sateraito-${idTarget}`);
+      }
+
+      // Tracking to show popup event
+      self.trackingBoxReplyInterval = setInterval(() => {
+        let boxReply = document.body.querySelector('.LW-avf.tS-tW');
+        if (!boxReply) {
+          setTimeout(() => {
+            if (self.isReplyBoxClose()) {
+              // Process close side panel
+              setCloseSidePanel(idTarget);
+
+              clearInterval(self.trackingBoxReplyInterval)
+              self.trackingBoxReplyInterval = null;
+            } else {
+              self.setIDTargetMailReply(idTarget);
+            }
+          }, 50);
+        }
+      }, 100);
+    },
+
+    /**
+     * Check is has element to set id target mail reply
+     * 
+     * @param {string} idTarget 
+     */
+    isHasElToSetIDTargetMailReply: function (idTarget) {
 
       // This handle for popup out reply
       let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
@@ -1320,34 +238,33 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
           let isCompose = ($(item).parents('.AD').find('.aoP .I5 .bAs table[role="presentation"]').length == 0)
           if (!isCompose) {
-
-            let findEl = $(item).find('.Am.Al.editable.LW-avf')[0];
-            findEl.innerHTML = body.replaceAll('\n', '</br>');
-            findEl.focus();
-
-            isAdded = true;
+            return true;
           }
         }
       }
 
       // This handle for popup normal reply
-      if (!isAdded) {
-        find('.Am.Al.editable.LW-avf', (findEl) => {
-          findEl.innerHTML = body.replaceAll('\n', '</br>');
-          findEl.focus();
-        });
-      }
+      return $('.Am.Al.editable.LW-avf').length > 0;
     },
 
     /**
-     * Set title and body to box compose opening
+     * Set id target mail compose
      * 
-     * @param {json} params 
+     * @param {string} idTarget 
      */
-    setMailCompose: function (params) {
-      const { title, body } = params;
+    setIDTargetMailCompose: function (idTarget) {
+      let self = _MailAIGenerate;
 
-      // This handle for popup out reply
+      if (self.trackingBoxComposeInterval != null) return;
+
+      if (!self.isHasElToSetIDTargetMailCompose()) {
+        setTimeout(() => {
+          self.setIDTargetMailCompose(idTarget);
+        }, 500);
+        return;
+      }
+
+      // This handle for popup out compose
       let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
       for (let i = 0; i < listAllBoxCompose.length; i++) {
         const item = listAllBoxCompose[i];
@@ -1355,15 +272,49 @@ document.addEventListener('RW759_connectExtension', function (e) {
         let isCompose = ($(item).parents('.AD').find('.aoP .I5 .bAs table[role="presentation"]').length == 0)
         if (isCompose) {
           // Set title
-          let findEl = $(item).find('.aoD input[name="subjectbox"]');
-          findEl.val(title)
-
-          // Set body
-          findEl = $(item).find('.iN .Am.Al.editable.LW-avf');
-          findEl.html(body.replaceAll('\n', '</br>'));
-          findEl.focus();
+          let findEl = $(item).find('.iN .Am.Al.editable.LW-avf');
+          $(findEl).addClass(`sateraito-${idTarget}`);
         }
       }
+
+      // Tracking to show popup event
+      self.trackingBoxComposeInterval = setInterval(() => {
+        let boxReply = document.body.querySelector('.LW-avf.tS-tW');
+        if (!boxReply) {
+          setTimeout(() => {
+            if (self.isReplyBoxClose()) {
+              // Process close side panel
+              setCloseSidePanel(idTarget);
+              
+              clearInterval(self.trackingBoxComposeInterval)
+              self.trackingBoxComposeInterval = null;
+            } else {
+              self.setIDTargetMailCompose(idTarget);
+            }
+          }, 50);
+        }
+      }, 100);
+    },
+
+    /**
+     * Check is has element to set id target mail compose
+     * 
+     * @param {string} idTarget 
+     */
+    isHasElToSetIDTargetMailCompose: function (idTarget) {
+
+      // This handle for popup out compose
+      let listAllBoxCompose = $('.nH.nn .AD .nH .aaZ .M9 .aoP.aoC')
+      for (let i = 0; i < listAllBoxCompose.length; i++) {
+        const item = listAllBoxCompose[i];
+
+        let isCompose = ($(item).parents('.AD').find('.aoP .I5 .bAs table[role="presentation"]').length == 0)
+        if (isCompose) {
+          return true;
+        }
+      }
+
+      return false;
     },
 
     /**
@@ -1388,21 +339,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
     },
 
     // Getter
-
-    /**
-     * Get id inbox mail
-     * 
-     * @returns {string}
-     */
-    getIdInbox: function () {
-      let url = window.location.href;
-      let regex = /\/([^\/#\?]+)$/; // Matches any characters after the last "/", but before "#" or "?"
-      let match = url.match(regex);
-      let desiredSubstring = match ? match[1] : null;
-      debugLog(desiredSubstring);
-
-      return desiredSubstring;
-    },
 
     /**
      * Get body mail
@@ -1592,95 +528,18 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * @param {string} contentMail 
      */
     processRequestToShowPopup: function (titleMail, contentMail) {
-      // let btnReplyMailEl = FoDoc.body.querySelector('.ams.bkH');
-      // if (btnReplyMailEl) {
-      //   btnReplyMailEl.click();
-      // }
+      let self = _MailAIGenerate;
+      const idPopup = getNewIdPopup();
 
-      // const idPopup = getNewIdPopup();
-      // find('.LW-avf.tS-tW', (elFind) => {
-      //   let pallaFinishedCount = 0;
-      //   let NUM_PROCEED_PALLA_FINISHED_COUNT = 3;
-      //   let proceedByPallaFinishedCount = function () {
-      //     pallaFinishedCount++;
-      //     if (pallaFinishedCount >= NUM_PROCEED_PALLA_FINISHED_COUNT) {
+      let btnReplyMailEl = FoDoc.body.querySelector('.ams.bkH');
+      if (btnReplyMailEl) {
+        btnReplyMailEl.click();
 
-      //       _MyPopup.is_loading = true;
-      //       _MyPopup.showPopup(idPopup);
+        self.setIDTargetMailReply(idPopup);
+      }
 
-      //       _SendMessageManager.getDataToShowPopup(titleMail, contentMail, (data) => {
-      //         _MyPopup.loadData(idPopup, data);
-      //       });
-
-      //     }
-      //   };
-
-      //   // Load the language the user previously used
-      //   _StorageManager.getLanguageWrite(recordLang => {
-      //     if (!recordLang) {
-      //       recordLang = LANGUAGE_SETTING_DATA[0]
-      //     }
-      //     USER_SETTING.language_write_active = recordLang;
-
-      //     proceedByPallaFinishedCount();
-
-      //     elFind.focus();
-      //   })
-
-      //   // Load the voice config write the user previously used
-      //   _StorageManager.getVoiceConfigWrite(voiceConfig => {
-      //     if (!voiceConfig) {
-      //       voiceConfig = {}
-      //       voiceConfig.your_lang = 'japanese';
-      //       voiceConfig.gpt_version = GPT_VERSION_SETTING_DATA[0].value;
-      //       for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
-      //         const item = VOICE_SETTING_DATA[i];
-
-      //         // Not use kind formality_reply
-      //         if (item.name_kind == 'formality_reply') continue;
-
-      //         voiceConfig[item.name_kind] = item.options[0].value;
-      //       }
-      //     }
-
-      //     // Remove unnecessary params
-      //     delete voiceConfig.gpt_ai_key
-      //     // delete voiceConfig.gpt_version
-      //     delete voiceConfig.type_generate
-      //     delete voiceConfig.topic_compose
-      //     delete voiceConfig.original_text_reply
-      //     delete voiceConfig.general_content_reply
-
-      //     // Init voice config
-      //     _MyPopup.formData.voice_setting = voiceConfig;
-
-      //     proceedByPallaFinishedCount();
-      //   })
-
-      //   chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
-      //     ID_USER_ADDON_LOGIN = userInfo.id;
-      //     USER_ADDON_LOGIN = userInfo.email;
-
-      //     if (USER_ADDON_LOGIN == '') {
-      //       USER_ADDON_LOGIN = getCurrentUser();
-      //     }
-
-      //     //addon setting
-      //     loadAddOnSetting(USER_ADDON_LOGIN, function (result) {
-      //       is_domain_regist = result.is_domain_regist
-      //       is_not_access_list = result.is_not_access_list
-      //       debugLog(`auto summary chat GPT: domain regist:[${is_domain_regist}], permission deny:[${is_not_access_list}]`)
-      //     });
-
-      //     proceedByPallaFinishedCount();
-      //   });
-      // });
-
-      // find('.G3.G2', (elFind) => {
-      //   elFind.setAttribute('s_popup_id', idPopup);
-      // });
-
-      _StorageManager.setTitleContentMailToWrite(titleMail, contentMail);
+      // _StorageManager.setIdPopupActive(idPopup);
+      _StorageManager.setTitleContentMailToWrite(idPopup, titleMail, contentMail);
     },
 
     // Handler func
@@ -1723,9 +582,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       self.processRequestToShowPopup(titleMail, contentMail);
 
       // open side panel when action for compose
-      chrome.runtime.sendMessage({
-        method: 'open_side_panel',
-      })
+      setOpenSidePanel();
     },
 
     /**
@@ -1735,17 +592,24 @@ document.addEventListener('RW759_connectExtension', function (e) {
      */
     handlerReplyBoxBtnClick: function (event) {
       const self = _MailAIGenerate;
+      const btnEl = event.target;
 
-      if (event.target.getAttribute('role_btn') == 'reply') {
+      if (btnEl.getAttribute('role_btn') == 'reply') {
         let titleMail = _MailAIGenerate.getTitleMail();
         let contentMail = _MailAIGenerate.getContentBodyMail();
         self.processRequestToShowPopup(titleMail, contentMail);
+
+      } else {
+        const idPopup = getNewIdPopup();
+
+        self.setIDTargetMailCompose(idPopup);
+
+        // _StorageManager.setIdPopupActive(idPopup);
+        _StorageManager.setTitleContentMailToWrite(idPopup, '', '');
       }
 
       // open side panel when action for compose
-      chrome.runtime.sendMessage({
-        method: 'open_side_panel',
-      })
+      setOpenSidePanel();
     },
   };
 

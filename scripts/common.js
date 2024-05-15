@@ -23,6 +23,8 @@ let accountCircleIconUrl = chrome.runtime.getURL("icons/account-circle-icon.svg"
 let translateIconUrl = chrome.runtime.getURL("icons/translate.svg");
 let moreHorizIconUrl = chrome.runtime.getURL("icons/more_horiz.svg");
 let minimizeIconUrl = chrome.runtime.getURL("icons/minimize.svg");
+let tipsIconUrl = chrome.runtime.getURL("icons/tips_and_updates.svg");
+let syncAltIconUrl = chrome.runtime.getURL("icons/sync_alt.svg");
 
 let chat_gpt_api_key = null;
 let is_domain_regist = false;
@@ -769,12 +771,20 @@ const _StorageManager = {
     });
   },
 
-  setTitleContentMailToWrite: (title, original_text) => {
-    chrome.storage.sync.set({ title_content_mail_to_write: { title, original_text } });
+  setTitleContentMailToWrite: (id_popup, title, original_text) => {
+    chrome.storage.sync.set({ title_content_mail_to_write: { id_popup, title, original_text } });
   },
   getTitleContentMailToWrite: (callback) => {
     chrome.storage.sync.get('title_content_mail_to_write', payload => {
       callback(payload.title_content_mail_to_write)
+    });
+  },
+
+  setCloseSidePanel: (id_popup, is_close, callback) => {
+    chrome.storage.sync.set({ trigger_close_side_panel: {is_close, id_popup} }, () => {
+      if (callback) {
+        callback();
+      }
     });
   },
 }

@@ -405,21 +405,23 @@ async function summaryContentMailRequest(params, callback, retry) {
     return false;
   }
 
-  // callback({
-  //   summarize: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. `,
-  //   answer_suggest: [
-  //     'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-  //     'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.',
-  //     'There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour',
-  //   ],
-  //   language: 'Tiếng Việt',
-  //   key_points: [
-  //     'There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour',
-  //     'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-  //     'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.',
-  //   ],
-  // })
-  // return;
+  setTimeout(() => {
+    callback({
+      summarize: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. `,
+      answer_suggest: [
+        'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
+        'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.',
+        'There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour',
+      ],
+      language: 'Tiếng Việt',
+      key_points: [
+        'There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour',
+        'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
+        'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.',
+      ],
+    })
+  }, 1000);
+  return;
 
   let is_use_prompt = (retry % 2) == 1;
 
@@ -473,9 +475,20 @@ Output in ${lang}`
 async function generateContentRequest(params, callback, retry) {
   if (typeof retry == 'undefined') retry = 0;
   if (retry > 3) {
-    callback('')
+    callback({ title: 'error', body: 'error' })
     return false;
   }
+
+  setTimeout(() => {
+    callback({
+      title: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. `,
+      body: `
+      'Lorem Ipsum is simply dummy text of the printing and typesetting industry.
+      'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
+      'There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour `
+    })
+  }, 1000);
+  return;
 
   const {
     gpt_ai_key, gpt_version, type_generate,

@@ -27,8 +27,9 @@ let DEBUG_MODE = true;
    * @returns 
    */
   async function onRequest(request, sender, sendResponse) {
+    const { method, payload } = request;
 
-    switch (request.method) {
+    switch (method) {
       case 'open_side_panel':
         chrome.sidePanel.open({ windowId: sender.tab.windowId });
 
