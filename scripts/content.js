@@ -29,6 +29,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
   let FoDoc;
   let FBoolMail;
   let flagHasSetCloseSidePanel = false;
+  let flagHasSetClearSidePanel = false;
 
   /**
    * Get new id popup
@@ -118,6 +119,16 @@ document.addEventListener('RW759_connectExtension', function (e) {
     flagHasSetCloseSidePanel = true;
     _StorageManager.setCloseSidePanel(idTarget, true, () => {
       flagHasSetCloseSidePanel = false;
+    });
+  };
+
+  const setClearSidePanel = (idTarget) => {
+    if (flagHasSetClearSidePanel) return;
+    debugLog('setClearSidePanel');
+
+    flagHasSetClearSidePanel = true;
+    _StorageManager.triggerClearSidePanel(idTarget, () => {
+      flagHasSetClearSidePanel = false;
     });
   };
 
@@ -248,7 +259,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
           setTimeout(() => {
             if (self.isReplyBoxClose()) {
               // Process close side panel
-              setCloseSidePanel(idTarget);
+              setClearSidePanel(idTarget);
 
               clearInterval(self.trackingBoxReplyInterval)
               self.trackingBoxReplyInterval = null;
@@ -321,7 +332,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
           setTimeout(() => {
             if (self.isReplyBoxClose()) {
               // Process close side panel
-              setCloseSidePanel(idTarget);
+              setClearSidePanel(idTarget);
 
               clearInterval(self.trackingBoxComposeInterval)
               self.trackingBoxComposeInterval = null;
@@ -571,9 +582,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
       let btnReplyMailEl = FoDoc.body.querySelector('.ams.bkH');
       if (btnReplyMailEl) {
         btnReplyMailEl.click();
-
-        self.setIDTargetMailReply(idPopup);
       }
+
+      self.setIDTargetMailReply(idPopup);
 
       // _StorageManager.setIdPopupActive(idPopup);
       _StorageManager.setTitleContentMailToWrite(idPopup, titleMail, contentMail);

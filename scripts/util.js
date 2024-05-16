@@ -256,212 +256,58 @@ async function callGPT(key_api, prompt_or_messages = null, gpt_model = false, re
 }
 
 /**
- * Get data to show popup in mail request
+ * Get suggest reply content mail request
  * 
  * @param {object} params 
  * @param {Function} callback 
  * @param {NUmber|null} retry 
  * @returns 
  */
-async function getDataToShowPopupInMailRequest(params, callback, retry) {
+async function getSuggestReplyMailRequest(params, callback, retry) {
   if (typeof retry == 'undefined') retry = 0;
   if (retry > 3) {
-    callback({
-      summarize: '',
-      answer_suggest: [],
-      language: '',
-      key_points: [],
-    })
+    callback({answer_suggest: []})
     return false;
   }
-
-  let is_use_prompt = (retry % 2) == 1;
 
   const { gpt_ai_key, gpt_model, title_mail, content_mail, lang } = params;
 
   const messages = [
     { role: "system", content: `You are a helpful assistant designed to output JSON` },
-    { role: 'user', content: `Language in ${lang}.\nFormat: {summarize: "", key_points: [3 items], language: "", answer_suggest: [3 items]}.` },
+    { role: 'user', content: `Language in ${lang}.` },
     { role: 'assistant', content: 'Ok' },
     {
-      role: 'user', content: `
+      role: 'user', content: `"""
 Title: ${title_mail}
 Content: ${content_mail}
+"""
 
-Summarize the letter's content in a single paragraph, summarize the letter's content according to 3 main points, language of body mail, suggest 3 ways to answer\nOutput in ${lang}`
+Suggest three different ways to answer the above passage without using bullet points.
+Json: {answer_suggest: [3 item<string>]}.
+Output in ${lang}`
     },
   ];
 
-  const prompt = `Title: ${title_mail}
-Body: ${content_mail}
-json: {summarize: "", key_points: [], language: "", answer_suggest: []}
-Summarize the letter's content in a single paragraph, summarize the letter's content according to 3 main points, language of body mail, suggest 3 ways to answer.
-Output in ${lang}`
-
   try {
-    const response = await callGPT(gpt_ai_key, (is_use_prompt ? prompt : messages), gpt_model, false, null, { "type": "json_object" })
+    const response = await callGPT(gpt_ai_key, messages, gpt_model, false, null, { "type": "json_object" })
     const contentRes = response.choices[0].message.content;
-
-    callback(JSON.parse(contentRes));
+    const dataJson = JSON.parse(contentRes);
 
     //Save log summary chat
-    let question = prompt;
-    if (!is_use_prompt) {
-      question = getContentByRoleInMessage('user', messages);
-    }
+    let question = getContentByRoleInMessage('user', messages);
     saveLog(question, contentRes, 'email');
+
+    if (dataJson.answer_suggest && dataJson.answer_suggest.length) {
+      callback(dataJson);
+
+    } else {
+      retry++;
+      getSuggestReplyMailRequest(params, callback, retry);
+    }
 
   } catch (error) {
     retry++;
-    getDataToShowPopupInMailRequest(params, callback, retry);
-  }
-}
-
-/**
- * Generate content reply mail request
- * 
- * @param {object} params 
- * @param {Function} callback 
- * @param {Number|null} retry 
- */
-async function generateContentReplyMailRequest(params, callback, retry) {
-  if (typeof retry == 'undefined') retry = 0;
-  if (retry > 3) {
-    callback({
-      title: '',
-      body: '',
-    })
-    return false;
-  }
-
-  let is_use_prompt = (retry % 2) == 1;
-
-  const { gpt_ai_key, gpt_model, title_mail, content_mail, voice_config, reply_suggested } = params;
-
-  let content_user = `
-Title: ${title_mail}
-Body: ${content_mail}`
-
-  let promptForMess = `Write a ${voice_config.formality} `;
-  if (voice_config.your_role.trim() != '') {
-    promptForMess = `Write an ${voice_config.formality} as a ${voice_config.your_role} `
-  }
-  promptForMess += `to reply to the original text. Ensure your response has a ${voice_config.tone} tone with and a ${voice_config.email_length} length. The key points of the write is "${reply_suggested}"\nOutput in ${voice_config.your_lang}`
-  const messages = [
-    { role: "system", content: "You are a helpful assistant designed to output JSON" },
-    { role: 'user', content: `Language in ${voice_config.your_lang}.\nFormat: {title: "", body: ""}` },
-    { role: 'assistant', content: 'Ok' },
-    { role: 'user', content: content_user },
-    { role: 'assistant', content: 'Ok' },
-    { role: 'user', content: promptForMess },
-  ];
-
-  let anOra = 'a', prompt = '', prompt_start = '';
-  if (voice_config.your_role.trim() != '') {
-    prompt_start = `as a ${voice_config.your_role}`
-    anOra = 'an'
-  }
-
-  prompt_start = `Write ${anOra} ${voice_config.formality} ${prompt_start}`;
-  prompt = `${prompt_start} to reply to the original text. Ensure your response has a ${voice_config.tone} tone with and a ${voice_config.email_length} length. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.\nRespond in the ${voice_config.your_lang} language.\n\n-----\n\nOriginal text:\n\"\"\"\n${content_user}\n\"\"\"\n\nThe key points of the reply:\n\"\"\"\n${reply_suggested}\n\"\"\"`
-  prompt += `\n\njson:\n\"\"\"\n{title: "", body: ""}\n\"\"\"\n\nOutput in ${voice_config.your_lang}`
-
-  try {
-    const response = await callGPT(gpt_ai_key, (is_use_prompt ? prompt : messages), gpt_model, false, null, { "type": "json_object" })
-    const contentRes = response.choices[0].message.content;
-
-    callback(JSON.parse(contentRes));
-
-    //Save log summary chat
-    let question = prompt;
-    if (!is_use_prompt) {
-      question = getContentByRoleInMessage('user', messages);
-    }
-    saveLog(question, contentRes, 'email');
-
-  } catch (error) {
-    retry++;
-    generateContentReplyMailRequest(params, callback, retry);
-  }
-}
-
-/**
- * Summary content mail
- * 
- * @param {object} params 
- * @param {Function} callback 
- * @param {NUmber|null} retry 
- * @returns 
- */
-async function summaryContentMailRequest(params, callback, retry) {
-  if (typeof retry == 'undefined') retry = 0;
-  if (retry > 3) {
-    callback({
-      summarize: '',
-      answer_suggest: [],
-      language: '',
-      key_points: [],
-    })
-    return false;
-  }
-
-  setTimeout(() => {
-    callback({
-      summarize: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. `,
-      answer_suggest: [
-        'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-        'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.',
-        'There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour',
-      ],
-      language: 'Tiếng Việt',
-      key_points: [
-        'There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour',
-        'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-        'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.',
-      ],
-    })
-  }, 1000);
-  return;
-
-  let is_use_prompt = (retry % 2) == 1;
-
-  const { gpt_ai_key, gpt_model, title_mail, content_mail, lang } = params;
-
-  const messages = [
-    { role: "system", content: `You are a helpful assistant designed to output JSON` },
-    { role: 'user', content: `Language in ${lang}.\nFormat: {summarize: "", key_points: [3 items], language: "", answer_suggest: [3 items]}.` },
-    { role: 'assistant', content: 'Ok' },
-    {
-      role: 'user', content: `
-Title: ${title_mail}
-Content: ${content_mail}
-
-Summarize the letter's content in a single paragraph, summarize the letter's content according to 3 main points, language of body mail, suggest 3 ways to answer\nOutput in ${lang}`
-    },
-  ];
-
-  const prompt = `Title: ${title_mail}
-Body: ${content_mail}
-json: {summarize: "", key_points: [], language: "", answer_suggest: []}
-Summarize the letter's content in a single paragraph, summarize the letter's content according to 3 main points, language of body mail, suggest 3 ways to answer.
-Output in ${lang}`
-
-  try {
-    const response = await callGPT(gpt_ai_key, (is_use_prompt ? prompt : messages), gpt_model, false, null, { "type": "json_object" })
-    const contentRes = response.choices[0].message.content;
-
-    callback(JSON.parse(contentRes));
-
-    //Save log summary chat
-    let question = prompt;
-    if (!is_use_prompt) {
-      question = getContentByRoleInMessage('user', messages);
-    }
-    saveLog(question, contentRes, 'email');
-
-  } catch (error) {
-    retry++;
-    getDataToShowPopupInMailRequest(params, callback, retry);
+    getSuggestReplyMailRequest(params, callback, retry);
   }
 }
 
@@ -479,17 +325,6 @@ async function generateContentRequest(params, callback, retry) {
     return false;
   }
 
-  setTimeout(() => {
-    callback({
-      title: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. `,
-      body: `
-      'Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-      'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
-      'There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour `
-    })
-  }, 1000);
-  return;
-
   const {
     gpt_ai_key, gpt_version, type_generate,
 
@@ -499,31 +334,43 @@ async function generateContentRequest(params, callback, retry) {
     tone, email_length, your_role, your_language
   } = params;
 
-
-  let anOra = 'a', prompt = '', prompt_start = '';
-
-  if (your_role.trim() != '') {
-    prompt_start = `as a ${your_role}`
-    anOra = 'an'
-  }
-
+  let prompt = '';
   if (type_generate == 'compose') {
-    prompt_start = `Write ${anOra} ${formality} ${prompt_start}`;
-    prompt += `${prompt_start}, with a ${tone} tone and a ${email_length} length.\nRespond in the ${your_language} language.\n\n The topic is:\n\"\"\"\n${topic_compose}\n\"\"\"`
+    prompt = `Help me write a ${formality}, with a ${tone} tone and a ${email_length} length.\n\n The topic is:\n\"\"\"\n${topic_compose}\n\"\"\"`
   } else {
-    prompt_start = `Write ${anOra} ${formality_reply} ${prompt_start}`;
-    prompt += `${prompt_start} to reply to the original text, with a ${tone} tone with and a ${email_length} length. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.\nRespond in the ${your_language} language.\n\n-----\n\nOriginal text:\n\"\"\"\n${original_text_reply}\n\"\"\"\n\nThe key points of the reply:\n\"\"\"\n${general_content_reply}\n\"\"\"`
+    prompt += `Help me write a ${formality_reply} to reply to the original text, with a ${tone} tone with and a ${email_length} length. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.\n\n-----\n\nOriginal text:\n\"\"\"\n${original_text_reply}\n\"\"\"\n\nThe key points of the reply:\n\"\"\"\n${general_content_reply}\n\"\"\"`
   }
-  prompt += `\n\njson:\n\"\"\"\n{title: "", body: ""}\n\"\"\"\nOutput in ${your_language}\n\n`
+  prompt += `\nJson: {title: "", body: ""}`
+  prompt += `\nOutput in ${your_language}`
+
+  const messages = [
+    { role: "system", content: `You are a helpful assistant designed to output JSON.` },
+    { role: 'user', content: `Language in ${your_language}.` },
+    { role: 'assistant', content: 'Ok' },
+  ];
+  if (your_role.trim() != '') {
+    messages.push({role: 'user', content: `I am the ${your_role}`})
+    messages.push({ role: 'assistant', content: 'I remembered!' })
+  }
+  messages.push({ role: 'user', content: prompt })
 
   try {
-    const response = await callGPT(gpt_ai_key, prompt, gpt_version, false, null, { "type": "json_object" })
+    const response = await callGPT(gpt_ai_key, messages, gpt_version, false, null, { "type": "json_object" })
     const contentRes = response.choices[0].message.content;
-
-    callback(JSON.parse(contentRes));
+    const dataJson = JSON.parse(contentRes);
 
     //Save log summary chat
-    saveLog(prompt, contentRes, 'email');
+    let question = getContentByRoleInMessage('user', messages);
+    saveLog(question, contentRes, 'email');
+
+    if (dataJson.title && dataJson.title != '' && dataJson.body && dataJson.body != '') {
+      callback(dataJson);
+
+    } else {
+      retry++;
+      generateContentRequest(params, callback, retry);
+    }
+
   } catch (error) {
     retry++;
     generateContentRequest(params, callback, retry);

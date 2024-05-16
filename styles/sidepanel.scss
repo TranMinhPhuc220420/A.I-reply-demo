@@ -509,12 +509,18 @@ body {
 
       img {
         width: 15px;
-        margin-right: 5px;
+        margin-right: 2.5px;
       }
 
       span {
         font-weight: 600;
         color: #575757;
+      }
+
+      .user-email {
+        margin-left: 2.5px;
+        padding-left: 2.5px;
+        border-left: 1px solid #ddd;
       }
     }
   }

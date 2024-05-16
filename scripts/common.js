@@ -772,7 +772,12 @@ const _StorageManager = {
   },
 
   setTitleContentMailToWrite: (id_popup, title, original_text) => {
-    chrome.storage.sync.set({ title_content_mail_to_write: { id_popup, title, original_text } });
+    let params = null;
+    if (id_popup != null) {
+      params = { id_popup, title, original_text };
+    }
+
+    chrome.storage.sync.set({ title_content_mail_to_write: params });
   },
   getTitleContentMailToWrite: (callback) => {
     chrome.storage.sync.get('title_content_mail_to_write', payload => {
@@ -781,7 +786,14 @@ const _StorageManager = {
   },
 
   setCloseSidePanel: (id_popup, is_close, callback) => {
-    chrome.storage.sync.set({ trigger_close_side_panel: {is_close, id_popup} }, () => {
+    chrome.storage.sync.set({ trigger_close_side_panel: { is_close, id_popup } }, () => {
+      if (callback) {
+        callback();
+      }
+    });
+  },
+  triggerClearSidePanel: (id_popup, callback) => {
+    chrome.storage.sync.set({ trigger_clear_side_panel: { id_popup } }, () => {
       if (callback) {
         callback();
       }
@@ -889,7 +901,7 @@ const isLeftOutOfViewport = (elem) => {
 const isRightSideOutOfViewport = (elem) => {
   var bounding = elem.getBoundingClientRect();
 
-  let widthNavbar = 40;
+  let widthNavbar = 45;
 
   if (bounding.right + widthNavbar > (window.innerWidth || document.documentElement.clientWidth)) {
     return true;

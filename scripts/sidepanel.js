@@ -49,6 +49,30 @@ const _SendMessageManager = {
   },
 
   /**
+   * Get suggest reply content mail request
+   * 
+   * @param {string} titleMail 
+   * @param {string} contentMail 
+   * @param {Function} callback 
+   */
+  getSuggestReplyMailRequest: function (titleMail, contentMail, callback) {
+    // Get open ai KEY
+    getChatGPTAIKey((gptAiKey) => {
+      let params = {
+        title_mail: titleMail,
+        content_mail: contentMail,
+        gpt_ai_key: gptAiKey,
+        lang: USER_SETTING.language_active
+      };
+
+      // Call request get data to show popup in mail
+      getSuggestReplyMailRequest(params, (response) => {
+        callback(response.answer_suggest);
+      })
+    })
+  },
+
+  /**
    * Generate content compose
    * 
    * @param {json} params 
@@ -105,10 +129,9 @@ const TabWriteManager = {
   },
   result_active: 0,
   generate_result_list: [],
-  language_output_list_config: [],
   voice_config_of_user: [],
 
-  summaryMailData: null,
+  list_suggest_reply_mail: null,
   title_content_mail_to_write: null,
 
   // Getter
@@ -136,7 +159,7 @@ const TabWriteManager = {
                 </div>
                 <div class="tab-body">
                   <span id="compose_tab" class="tab-item">
-                    <textarea placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_TOPIC_COMPOSE')}"></textarea>
+                    <textarea class="topic_to_compose" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_TOPIC_COMPOSE')}"></textarea>
                   </span>
                   <span id="reply_tab" class="tab-item">
 
@@ -270,7 +293,7 @@ const TabWriteManager = {
       typeGenerate = 'reply'
     }
 
-    let topicCompose = $('#write_tab #compose_tab textarea').val().trim();
+    let topicCompose = $('#write_tab #compose_tab textarea.topic_to_compose').val().trim();
     let originalTextReply = $('#write_tab #reply_tab textarea.original_text_reply').val().trim();
     let generalContentReply = $('#write_tab #reply_tab textarea.general_content_reply').val().trim();
 
@@ -507,16 +530,13 @@ const TabWriteManager = {
     }
   },
 
-  loadSummaryMailData: () => {
+  loadContentDataMailReply: () => {
     const self = TabWriteManager;
     if (self.is_loading) return;
-    if (!self.summaryMailData) return;
+    if (!self.list_suggest_reply_mail) return;
 
-    const { summary, key_points_list, lang_content, suggestion_list } = self.summaryMailData;
-
-    let originalTextReplyEl = document.body.querySelector(`#reply_tab .original_text_reply`);
-    // renderTextStyleChatGPT(originalTextReplyEl, summary);
-    $(originalTextReplyEl).val(summary);
+    let originalTextReplyEl = document.body.querySelector(`#${self.idTab} #reply_tab .original_text_reply`);
+    $(originalTextReplyEl).val(self.title_content_mail_to_write.original_text);
 
     let swapTextEl = document.createElement('div');
     swapTextEl.className = 'swap-text-original';
@@ -528,8 +548,8 @@ const TabWriteManager = {
     iconEl.className = 'tips-icon';
     $(`#${self.idTab} #reply_tab .reply-suggestions`).append(iconEl);
 
-    for (let i = 0; i < suggestion_list.length; i++) {
-      const suggestItem = suggestion_list[i];
+    for (let i = 0; i < self.list_suggest_reply_mail.length; i++) {
+      const suggestItem = self.list_suggest_reply_mail[i];
 
       let pEl = document.createElement('p');
       let suggestEl = document.createElement('li');
@@ -542,7 +562,8 @@ const TabWriteManager = {
     }
 
     setTimeout(() => {
-      $('.original_text_reply').focus();
+      $(`#${self.idTab} #reply_tab .original_text_reply`).focus();
+      $(`#${self.idTab} #reply_tab .original_text_reply`).scrollTop(0);
     }, 200);
   },
 
@@ -697,43 +718,42 @@ const TabWriteManager = {
     document.body.querySelector(`#${self.idTab} #version_gpt`).onSelect = self.onSelectVersionGptConfig;
 
     // For input original text
-    $(document).on('focus', `#${self.idTab} #reply_tab .original_text_reply`, event => {
-      setTimeout(() => {
-        if (self.swap_original_text_flag) {
-          self.swap_original_text_flag = false;
-        } else {
-          $('.swap-text-original').addClass('show');
-        }
-      }, 200);
-    })
-    $(document).on('focusout', `#${self.idTab} #reply_tab .original_text_reply`, event => {
-      setTimeout(() => {
-        if (self.swap_original_text_flag) {
-          self.swap_original_text_flag = false;
-        } else {
-          $('.swap-text-original').removeClass('show');
-        }
-      }, 200);
-    })
-    $(document).on('click', `#${self.idTab} .show-summary`, event => {
-      if (self.is_loading || self.is_summarizing) return;
-      $('.original_text_reply').val(self.summaryMailData.summary);
+    // $(document).on('focus', `#${self.idTab} #reply_tab .original_text_reply`, event => {
+    //   setTimeout(() => {
+    //     if (self.swap_original_text_flag) {
+    //       self.swap_original_text_flag = false;
+    //     } else {
+    //       $('.swap-text-original').addClass('show');
+    //     }
+    //   }, 200);
+    // })
+    // $(document).on('focusout', `#${self.idTab} #reply_tab .original_text_reply`, event => {
+    //   setTimeout(() => {
+    //     if (self.swap_original_text_flag) {
+    //       self.swap_original_text_flag = false;
+    //     } else {
+    //       $('.swap-text-original').removeClass('show');
+    //     }
+    //   }, 200);
+    // })
+    // $(document).on('click', `#${self.idTab} .show-summary`, event => {
+    //   if (self.is_loading || self.is_summarizing) return;
+    //   $('.original_text_reply').val(self.summaryMailData.summary);
 
-      self.swap_original_text_flag = true;
+    //   self.swap_original_text_flag = true;
 
-      $('.original_text_reply').focus();
-      $('#reply_tab .original_text_reply').scrollTop(0);
-    });
-    $(document).on('click', `#${self.idTab} .show-original-text`, event => {
-      if (self.is_loading || self.is_summarizing) return;
-      console.log(self.title_content_mail_to_write.original_text);
-      $('.original_text_reply').val(self.title_content_mail_to_write.original_text);
+    //   $('.original_text_reply').focus();
+    //   $('#reply_tab .original_text_reply').scrollTop(0);
+    // });
+    // $(document).on('click', `#${self.idTab} .show-original-text`, event => {
+    //   if (self.is_loading || self.is_summarizing) return;
+    //   $('.original_text_reply').val(self.title_content_mail_to_write.original_text);
 
-      self.swap_original_text_flag = true;
+    //   self.swap_original_text_flag = true;
 
-      $('.original_text_reply').focus();
-      $('#reply_tab .original_text_reply').scrollTop(0);
-    });
+    //   $('.original_text_reply').focus();
+    //   $('#reply_tab .original_text_reply').scrollTop(0);
+    // });
 
     // For reply suggestions
     $(document).on('mouseover', `#${self.idTab} #reply_tab .reply-suggestions li`, event => {
@@ -901,7 +921,7 @@ const TabWriteManager = {
       typeGenerate = 'reply'
     }
 
-    let topicCompose = $('#write_tab #compose_tab textarea').val()
+    let topicCompose = $('#write_tab #compose_tab textarea.topic_to_compose').val()
     let originalTextReply = $('#write_tab #reply_tab textarea.original_text_reply').val()
     let generalContentReply = $('#write_tab #reply_tab textarea.general_content_reply').val()
 
@@ -937,16 +957,16 @@ const TabWriteManager = {
     self.setActiveTab('reply_tab');
 
     self.is_summarizing = true;
-    _SendMessageManager.getSummaryContentMail(title, original_text, (dataRes) => {
-      self.summaryMailData = dataRes;
+    _SendMessageManager.getSuggestReplyMailRequest(title, original_text, (dataRes) => {
+      self.list_suggest_reply_mail = dataRes;
 
-      self.loadSummaryMailData();
+      self.loadContentDataMailReply();
 
       self.is_summarizing = false;
       $('#reply_tab').removeClass('is-loading');
     });
 
-    _StorageManager.setTitleContentMailToWrite(null, null, null);
+    _StorageManager.setTitleContentMailToWrite(null);
   },
 
   clearTitleContentMailToWrite: () => {
@@ -958,11 +978,19 @@ const TabWriteManager = {
 
     $(`#${self.idTab} #result`).addClass('hidden');
 
+    $(`#${self.idTab} #compose_tab .topic_to_compose`).val('');
     $(`#${self.idTab} #reply_tab .original_text_reply`).val('');
     $(`#${self.idTab} #reply_tab .general_content_reply`).val('');
     $(`#${self.idTab} #reply_tab .swap-text-original`).remove();
     $(`#${self.idTab} #reply_tab .reply-suggestions .tips-icon`).remove();
     $(`#${self.idTab} #reply_tab .reply-suggestions li`).remove();
+  },
+
+  clearForm: () => {
+    const self = TabWriteManager;
+    if (self.is_loading) return;
+
+    self.clearTitleContentMailToWrite();
   },
 
   // Event
@@ -1011,6 +1039,7 @@ const TabWriteManager = {
     const containerEl = document.getElementById(`tab_container`);
     const formConfigEl = document.body.querySelector(`#${self.idTab} .form-config`);
     const resultEl = document.body.querySelector(`#${self.idTab} #result`);
+    $(resultEl).css('marginTop', (containerEl.offsetHeight - formConfigEl.offsetHeight) + 'px');
 
     $(resultEl).removeClass('hidden');
     $(containerEl).animate({
@@ -1018,7 +1047,6 @@ const TabWriteManager = {
     }, 500);
 
     $(resultEl).addClass('is-loading');
-    // $(resultEl).css('height', formConfigEl.offsetHeight + 'px');
   },
 
   /**
@@ -1226,6 +1254,16 @@ const WrapperManager = {
     }
   },
 
+  setEmailFooter: (userEmail) => {
+    const self = WrapperManager;
+
+    let spanEl = document.createElement('span');
+    spanEl.className = 'user-email';
+    spanEl.textContent = userEmail;
+
+    $('footer').append(spanEl);
+  },
+
   /**
    * Fix height container
    * 
@@ -1404,7 +1442,7 @@ const storageOnChanged = (payload, type) => {
   if ('title_content_mail_to_write' in payload) {
     let dataNew = payload.title_content_mail_to_write.newValue;
 
-    if (dataNew) {
+    if (dataNew && typeof (dataNew.title) != 'undefined' && typeof (dataNew.original_text) != 'undefined') {
       TabWriteManager.clearTitleContentMailToWrite();
       TabWriteManager.title_content_mail_to_write = { ...dataNew };
       TabWriteManager.processTitleContentMailToWrite();
@@ -1418,6 +1456,13 @@ const storageOnChanged = (payload, type) => {
         window.close();
       });
     }
+  }
+  if ('trigger_clear_side_panel' in payload) {
+    let { id_popup } = payload.trigger_clear_side_panel.newValue;
+
+    _StorageManager.triggerClearSidePanel(null, () => {
+      TabWriteManager.clearForm();
+    });
   }
 }
 
@@ -1472,6 +1517,8 @@ const initialize_side = async () => {
   chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
     ID_USER_ADDON_LOGIN = userInfo.id;
     USER_ADDON_LOGIN = userInfo.email;
+
+    WrapperManager.setEmailFooter(USER_ADDON_LOGIN);
 
     //addon setting
     loadAddOnSetting(userInfo.email, function (result) {

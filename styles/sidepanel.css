@@ -374,11 +374,16 @@ body.ja #write_tab .form-config .version button.submit-generate {
 }
 .gpt-layout main footer img {
   width: 15px;
-  margin-right: 5px;
+  margin-right: 2.5px;
 }
 .gpt-layout main footer span {
   font-weight: 600;
   color: #575757;
+}
+.gpt-layout main footer .user-email {
+  margin-left: 2.5px;
+  padding-left: 2.5px;
+  border-left: 1px solid #ddd;
 }
 .gpt-layout .sidebar svg {
   height: 20px;
