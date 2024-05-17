@@ -159,12 +159,12 @@ const TabWriteManager = {
                 </div>
                 <div class="tab-body">
                   <span id="compose_tab" class="tab-item">
-                    <textarea class="topic_to_compose" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_TOPIC_COMPOSE')}"></textarea>
+                    <textarea class="topic_to_compose" maxlength="${MAX_LENGTH_TEXTAREA_TOKEN}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_TOPIC_COMPOSE')}"></textarea>
                   </span>
                   <span id="reply_tab" class="tab-item">
 
-                    <textarea class="original_text_reply" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_REPLY')}"></textarea>
-                    <textarea class="general_content_reply" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_GENERAL_CONTENT_REPLY')}"></textarea>
+                    <textarea class="original_text_reply" maxlength="${MAX_LENGTH_TEXTAREA_TOKEN}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_REPLY')}"></textarea>
+                    <textarea class="general_content_reply" maxlength="${MAX_LENGTH_TEXTAREA_TOKEN}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_GENERAL_CONTENT_REPLY')}"></textarea>
 
                     <ul class="reply-suggestions">
                     </ul>
@@ -328,6 +328,18 @@ const TabWriteManager = {
   },
 
   // Setter
+  setOriginalText: (originalText) => {
+    const self = TabWriteManager;
+    if (self.is_loading) return;
+
+    let originalTextReplyEl = document.body.querySelector(`#${self.idTab} #reply_tab .original_text_reply`);
+    $(originalTextReplyEl).val(originalText);
+
+    self.title_content_mail_to_write.original_text = originalText;
+
+    $(originalTextReplyEl).focus();
+    $(originalTextReplyEl).scrollTop(0);
+  },
 
   /**
    * Load and show list option gpt version for user
@@ -433,8 +445,8 @@ const TabWriteManager = {
                       </div>
                       <div class="options">
                         ${vHtmlItemConfig}
-                        <button class="item text combobox" id="${configItem.name_kind}_cbx">
-                          <img class="icon" src="${moreHorizIconUrl}" />
+                        <button class="item combobox" id="${configItem.name_kind}_cbx">
+                          <img class="icon" src="${expandMoreIconUrl}" />
                           <ul class="popover-cbx wrap-item">
                             ${vHtmlOptionsConfig}
                           </ul>
@@ -509,8 +521,8 @@ const TabWriteManager = {
 
         // Button combobox
         let vHtml = ` ${vHtmlItemConfig}
-                        <button class="item text combobox" id="${configItem.name_kind}_cbx">
-                          <img class="icon" src="${moreHorizIconUrl}" />
+                        <button class="item combobox" id="${configItem.name_kind}_cbx">
+                          <img class="icon" src="${expandMoreIconUrl}" />
                           <ul class="popover-cbx wrap-item">
                             ${vHtmlOptionsConfig}
                           </ul>
@@ -530,6 +542,10 @@ const TabWriteManager = {
     }
   },
 
+  /**
+   * Load content data mail reply
+   * 
+   */
   loadContentDataMailReply: () => {
     const self = TabWriteManager;
     if (self.is_loading) return;
@@ -553,6 +569,7 @@ const TabWriteManager = {
 
       let pEl = document.createElement('p');
       let suggestEl = document.createElement('li');
+      suggestEl.className = 'd-flex content-center align-center'
       suggestEl.setAttribute('value', suggestItem);
       suggestEl.append(pEl);
 
@@ -562,8 +579,8 @@ const TabWriteManager = {
     }
 
     setTimeout(() => {
-      $(`#${self.idTab} #reply_tab .original_text_reply`).focus();
-      $(`#${self.idTab} #reply_tab .original_text_reply`).scrollTop(0);
+      $(originalTextReplyEl).focus();
+      $(originalTextReplyEl).scrollTop(0);
     }, 200);
   },
 
@@ -590,6 +607,11 @@ const TabWriteManager = {
     }, 3000);
   },
 
+  /**
+   * Set active tab
+   * 
+   * @param {string} tabActive 
+   */
   setActiveTab: (tabActive) => {
     const self = TabWriteManager;
     if (self.is_loading) return;
@@ -600,6 +622,8 @@ const TabWriteManager = {
     $(`#${self.idTab} .tab .tab-body .tab-item`).removeClass('active');
     $(`#${self.idTab} .tab .tab-body #${tabActive}`).addClass('active');
     $(`#${self.idTab} .tab .tab-body #${tabActive} textarea`).focus();
+
+    $('textarea').css('maxWidth', document.querySelector('textarea').clientWidth);
   },
 
   /**
@@ -610,27 +634,25 @@ const TabWriteManager = {
     const self = TabWriteManager;
 
     // For combobox component
-    $(document).on('click', `#${self.idTab} .combobox`, function (event) {
-      $(`#${self.idTab} .popover-cbx`).removeClass('show');
-
+    // $(document).on('click', `#${self.idTab} .combobox`, function (event) {
+    $(document).on('click', `#${self.idTab} .wrap-config .options`, function (event) {
       const targetEl = event.target;
+      
       const popoverEl = targetEl.querySelector(`#${self.idTab} .popover-cbx`);
-
       if (!popoverEl) return;
 
+      $(`#${self.idTab} .popover-cbx`).removeClass('show');
       self.combobox_flag = true;
 
       popoverEl.classList.add('show');
-      popoverEl.style.top = `-${popoverEl.offsetHeight - 10}px`;
-      popoverEl.style.left = `${targetEl.offsetWidth - 20}px`;
 
       if (isRightSideOutOfViewport(popoverEl)) {
         popoverEl.style.left = 'unset'
         popoverEl.style.right = `${targetEl.offsetWidth - 20}px`;
       }
-      if (isTopOutOfViewport(popoverEl)) {
+      if (isBottomSideOutOfViewport(popoverEl)) {
         popoverEl.style.top = 'unset'
-        // popoverEl.style.bottom = `${targetEl.offsetWidth - 20}px`;
+        popoverEl.style.bottom = `35px`;
       }
 
       setTimeout(() => {
@@ -941,6 +963,10 @@ const TabWriteManager = {
     });
   },
 
+  /**
+   * Process show data title content mail to write
+   * 
+   */
   processTitleContentMailToWrite: () => {
     const self = TabWriteManager;
     if (self.is_loading) return;
@@ -969,6 +995,10 @@ const TabWriteManager = {
     _StorageManager.setTitleContentMailToWrite(null);
   },
 
+  /**
+   * Clear title content mail to write
+   * 
+   */
   clearTitleContentMailToWrite: () => {
     const self = TabWriteManager;
     if (self.is_loading) return;
@@ -986,6 +1016,10 @@ const TabWriteManager = {
     $(`#${self.idTab} #reply_tab .reply-suggestions li`).remove();
   },
 
+  /**
+   * Clear form data
+   * 
+   */
   clearForm: () => {
     const self = TabWriteManager;
     if (self.is_loading) return;
@@ -1082,7 +1116,7 @@ const TabWriteManager = {
       title: itemActive.title,
       body: itemActive.body,
     }
-    chrome.storage.sync.set({ side_panel_send_result: params });
+    chrome.storage.local.set({ side_panel_send_result: params });
   },
 
   /**
@@ -1402,6 +1436,15 @@ const WrapperManager = {
  * @param {Event} event 
  */
 const storageOnChanged = (payload, type) => {
+  if ('original_text_side_panel' in payload) {
+    let originalTextNew = payload.original_text_side_panel.newValue;
+    if (originalTextNew) {
+      _StorageManager.removeOriginalTextSidePanel();
+
+      TabWriteManager.setOriginalText(originalTextNew);
+      TabWriteManager.setActiveTab('reply_tab');
+    }
+  }
   if ('write_voice_config' in payload) {
     let configNew = payload.write_voice_config.newValue;
     let configOld = payload.write_voice_config.oldValue || [];
@@ -1493,7 +1536,7 @@ const initialize_side = async () => {
 
       let hasConfig = voiceConfig.find(item => item.name_kind == nameKind);
       if (!hasConfig) {
-        let optionsDefault = optionsConfig.splice(0, 3);
+        let optionsDefault = optionsConfig.splice(0, MAX_VOICE_CONFIG_OPTIONS_SHOW);
         optionsDefault[0].isActive = true;
         voiceConfig.push({
           ...configItem,

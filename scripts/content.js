@@ -4,6 +4,15 @@ let DEBUG_MODE = true;
 /** @define {object} GLOBALS_GMAIL*/
 let GLOBALS_GMAIL = null;
 
+//==========CREATE HANDLE TO GET [GLOBALS] VARIABLE GMAIL=================
+//CREATE HANDLE TO GET [GLOBALS] VARIABLE GMAIL
+var s = document.createElement('script');
+s.src = chrome.runtime.getURL('scripts/script.js');
+(document.head || document.documentElement).appendChild(s);
+s.onload = function () {
+  s.remove();
+};
+
 // Event listener
 document.addEventListener('RW759_connectExtension', function (e) {
   // e.detail contains the transferred data (can be anything, ranging
@@ -90,7 +99,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
         _MailAIGenerate.setTitleContentMail(newValue);
       }
       setTimeout(() => {
-        chrome.storage.sync.set({ side_panel_send_result: {} });
+        chrome.storage.local.set({ side_panel_send_result: {} });
       }, 1000);
     }
   }
@@ -155,6 +164,13 @@ document.addEventListener('RW759_connectExtension', function (e) {
         clearInterval(self.detectInterval_100);
       }
       self.detectInterval_100 = setInterval(self.handleDetect);
+
+      function gText(e) {
+        let sessionEl = (document.all) ? document.selection.createRange().text : document.getSelection();
+        _StorageManager.setOriginalTextSidePanel(sessionEl.toString());
+      }
+      document.onmouseup = gText;
+      if (!document.all) document.captureEvents(Event.MOUSEUP);
     },
 
     // Setter
@@ -579,6 +595,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
       let self = _MailAIGenerate;
       const idPopup = getNewIdPopup();
 
+      let emailInPage = getCurrentUser();
+      _StorageManager.setSecondEmail(emailInPage);
+
       let btnReplyMailEl = FoDoc.body.querySelector('.ams.bkH');
       if (btnReplyMailEl) {
         btnReplyMailEl.click();
@@ -649,6 +668,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       } else {
         const idPopup = getNewIdPopup();
+
+        let emailInPage = getCurrentUser();
+        _StorageManager.setSecondEmail(emailInPage);
 
         self.setIDTargetMailCompose(idPopup);
 

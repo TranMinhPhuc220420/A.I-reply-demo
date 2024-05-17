@@ -25,6 +25,7 @@ let moreHorizIconUrl = chrome.runtime.getURL("icons/more_horiz.svg");
 let minimizeIconUrl = chrome.runtime.getURL("icons/minimize.svg");
 let tipsIconUrl = chrome.runtime.getURL("icons/tips_and_updates.svg");
 let syncAltIconUrl = chrome.runtime.getURL("icons/sync_alt.svg");
+let expandMoreIconUrl = chrome.runtime.getURL("icons/expand_more.svg");
 
 let chat_gpt_api_key = null;
 let is_domain_regist = false;
@@ -32,7 +33,8 @@ let is_not_access_list = false;
 
 let TAB_ID, WINDOW_ID, ID_USER_ADDON_LOGIN, USER_ADDON_LOGIN = '';
 
-const MAX_VOICE_CONFIG_OPTIONS_SHOW = 3;
+const MAX_VOICE_CONFIG_OPTIONS_SHOW = 1;
+const MAX_LENGTH_TEXTAREA_TOKEN = 4000;
 
 const USER_SETTING = {
 };
@@ -632,7 +634,7 @@ const VOICE_SETTING_DATA_2 = [
     options: [
       {
         value: ' ',
-        display: `<img class="none-role" src=${minimizeIconUrl} />`
+        display: `---`
       },
       {
         value: 'leader',
@@ -760,13 +762,31 @@ const GPT_VERSION_SETTING_DATA = [
 ];
 
 const _StorageManager = {
+  setSecondEmail: (email) => {
+    chrome.storage.local.set({ second_email: email });
+  },
+
+  setOriginalTextSidePanel: (original_text) => {
+    if (original_text) {
+      chrome.storage.local.set({ original_text_side_panel: original_text });
+    }
+  },
+  getOriginalTextSidePanel: (callback) => {
+    chrome.storage.local.get('original_text_side_panel', payload => {
+      callback(payload.original_text_side_panel)
+    });
+  },
+  removeOriginalTextSidePanel: () => {
+    chrome.storage.local.remove('original_text_side_panel');
+  },
+
   setVoiceConfigWrite: (voiceConfig) => {
     if (voiceConfig) {
-      chrome.storage.sync.set({ write_voice_config: voiceConfig });
+      chrome.storage.local.set({ write_voice_config: voiceConfig });
     }
   },
   getVoiceConfigWrite: (callback) => {
-    chrome.storage.sync.get('write_voice_config', payload => {
+    chrome.storage.local.get('write_voice_config', payload => {
       callback(payload.write_voice_config)
     });
   },
@@ -777,23 +797,23 @@ const _StorageManager = {
       params = { id_popup, title, original_text };
     }
 
-    chrome.storage.sync.set({ title_content_mail_to_write: params });
+    chrome.storage.local.set({ title_content_mail_to_write: params });
   },
   getTitleContentMailToWrite: (callback) => {
-    chrome.storage.sync.get('title_content_mail_to_write', payload => {
+    chrome.storage.local.get('title_content_mail_to_write', payload => {
       callback(payload.title_content_mail_to_write)
     });
   },
 
   setCloseSidePanel: (id_popup, is_close, callback) => {
-    chrome.storage.sync.set({ trigger_close_side_panel: { is_close, id_popup } }, () => {
+    chrome.storage.local.set({ trigger_close_side_panel: { is_close, id_popup } }, () => {
       if (callback) {
         callback();
       }
     });
   },
   triggerClearSidePanel: (id_popup, callback) => {
-    chrome.storage.sync.set({ trigger_clear_side_panel: { id_popup } }, () => {
+    chrome.storage.local.set({ trigger_clear_side_panel: { id_popup } }, () => {
       if (callback) {
         callback();
       }

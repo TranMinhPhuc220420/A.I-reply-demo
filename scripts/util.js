@@ -60,13 +60,6 @@ function loadAddOnSetting(email, callback) {
   console.log(`domain login: ${DOMAIN_ADDON_LOGIN}`)
   if (USER_ADDON_LOGIN) {
     fetchChatGPTSetting(DOMAIN_ADDON_LOGIN, function (data) {
-      // if ('is_summary_auto_flag' in data){
-      //     result.is_auto_sum = data['is_summary_auto_flag']
-      // }
-      // if ('auto_time' in data){
-      //     var auto_time = data['auto_time']
-      //     result.times = auto_time*1000*60
-      // }
       if ('is_domain_regist' in data) {
         result.is_domain_regist = data['is_domain_regist']
       }
@@ -282,7 +275,7 @@ Title: ${title_mail}
 Content: ${content_mail}
 """
 
-Suggest three different ways to answer the above passage without using bullet points.
+Suggest me 3 main points to answer, without using bullet points.
 Json: {answer_suggest: [3 item<string>]}.
 Output in ${lang}`
     },
@@ -334,11 +327,19 @@ async function generateContentRequest(params, callback, retry) {
     tone, email_length, your_role, your_language
   } = params;
 
-  let prompt = '';
+  let anOra = 'a', prompt = '', prompt_start = '';
+
+  if (your_role.trim() != '') {
+    prompt_start = `as a ${your_role}`
+    anOra = 'an'
+  }
+
   if (type_generate == 'compose') {
-    prompt = `Help me write a ${formality}, with a ${tone} tone and a ${email_length} length.\n\n The topic is:\n\"\"\"\n${topic_compose}\n\"\"\"`
+    prompt_start = `Help me write ${anOra} ${formality} ${prompt_start}`;
+    prompt = `${prompt_start}, with a ${tone} tone and a ${email_length} length.\n\n The topic is:\n\"\"\"\n${topic_compose}\n\"\"\"`
   } else {
-    prompt += `Help me write a ${formality_reply} to reply to the original text, with a ${tone} tone with and a ${email_length} length. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.\n\n-----\n\nOriginal text:\n\"\"\"\n${original_text_reply}\n\"\"\"\n\nThe key points of the reply:\n\"\"\"\n${general_content_reply}\n\"\"\"`
+    prompt_start = `Write ${anOra} ${formality_reply} ${prompt_start}`;
+    prompt += `${prompt_start} to reply to the original text, with a ${tone} tone with and a ${email_length} length. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.\n\n-----\n\nOriginal text:\n\"\"\"\n${original_text_reply}\n\"\"\"\n\nThe key points of the reply:\n\"\"\"\n${general_content_reply}\n\"\"\"`
   }
   prompt += `\nJson: {title: "", body: ""}`
   prompt += `\nOutput in ${your_language}`
@@ -346,7 +347,7 @@ async function generateContentRequest(params, callback, retry) {
   const messages = [
     { role: "system", content: `You are a helpful assistant designed to output JSON.` },
     { role: 'user', content: `Language in ${your_language}.` },
-    { role: 'assistant', content: 'Ok' },
+    { role: 'assistant', content: 'Of course, I will help you. Do you have a specific question that you need my help with?' },
   ];
   if (your_role.trim() != '') {
     messages.push({role: 'user', content: `I am the ${your_role}`})

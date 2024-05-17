@@ -61,7 +61,7 @@
             ],
             "resources": [
                 "bootstrap.bundle.min.js",
-                "script.js",
+                "scripts/script.js",
                 "styles/style.css",
                 "images/sateraito_logo.png",
                 "images/favicon.png",
