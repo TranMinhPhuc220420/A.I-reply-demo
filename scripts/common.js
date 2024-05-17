@@ -27,14 +27,27 @@ let tipsIconUrl = chrome.runtime.getURL("icons/tips_and_updates.svg");
 let syncAltIconUrl = chrome.runtime.getURL("icons/sync_alt.svg");
 let expandMoreIconUrl = chrome.runtime.getURL("icons/expand_more.svg");
 
-let chat_gpt_api_key = null;
-let is_domain_regist = false;
-let is_not_access_list = false;
+let AddOnEmailSetting = {
+  chat_gpt_api_key: null,
+  is_domain_registered: false,
+  is_not_access_list: false,
+  chat_gpt_access_list: "",
+  chat_gpt_whitelist: "",
+  chatgpt_prohibited_keywords: "",
+  is_ip_address_ok: true,
+  restricted_rule_address_flag: false,
+  restricted_rule_bank_flag: false,
+  restricted_rule_email_flag: false,
+  restricted_rule_phone_flag: false,
+}
 
-let TAB_ID, WINDOW_ID, ID_USER_ADDON_LOGIN, USER_ADDON_LOGIN = '';
+let TAB_ID, WINDOW_ID, ID_USER_ADDON_LOGIN, USER_ADDON_LOGIN, DOMAIN_ADDON_LOGIN = '';
 
 const MAX_VOICE_CONFIG_OPTIONS_SHOW = 1;
 const MAX_LENGTH_TEXTAREA_TOKEN = 4000;
+
+const GROUP_PROMPT_LABEL_BG_COLOR = "#2196F3";
+const GROUP_PROMPT_LABEL_TEXT_COLOR = "#ffffff";
 
 const USER_SETTING = {
 };
@@ -780,6 +793,20 @@ const _StorageManager = {
     chrome.storage.local.remove('original_text_side_panel');
   },
 
+  setGeneralContentReplySidePanel: (general_content_reply, is_direct_send = false) => {
+    if (general_content_reply) {
+      chrome.storage.local.set({ general_content_reply_side_panel: { general_content_reply, is_direct_send } });
+    }
+  },
+  getGeneralContentReplySidePanel: (callback) => {
+    chrome.storage.local.get('general_content_reply_side_panel', payload => {
+      callback(payload.general_content_reply_side_panel)
+    });
+  },
+  removeGeneralContentReplySidePanel: () => {
+    chrome.storage.local.remove('general_content_reply_side_panel');
+  },
+
   setVoiceConfigWrite: (voiceConfig) => {
     if (voiceConfig) {
       chrome.storage.local.set({ write_voice_config: voiceConfig });
@@ -818,6 +845,13 @@ const _StorageManager = {
         callback();
       }
     });
+  },
+
+  toggleSidePromptBuilder: () => {
+    chrome.storage.local.set({ toggle_side_prompt_builder: { is_open: Math.random() } });
+  },
+  removeToggleSidePromptBuilder: () => {
+    chrome.storage.local.remove('toggle_side_prompt_builder');
   },
 }
 
@@ -874,10 +908,10 @@ const getPropGptByVersion = (keyGet, gptVersion) => {
  * 
  */
 const loadChatGPTAIKey = () => {
-  if (!chat_gpt_api_key) {
+  if (!AddOnEmailSetting.chat_gpt_api_key) {
     fetchChatGPTAIKey(function (api_key, version_ext) {
       if (typeof (api_key) != "undefined") {
-        chat_gpt_api_key = api_key;
+        AddOnEmailSetting.chat_gpt_api_key = api_key;
       }
     })
   }
@@ -889,10 +923,10 @@ const loadChatGPTAIKey = () => {
  * @param {Function} callback 
  */
 const getChatGPTAIKey = (callback) => {
-  if (!chat_gpt_api_key) {
+  if (!AddOnEmailSetting.chat_gpt_api_key) {
     fetchChatGPTAIKey(function (api_key, version_ext) {
       if (typeof (api_key) != "undefined") {
-        chat_gpt_api_key = api_key;
+        AddOnEmailSetting.chat_gpt_api_key = api_key;
         callback(api_key)
         return;
       }
@@ -901,7 +935,7 @@ const getChatGPTAIKey = (callback) => {
     })
   } else {
     // exist key
-    callback(chat_gpt_api_key)
+    callback(AddOnEmailSetting.chat_gpt_api_key)
   }
 }
 

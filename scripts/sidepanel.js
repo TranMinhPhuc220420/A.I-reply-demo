@@ -341,6 +341,21 @@ const TabWriteManager = {
     $(originalTextReplyEl).scrollTop(0);
   },
 
+  setGeneralContentReply: (general_content_reply, is_direct_send = false) => {
+    const self = TabWriteManager;
+    if (self.is_loading) return;
+
+    let generalContentReplyEl = document.body.querySelector(`#${self.idTab} #reply_tab .general_content_reply`);
+    $(generalContentReplyEl).val(general_content_reply);
+
+    $(generalContentReplyEl).focus();
+    $(generalContentReplyEl).scrollTop(0);
+
+    if (is_direct_send) {
+      self.onSubmitGenerate();
+    }
+  },
+
   /**
    * Load and show list option gpt version for user
    * 
@@ -562,6 +577,7 @@ const TabWriteManager = {
     let iconEl = document.createElement('img');
     iconEl.src = tipsIconUrl;
     iconEl.className = 'tips-icon';
+    iconEl.onclick = self.onClickOpenTips;
     $(`#${self.idTab} #reply_tab .reply-suggestions`).append(iconEl);
 
     for (let i = 0; i < self.list_suggest_reply_mail.length; i++) {
@@ -637,7 +653,7 @@ const TabWriteManager = {
     // $(document).on('click', `#${self.idTab} .combobox`, function (event) {
     $(document).on('click', `#${self.idTab} .wrap-config .options`, function (event) {
       const targetEl = event.target;
-      
+
       const popoverEl = targetEl.querySelector(`#${self.idTab} .popover-cbx`);
       if (!popoverEl) return;
 
@@ -1233,7 +1249,13 @@ const TabWriteManager = {
 
       $(`#${self.idTab} #version_gpt .content img`).attr('src', record.icon);
     }
-  }
+  },
+
+  onClickOpenTips: (event) => {
+    const self = TabWriteManager;
+
+    _StorageManager.toggleSidePromptBuilder();
+  },
 }
 
 /**
@@ -1445,6 +1467,17 @@ const storageOnChanged = (payload, type) => {
       TabWriteManager.setActiveTab('reply_tab');
     }
   }
+  if ('general_content_reply_side_panel' in payload) {
+    let newValue = payload.general_content_reply_side_panel.newValue;
+    if (newValue) {
+      let { general_content_reply, is_direct_send } = newValue;
+
+      TabWriteManager.setGeneralContentReply(general_content_reply, is_direct_send);
+      TabWriteManager.setActiveTab('reply_tab');
+
+      _StorageManager.removeGeneralContentReplySidePanel();
+    }
+  }
   if ('write_voice_config' in payload) {
     let configNew = payload.write_voice_config.newValue;
     let configOld = payload.write_voice_config.oldValue || [];
@@ -1565,9 +1598,7 @@ const initialize_side = async () => {
 
     //addon setting
     loadAddOnSetting(userInfo.email, function (result) {
-      is_domain_regist = result.is_domain_regist
-      is_not_access_list = result.is_not_access_list
-      debugLog(`auto summary chat GPT: domain regist:[${is_domain_regist}], permission deny:[${is_not_access_list}]`)
+      debugLog(`auto summary chat GPT: domain regist:[${AddOnEmailSetting.is_domain_registered}], permission deny:[${AddOnEmailSetting.is_not_access_list}]`);
     });
 
     proceedByPallaFinishedCount();

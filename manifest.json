@@ -21,7 +21,9 @@
                 "*://mail.google.com/*"
             ],
             "css": [
-                "styles/style.css"
+                "styles/style.css",
+                "styles/prompt_builder.css",
+                "styles/content_cs.css"
             ],
             "js": [
                 "third-party/crypto/core.min.js",
@@ -30,6 +32,7 @@
                 "third-party/jquery-1.10.2.min.js",
                 "scripts/sateraito_lang.js",
                 "scripts/common.js",
+                "scripts/sateraito_ai.js",
                 "scripts/server_request.js",
                 "scripts/util.js",
                 "scripts/content.js"
@@ -61,6 +64,7 @@
             ],
             "resources": [
                 "bootstrap.bundle.min.js",
+                "scripts/sateraito_ai.js",
                 "scripts/script.js",
                 "styles/style.css",
                 "images/sateraito_logo.png",

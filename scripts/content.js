@@ -102,6 +102,17 @@ document.addEventListener('RW759_connectExtension', function (e) {
         chrome.storage.local.set({ side_panel_send_result: {} });
       }, 1000);
     }
+    if ('toggle_side_prompt_builder' in payload) {
+      const newValue = payload.toggle_side_prompt_builder.newValue;
+
+      if (newValue) {
+        _PromptBuilder.toggleSide();
+      }
+
+      setTimeout(() => {
+        _StorageManager.removeToggleSidePromptBuilder();
+      }, 1000);
+    }
   }
 
   /**
@@ -140,6 +151,368 @@ document.addEventListener('RW759_connectExtension', function (e) {
       flagHasSetClearSidePanel = false;
     });
   };
+
+  function checkUseExtension() {
+    var is_ok = true
+    if (!AddOnEmailSetting.is_ip_address_ok || AddOnEmailSetting.is_not_access_list) is_ok = false;
+    if (is_ok) {
+      if (!AddOnEmailSetting.is_domain_registered) {
+        console.log('Domain register not yet')
+        return false;
+      } else {
+        console.log('Domain registered')
+        return true;
+      }
+    } else {
+      console.log('Extension deny')
+      return false;
+    }
+  }
+
+  const _PromptBuilder = {
+    shared_prompt_builders: [],
+    prompt_labels: [],
+    groupPrompts: [],
+    formBuilder: null,
+    modal_id: "ai_user_builder_popup_modal",
+
+    _init: () => {
+      const self = _PromptBuilder;
+
+      self.renderHTMLAddOn();
+
+      self.setEvent();
+    },
+
+    findPromptLabelDetail: (label_name) => {
+      const self = _PromptBuilder;
+
+      let labelDetail = {
+        bg_color: GROUP_PROMPT_LABEL_BG_COLOR,
+        text_color: GROUP_PROMPT_LABEL_TEXT_COLOR,
+      };
+      let results = self.prompt_labels.filter(function (item) {
+        return item.label_name === label_name;
+      });
+      if (results.length) {
+        labelDetail = results[0];
+      }
+      return labelDetail;
+    },
+
+    // Setter
+
+    toggleSide: (isClose) => {
+      const self = _PromptBuilder;
+
+      if ($('#stateraito_addon_suggestion').hasClass("show") || isClose) {
+        $('#stateraito_addon_suggestion').addClass('hidden');
+        $('#stateraito_addon_suggestion').removeClass('show');
+      } else {
+        $('#stateraito_addon_suggestion').addClass('show');
+        $('#stateraito_addon_suggestion').removeClass('hidden');
+      }
+    },
+
+    showHidePopup: (state) => {
+      const self = _PromptBuilder;
+
+      if (state) {
+        $(`#${self.modal_id}`).show()
+      } else {
+        $(`#${self.modal_id}`).hide()
+      }
+    },
+
+    mergePromptGroup: (callback) => {
+      const self = _PromptBuilder;
+
+      let newGroupPrompts = [];
+      self.prompt_labels.forEach(function (prompt_label) {
+        let prompts = self.shared_prompt_builders.filter((prompt_builder) => {
+          return prompt_builder.label_id == prompt_label.label_name;
+        });
+
+        let labelDetail = self.findPromptLabelDetail(prompt_label.label_name);
+        newGroupPrompts.push({
+          name: prompt_label.label_name,
+          bg_color: labelDetail.bg_color,
+          text_color: labelDetail.text_color,
+          prompts: [...prompts],
+        });
+      });
+
+      newGroupPrompts.push({
+        name: "ラベルの指定なし",
+        bg_color: GROUP_PROMPT_LABEL_BG_COLOR,
+        text_color: GROUP_PROMPT_LABEL_TEXT_COLOR,
+        prompts: self.shared_prompt_builders.filter((prompt_builder) => {
+          return !prompt_builder.label_id;
+        }),
+      });
+
+      //console.log(newGroupPrompts)
+      self.groupPrompts = newGroupPrompts
+      callback()
+    },
+
+    setEvent: () => {
+      self = _PromptBuilder;
+
+      $(document).on('click', `#stateraito_addon_suggestion .close-suggestion`, function (event) {
+        self.toggleSide(true);
+      });
+    },
+
+    // Loader
+
+    renderHTMLAddOn: () => {
+      const self = _PromptBuilder;
+
+      self.createModalHtml()
+
+      let chevron_icon = '<svg viewBox="0 0 24 24" ><path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"></path></svg>';
+
+      let elmSuggestion = FoDoc.createElement('div');
+      elmSuggestion.setAttribute("id", 'stateraito_addon_suggestion');
+      elmSuggestion.setAttribute("class", "content-suggestion sate-addon");
+
+      let pencil_icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.1,9L15,9.9L5.9,19H5V18.1L14.1,9M17.7,3C17.5,3 17.2,3.1 17,3.3L15.2,5.1L18.9,8.9L20.7,7C21.1,6.6 21.1,6 20.7,5.6L18.4,3.3C18.2,3.1 17.9,3 17.7,3M14.1,6.2L3,17.2V21H6.8L17.8,9.9L14.1,6.2M7,2V5H10V7H7V10H5V7H2V5H5V2H7Z"/></svg>';
+      let yourtab_icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8A2,2 0 0,0 12,6M12,13C14.67,13 20,14.33 20,17V20H4V17C4,14.33 9.33,13 12,13M12,14.9C9.03,14.9 5.9,16.36 5.9,17V18.1H18.1V17C18.1,16.36 14.97,14.9 12,14.9Z"/></svg>';
+      let sharetab_icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13.07 10.41A5 5 0 0 0 13.07 4.59A3.39 3.39 0 0 1 15 4A3.5 3.5 0 0 1 15 11A3.39 3.39 0 0 1 13.07 10.41M5.5 7.5A3.5 3.5 0 1 1 9 11A3.5 3.5 0 0 1 5.5 7.5M7.5 7.5A1.5 1.5 0 1 0 9 6A1.5 1.5 0 0 0 7.5 7.5M16 17V19H2V17S2 13 9 13 16 17 16 17M14 17C13.86 16.22 12.67 15 9 15S4.07 16.31 4 17M15.95 13A5.32 5.32 0 0 1 18 17V19H22V17S22 13.37 15.94 13Z"/></svg>';
+      let buildertab_icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.5 2H5.5C3.6 2 2 3.6 2 5.5V18.5C2 20.4 3.6 22 5.5 22H16L22 16V5.5C22 3.6 20.4 2 18.5 2M20.1 15H18.6C16.7 15 15.1 16.6 15.1 18.5V20H5.8C4.8 20 4 19.2 4 18.2V5.8C4 4.8 4.8 4 5.8 4H18.3C19.3 4 20.1 4.8 20.1 5.8V15M7 7H17V9H7V7M7 11H17V13H7V11M7 15H13V17H7V15Z"/></svg>';
+      let header_suggest_icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,2A7,7 0 0,1 19,9C19,11.38 17.81,13.47 16,14.74V17A1,1 0 0,1 15,18H9A1,1 0 0,1 8,17V14.74C6.19,13.47 5,11.38 5,9A7,7 0 0,1 12,2M9,21V20H15V21A1,1 0 0,1 14,22H10A1,1 0 0,1 9,21M12,4A5,5 0 0,0 7,9C7,11.05 8.23,12.81 10,13.58V16H14V13.58C15.77,12.81 17,11.05 17,9A5,5 0 0,0 12,4Z"/></svg>';
+
+      let vhtml = '<div class="header-suggestion">'
+      vhtml += '<span class="header-text-suggestion"><i class="item-icon ">' + header_suggest_icon + '</i>プロンプト一覧</span>'
+      vhtml += '<div class="close-suggestion">'
+      vhtml += '<svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
+      vhtml += '</div>'
+      vhtml += '</div>'
+      vhtml += '<div class="detail-suggestion">'
+
+      vhtml += '<div class="container-tab">'
+
+      vhtml += '<div class="content-tab" >'
+      vhtml += '  <a class="show"><i class="item-icon ">' + buildertab_icon + '</i>ビルダーで利用<i class="item-icon chevron_icon ">' + chevron_icon + '</i></a>'
+      vhtml += '  <section>'
+      vhtml += '      <ul id="shared_prompt_builders_list" ></ul>'
+      vhtml += '  </section>'
+      vhtml += '</div>'
+
+      vhtml += '</div>'
+
+      vhtml += '</div>'
+      elmSuggestion.innerHTML = vhtml;
+      document.body.appendChild(elmSuggestion)
+
+      self.loadPromptSuggest();
+    },
+
+    renderHTMLPrompt: () => {
+      const self = _PromptBuilder;
+
+      let chevron_icon = '<svg viewBox="0 0 24 24" ><path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"></path></svg>';
+      let texts_icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path  fill="currentColor"d="M16,15H9V13H16M19,11H9V9H19M19,7H9V5H19M21,1H7C5.89,1 5,1.89 5,3V17C5,18.11 5.9,19 7,19H21C22.11,19 23,18.11 23,17V3C23,1.89 22.1,1 21,1M3,5V21H19V23H3A2,2 0 0,1 1,21V5H3Z"/></svg>';
+      let text_icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path  fill="currentColor" d="M14,17H7V15H14M17,13H7V11H17M17,9H7V7H17M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3Z"/></svg>';
+
+      let vHTML = ''
+      self.groupPrompts.map((groupPrompt, group_prompt_index) => {
+        // console.log(groupPrompt)
+        let style_group = `style="background-color: ${groupPrompt.bg_color};color: ${groupPrompt.text_color};"`
+        vHTML += `
+          <div class="accordion-item" align="center">
+              <h2 class="promt-lbl-header accordion-header" ${style_group}>
+                  <button type="button" aria-expanded="true" class="accordion-button">
+                      <i class="item-icon " style=" color: ${groupPrompt.text_color}!important;">${texts_icon}</i>
+                      ${groupPrompt.name}
+                      <i class=" item-icon  chevron_icon " style=" color: ${groupPrompt.text_color}!important;">${chevron_icon}</i>
+                  </button>
+              </h2>`
+
+        // detail
+        groupPrompt.prompts.map(
+          (suggestion, index) => {
+            // console.log(suggestion)
+            vHTML += `
+                      <div class="accordion-collapse  show">
+                          <div class="accordion-body">
+                              <div class="list-group">
+                                  <div class="list-group-item item-detail-builder" data-group="${group_prompt_index}"  data-index="${index}" data-key="${suggestion.prompt_builder_id}">
+                                      <i class="item-icon ">${text_icon}</i>
+                                      <div class="block-title">${suggestion.title}</div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>`
+          })
+
+        vHTML += '</div>'
+      })
+
+      self.detectPromptBuilder(vHTML)
+    },
+
+    createModalHtml: () => {
+      const self = _PromptBuilder;
+
+      if ($(document).find('#' + self.modal_id).length) {
+        return;
+      }
+      var ico_close = '<svg viewBox="0 0 24 24" ><path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"></path></svg>';
+
+      let vHtml = '';
+      // <!-- The Modal -->
+      vHtml += '<div id="' + self.modal_id + '" class="sateraito_ai_modal st-ui modal-large sateraito_ai_builder">';
+
+      // <!-- Modal content -->
+      vHtml += '  <div class="modal-content">';
+      vHtml += '		<div class="modal-header">';
+      vHtml += '  	  <i class="mdi mdi-sticker-text-outline ico"></i>';
+      vHtml += '  	  <h2>プロンプトビルダーで利用して質問を作成する</h2>';
+      vHtml += '  	  <i class="item-icon close-modal">' + ico_close + '</i>';
+      vHtml += '  	</div>';
+
+      // START modal-body
+      vHtml += '  	<div class="modal-body">';
+      vHtml += '    <div class="block-wrap">'
+
+      // START template_builder
+      vHtml += '    <div class="content-item template_builder" data-content_type="template_builder">';
+      vHtml += '    </div>'
+      // END template_builder
+
+      vHtml += '  	</div>';
+      vHtml += '  	</div>';
+      // END modal-body
+
+      vHtml += '  	<div class="modal-footer">';
+      vHtml += '  	  <button type="button" class="btn btn-cancel st-btn-material-outline">戻る</button>';
+
+      // switch auto send
+      vHtml += '<div class="custom-switch auto-summary form-check">';
+      vHtml += '  <input type="checkbox" class="form-check-input" name="direct_send">';
+      vHtml += '  <label title="" class="form-check-label">ChatGPTへの問い合わせまで自動実行する</label>';
+      vHtml += "</div>";
+      // end switch auto send
+
+      vHtml += '  	  <button type="button" class="btn btn-submit st-btn-material" >上の質問内容を採用する</button>';
+      vHtml += '  	</div>';
+      vHtml += '  </div>';
+      vHtml += '</div>';
+      $(document.body).append(vHtml);
+
+      $(`#${self.modal_id} .close-modal`).click(function () {
+        self.showHidePopup(false)
+      })
+
+      $(`#${self.modal_id} .btn-cancel`).click(function () {
+        self.showHidePopup(false)
+      })
+
+      $(`#${self.modal_id} .btn-submit`).click(function () {
+        self.handlerOnSubmitForm()
+      })
+    },
+
+    detectPromptBuilder: (vhtml) => {
+      const self = _PromptBuilder;
+
+      let elmTmp = document.getElementById("shared_prompt_builders_list");
+      if (elmTmp) {
+        elmTmp.innerHTML = vhtml
+        //add event
+        var items = document.querySelectorAll('div.item-detail-builder');
+        if (items) {
+          for (let i = 0; i < items.length; i++) {
+            items[i].addEventListener('click', self.onclickItemPromptBuilder);
+          }
+        }
+
+        $('.accordion-header').click(function () {
+          // $('.content-tab a').removeClass('show');
+          $(this).toggleClass('show');
+        })
+        return;
+      }
+
+      setTimeout(function () {
+        self.detectPromptBuilder(vhtml)
+      }, 300)
+    },
+
+    renderPromptList: (data) => {
+      const self = _PromptBuilder;
+
+      if (data.prompt_labels) {
+        self.prompt_labels = data.prompt_labels
+      }
+      if (data.shared_prompt_builders) {
+        self.shared_prompt_builders = data.shared_prompt_builders
+      }
+
+      self.mergePromptGroup(function () {
+        self.renderHTMLPrompt()
+      })
+    },
+
+    loadPromptSuggest: () => {
+      const self = _PromptBuilder;
+
+      getPromptsRequest({}, data => {
+        self.renderPromptList(data)
+      });
+    },
+
+    //
+
+    onclickItemPromptBuilder: (e) => {
+      const self = _PromptBuilder;
+      const targetEl = event.target;
+
+      let group_index = parseInt(targetEl.getAttribute('data-group'));
+      let prompt_index = parseInt(targetEl.getAttribute('data-index'));
+      let prompt_id = targetEl.getAttribute('data-key');
+
+      if (self.groupPrompts.length > 0 && group_index < self.groupPrompts.length) {
+        let group_prompt = self.groupPrompts[group_index]
+        // console.log(group_prompt)
+        if (group_prompt.prompts.length > 0 && prompt_index < group_prompt.prompts.length) {
+          let prompt = group_prompt.prompts[prompt_index]
+          // console.log(prompt)
+          let template_builder_div = document.querySelector('.content-item[data-content_type="template_builder"]');
+          if (template_builder_div) {
+            self.formBuilder = new sateraitoAI.BuilderTemplate.initFormBuilder(template_builder_div, {
+              template_name: prompt.title,
+              template_body: prompt.content
+            });
+
+            //direct_send
+            // console.log(prompt.direct_send)
+            $(`#${self.modal_id} :input[name="direct_send"]`).prop("checked", prompt.direct_send);
+
+            self.showHidePopup(true)
+          }
+        }
+      }
+    },
+
+    handlerOnSubmitForm: (event) => {
+      const self = _PromptBuilder;
+      
+      var templateBody = self.formBuilder.getPrompt();
+      console.log(templateBody)
+
+      let is_direct_send = $(`#${self.modal_id} :input[name="direct_send"]`).is(":checked");
+
+      _StorageManager.setGeneralContentReplySidePanel(templateBody, is_direct_send);
+
+      self.showHidePopup(false)
+      //close-suggestion
+      $('#stateraito_addon_suggestion').addClass('hidden');
+      $('#stateraito_addon_suggestion').removeClass('show');
+    }
+  }
 
   /**
    * Mail Add-on
@@ -696,7 +1069,22 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       FBoolMail = (strUrl.indexOf('//mail.google.com/') >= 0);
       if (FBoolMail) {
-        _MailAIGenerate._init();
+        chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
+          ID_USER_ADDON_LOGIN = userInfo.id;
+          USER_ADDON_LOGIN = userInfo.email;
+
+          //addon setting
+          loadAddOnSetting(userInfo.email, function () {
+
+            if (checkUseExtension()) {
+              _MailAIGenerate._init();
+
+              _PromptBuilder._init();
+            }
+
+            debugLog(`auto summary chat GPT: domain regist:[${AddOnEmailSetting.is_domain_registered}], permission deny:[${AddOnEmailSetting.is_not_access_list}]`);
+          });
+        });
 
         chrome.storage.onChanged.addListener(storageOnChanged);
       }

@@ -3,10 +3,7 @@ var timeout_fetch = 60000
 var chat_gpt_model = "gpt-3.5-turbo-0125"
 var chuck_size_text = 4000
 var retry_call_gpt = true
-// var USER_ADDON_LOGIN = ''
-var DOMAIN_ADDON_LOGIN = ''
 var MAXIMIZE_TIME_AUTO = 1000 * 60 * 5 //milisecond 5p == 1000*60*5
-var is_domain_regist_addon = false
 
 /**
  * Check chat gpt access list
@@ -42,12 +39,6 @@ function checkChatGptAccesslist(accesslist_str) {
  * @param {Function} callback 
  */
 function loadAddOnSetting(email, callback) {
-  var result = {
-    is_auto_sum: true,
-    times: MAXIMIZE_TIME_AUTO,
-    is_domain_regist: false,
-    is_not_access_list: false
-  }
   //check domain
   if (email) {
     USER_ADDON_LOGIN = email
@@ -60,28 +51,21 @@ function loadAddOnSetting(email, callback) {
   console.log(`domain login: ${DOMAIN_ADDON_LOGIN}`)
   if (USER_ADDON_LOGIN) {
     fetchChatGPTSetting(DOMAIN_ADDON_LOGIN, function (data) {
+      AddOnEmailSetting = data;
+
       if ('is_domain_regist' in data) {
-        result.is_domain_regist = data['is_domain_regist']
+        AddOnEmailSetting.is_domain_registered = data['is_domain_regist'];
       }
 
       if ('chat_gpt_accesslist' in data) {
-        result.is_not_access_list = checkChatGptAccesslist(data['chat_gpt_accesslist'])
+        AddOnEmailSetting.is_not_access_list = checkChatGptAccesslist(data['chat_gpt_accesslist']);
       }
 
-      //if not regist
-      if (!result.is_domain_regist) {
-        result.is_auto_sum = false
-      }
-
-      //save staus domain
-      is_domain_regist_addon = result.is_domain_regist
-
-      callback(result)
+      callback(true);
     });
   } else {
-    //user unavariable
-    result.is_auto_sum = false
-    callback(result)
+    //user undefined
+    callback(false);
   }
 }
 
@@ -142,19 +126,13 @@ function saveLog(question, answer, type_chat, error = '') {
  * @param {string} error 
  */
 async function saveCountRequest(prompt, error = '') {
-  // console.log('=======saveCountRequest=========')
-  // console.log(is_domain_regist_addon)
-  if (!is_domain_regist_addon) return
-  //saveCountRequest
+  if (!AddOnEmailSetting.is_domain_registered) return
   var data = {
     user_id: USER_ADDON_LOGIN,
     prompt: prompt,
     model: chat_gpt_model,
     error_info: error,
-    // environment_type: type_chat
   }
-  // console.log(data)
-  // console.log(DOMAIN_ADDON_LOGIN)
   if (DOMAIN_ADDON_LOGIN) {
     fetchChatGPTCountRequest(DOMAIN_ADDON_LOGIN, data, function (res) {
       console.log(res)
@@ -375,5 +353,22 @@ async function generateContentRequest(params, callback, retry) {
   } catch (error) {
     retry++;
     generateContentRequest(params, callback, retry);
+  }
+}
+
+/**
+ * get prompts request
+ * 
+ * @param {object} params 
+ * @param {Function} callback 
+ * @param {Number|null} retry 
+ */
+async function getPromptsRequest(params, callback, retry) {
+  if (!AddOnEmailSetting.is_domain_registered) return
+
+  if (DOMAIN_ADDON_LOGIN) {
+    fetchPromptsRequest(DOMAIN_ADDON_LOGIN, params, function (res) {
+      callback(res)
+    })
   }
 }

@@ -774,6 +774,14 @@
   animation: slide 1.5s linear infinite;
 }
 
+.item-detail-builder * {
+  pointer-events: none;
+}
+
+.sateraito_ai_modal {
+  z-index: 99999999999 !important;
+}
+
 @keyframes slide {
   0% {
     background-position: 100% 0;

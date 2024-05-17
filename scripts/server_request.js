@@ -1,6 +1,8 @@
 // const SERVER_URL = 'https://sites.sateraito.jp';
 const SERVER_URL = 'https://tambh-dot-sateraito-gpt-api.appspot.com';
 const PREFIX_KEY = 'Sateraito-WzNyEGIZoaF7Z1R8';
+const MD5_SUFFIX_KEY = '6a8a0a5a5bf94c95aa0f39d0eedbe71e'
+
 function getDateUTCString() {
   let curr_date = new Date();
   let dt_str = curr_date.getUTCFullYear() +
@@ -29,10 +31,13 @@ function addParameters(data) {
   }
 
   //create token
-  if (!('token' in params)) {
+  if (!(params.get('token'))) {
+    // var date_str = getDateUTCString();
+    // var token = CryptoJS.MD5(PREFIX_KEY + date_str);
+    // params.append('token', token);
     var date_str = getDateUTCString();
-    var token = CryptoJS.MD5(PREFIX_KEY + date_str);
-    params.append('token', token);
+    var check_key = CryptoJS.MD5(DOMAIN_ADDON_LOGIN + date_str + MD5_SUFFIX_KEY);
+    params.append('ck', check_key);
   }
 
   return params
@@ -131,16 +136,6 @@ function fetchChatGPTAIKey(callback) {
   })
 }
 
-async function fetchChatGPTAIKeyAsync() {
-  return new Promise((resolve, reject) => {
-    var data = {};
-    var url = SERVER_URL + '/a/extension/chatgpt/aikey';
-    fetchData(url, data, function (data) {
-      resolve(data);
-    })
-  });
-};
-
 /**
  * Fetch chat gpt setting
  * 
@@ -201,6 +196,26 @@ function fetchChatGPTCountRequest(tenant, data, callback) {
   data['token'] = token
   fetchData(url, data, function (res) {
     // console.log(res)
+    if (res) {
+      if (res.code == 0) {
+        callback(res.data);
+        return;
+      }
+    }
+    callback();
+  });
+}
+
+function fetchPromptsRequest(tenant, data, callback) {
+  var url = SERVER_URL + '/a/' + tenant + '/addon/api/prompt';
+  if (typeof (data) == "undefined") data = {}
+
+  if (!('user_id' in data)) {
+    data['user_id'] = USER_ADDON_LOGIN
+  }
+
+  fetchData(url, data, function (res) {
+    console.log(res)
     if (res) {
       if (res.code == 0) {
         callback(res.data);
