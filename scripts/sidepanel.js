@@ -23,7 +23,7 @@
     generate_result_list: [],
     voice_config_of_user: [],
 
-    list_suggest_reply_mail: null,
+    // list_suggest_reply_mail: null,
     title_content_mail_to_write: null,
 
     // Getter
@@ -470,7 +470,6 @@
     loadContentDataMailReply: () => {
       const self = TabWriteManager;
       if (self.is_loading) return;
-      if (!self.list_suggest_reply_mail) return;
 
       let originalTextReplyEl = document.body.querySelector(`#${self.idTab} #reply_tab .original_text_reply`);
       $(originalTextReplyEl).val(self.title_content_mail_to_write.original_text);
@@ -480,26 +479,28 @@
       swapTextEl.innerHTML = `<div class="item show-summary"></div> <div class="item show-original-text"></div>`
       $(`#${self.idTab} #reply_tab`).append(swapTextEl);
 
-      for (let i = 0; i < self.list_suggest_reply_mail.length; i++) {
-        const suggestItem = self.list_suggest_reply_mail[i];
-
-        let pEl = document.createElement('p');
-        let suggestEl = document.createElement('li');
-        suggestEl.className = 'd-flex content-center align-center'
-        suggestEl.setAttribute('value', suggestItem);
-        suggestEl.append(pEl);
-
-        $(`#${self.idTab} #reply_tab .reply-suggestions`).append(suggestEl);
-
-        MyUtils.renderTextStyleChatGPT(pEl, suggestItem)
-      }
-
-      $(`#${self.idTab} #reply_tab .reply-suggestions`).removeClass('hidden');
-
       setTimeout(() => {
         $(originalTextReplyEl).focus();
         $(originalTextReplyEl).scrollTop(0);
-      }, 200);
+
+        self.is_summarizing = false;
+      }, 100);
+
+      // if (!self.list_suggest_reply_mail) return;
+      // for (let i = 0; i < self.list_suggest_reply_mail.length; i++) {
+      //   const suggestItem = self.list_suggest_reply_mail[i];
+
+      //   let pEl = document.createElement('p');
+      //   let suggestEl = document.createElement('li');
+      //   suggestEl.className = 'd-flex content-center align-center'
+      //   suggestEl.setAttribute('value', suggestItem);
+      //   suggestEl.append(pEl);
+
+      //   $(`#${self.idTab} #reply_tab .reply-suggestions`).append(suggestEl);
+
+      //   MyUtils.renderTextStyleChatGPT(pEl, suggestItem)
+      // }
+      // $(`#${self.idTab} #reply_tab .reply-suggestions`).removeClass('hidden');
     },
 
     /**
@@ -863,19 +864,21 @@
       title = title.trim(), original_text = original_text.trim();
       if (title == '' || original_text == '') return;
 
-      $('#reply_tab').addClass('is-loading');
+      // $('#reply_tab').addClass('is-loading');
       
       self.setActiveTab('reply_tab');
 
       self.is_summarizing = true;
-      OpenAIManager.getSuggestReplyMail(title, original_text, (dataRes) => {
-        self.list_suggest_reply_mail = dataRes;
+      // OpenAIManager.getSuggestReplyMail(title, original_text, (dataRes) => {
+      //   self.list_suggest_reply_mail = dataRes;
 
-        self.loadContentDataMailReply();
+      //   self.loadContentDataMailReply();
 
-        self.is_summarizing = false;
-        $('#reply_tab').removeClass('is-loading');
-      });
+      //   self.is_summarizing = false;
+      //   $('#reply_tab').removeClass('is-loading');
+      // });
+
+      self.loadContentDataMailReply();
 
       StorageManager.setTitleContentMailToWrite(null);
     },
@@ -1458,7 +1461,7 @@
       ID_USER_ADDON_LOGIN = userInfo.id;
       USER_ADDON_LOGIN = userInfo.email;
 
-      WrapperManager.setEmailFooter(USER_ADDON_LOGIN);
+      // WrapperManager.setEmailFooter(USER_ADDON_LOGIN);
 
       //addon setting
       SateraitoRequest.loadAddOnSetting(userInfo.email, function (result) {
