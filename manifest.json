@@ -21,9 +21,9 @@
                 "*://mail.google.com/*"
             ],
             "css": [
-                "styles/style.css",
+                "styles/content_cs.css",
                 "styles/prompt_builder.css",
-                "styles/content_cs.css"
+                "styles/style.css"
             ],
             "js": [
                 "third-party/crypto/core.min.js",
@@ -33,8 +33,6 @@
                 "scripts/sateraito_lang.js",
                 "scripts/common.js",
                 "scripts/sateraito_ai.js",
-                "scripts/server_request.js",
-                "scripts/util.js",
                 "scripts/content.js"
             ],
             "run_at": "document_end",
@@ -67,22 +65,8 @@
                 "scripts/sateraito_ai.js",
                 "scripts/script.js",
                 "styles/style.css",
-                "images/sateraito_logo.png",
-                "images/favicon.png",
-                "icons/close-icon.png",
-                "icons/send-icon.png",
-                "icons/black-icon.png",
-                "icons/content-copy-icon.png",
-                "icons/refresh-icon.png",
-                "icons/account-circle-icon.svg",
-                "icons/chevron_left.svg",
-                "icons/chevron_right.svg",
-                "icons/description-icon.svg",
-                "icons/emoji-emotions-icon.svg",
-                "icons/format-align-icon.svg",
-                "icons/graphic-eq.svg",
-                "icons/translate.svg",
-                "icons/cancel.svg"
+                "/images/*",
+                "/icons/*"
             ],
             "use_dynamic_url": true
         }

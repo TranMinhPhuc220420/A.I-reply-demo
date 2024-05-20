@@ -230,11 +230,20 @@
   "des_error_empty_topic_compose": {
     "message": "Please enter the topic you want to compose"
   },
+  "des_error_empty_topic_compose_max_length_token": {
+    "message": "Maximum 4000 characters for the topic to compose"
+  },
   "des_error_empty_original_text_reply": {
     "message": "Please enter the original text to which you want to reply"
   },
+  "des_error_empty_original_text_reply_max_length_token": {
+    "message": "Maximum 4000 characters for the original text to which you want to reply"
+  },
   "des_error_empty_general_content_reply": {
     "message": "Please enter the general content of your reply to the above text"
+  },
+  "des_error_empty_general_content_reply_max_length_token": {
+    "message": "Maximum 4000 characters for the general content of your reply to the above text"
   },
   "des_error_gemini_not_released": {
     "message": "Opps! Gemini 1.0 Pro has not been released yet"

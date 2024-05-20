@@ -170,12 +170,12 @@
 }
 
 .sateraito_ai_builder {
-  --base-color:#03A9F4;
+  --base-color:#8d5bef;
   --reverse-color:#ffffff;
   --base-text-color:rgba(0,0,0,0.87);
   --base-text-menu:#202124;
   --base-icon-color:rgb(141 141 142);
-  --base-addon-color: #03A9F4;
+  --base-addon-color: #8d5bef;
   height: 100vh;
   position: fixed;
   top: 0;

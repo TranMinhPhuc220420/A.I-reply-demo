@@ -21,9 +21,6 @@ body ul {
 body ul li {
   list-style: none;
 }
-body.ja #write_tab .form-config .version button.submit-generate {
-  padding: 5px 0;
-}
 
 ::-webkit-scrollbar {
   width: 2px;
@@ -511,7 +508,7 @@ body.ja #write_tab .form-config .version button.submit-generate {
   overflow: hidden;
 }
 .gpt-layout #write_tab .tab .tab-title .item.active span {
-  color: #471aa1;
+  color: #8d5bef;
 }
 .gpt-layout #write_tab .tab .tab-title .item span {
   font-size: 18px;
@@ -529,6 +526,9 @@ body.ja #write_tab .form-config .version button.submit-generate {
   width: 100%;
   padding: 5px 0;
 }
+.gpt-layout #write_tab .tab .tab-body .tab-item:last-child {
+  padding-bottom: 0;
+}
 .gpt-layout #write_tab .tab .tab-body .tab-item.active {
   display: block;
 }
@@ -538,7 +538,8 @@ body.ja #write_tab .form-config .version button.submit-generate {
 }
 .gpt-layout #write_tab .tab .tab-body .tab-item#reply_tab.is-loading .original_text_reply,
 .gpt-layout #write_tab .tab .tab-body .tab-item#reply_tab.is-loading .general_content_reply,
-.gpt-layout #write_tab .tab .tab-body .tab-item#reply_tab.is-loading .reply-suggestions {
+.gpt-layout #write_tab .tab .tab-body .tab-item#reply_tab.is-loading .reply-suggestions,
+.gpt-layout #write_tab .tab .tab-body .tab-item#reply_tab.is-loading .tips-icon {
   display: none;
 }
 .gpt-layout #write_tab .tab .tab-body .tab-item#reply_tab.is-loading .loading {
@@ -628,34 +629,60 @@ body.ja #write_tab .form-config .version button.submit-generate {
 .gpt-layout #write_tab .tab .tab-body .tab-item .swap-text-original .item:hover {
   background-color: #575757;
 }
-.gpt-layout #write_tab .tab .tab-body .tab-item .reply-suggestions {
-  width: 100%;
-  bottom: 20px;
-  display: flex;
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply {
+  position: relative;
 }
-.gpt-layout #write_tab .tab .tab-body .tab-item .reply-suggestions .tips-icon {
-  width: 20px;
-  height: 20px;
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon {
   margin-right: 5px;
+  position: absolute;
+  right: 6px;
+  bottom: 12px;
+  z-index: 1;
+  padding: 5px;
+  border-radius: 12px;
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: 0.25s all;
+}
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon:hover {
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+}
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon img {
+  pointer-events: none;
+  width: 18px;
+  height: 18px;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+.gpt-layout #write_tab .tab .tab-body .tab-item .reply-suggestions {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: start;
+  width: 100%;
+}
+.gpt-layout #write_tab .tab .tab-body .tab-item .reply-suggestions span {
+  border: none;
 }
 .gpt-layout #write_tab .tab .tab-body .tab-item .reply-suggestions li {
-  padding: 0 5px;
-  width: 23%;
+  padding: 5px;
   border-radius: 5px;
   margin-right: 5px;
   cursor: pointer;
   border: #d5bfff 1px solid;
   color: fff;
   transition: 0.25s all;
+  margin-bottom: 5px;
 }
 .gpt-layout #write_tab .tab .tab-body .tab-item .reply-suggestions li:hover {
   background-color: #f6f2ff;
 }
 .gpt-layout #write_tab .tab .tab-body .tab-item .reply-suggestions li p {
-  color: #471aa1;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
+  color: #8d5bef;
   pointer-events: none;
 }
 .gpt-layout #write_tab .form-config .voice-config {
@@ -774,7 +801,7 @@ body.ja #write_tab .form-config .version button.submit-generate {
   font-weight: 600;
   font-size: 14px;
   color: #fff;
-  background-color: #471aa1;
+  background-color: #8d5bef;
   cursor: pointer;
   transition: 0.15s all;
 }
@@ -832,7 +859,7 @@ body.ja #write_tab .form-config .version button.submit-generate {
   opacity: 1;
 }
 .gpt-layout #write_tab .form-config .version .options .item.active {
-  color: #471aa1;
+  color: #8d5bef;
   border: #d5bfff 1px solid;
   background-color: #f6f2ff;
 }
@@ -980,7 +1007,7 @@ body.ja #write_tab .form-config .version button.submit-generate {
   justify-content: center;
 }
 .gpt-layout #write_tab #result .result-footer .btn.insert-btn {
-  background-color: #471aa1;
+  background-color: #8d5bef;
   color: #fff;
   padding: 0 10px;
 }

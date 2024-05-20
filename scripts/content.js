@@ -34,23 +34,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
   let FoDoc;
   let FBoolMail;
-  let flagHasSetCloseSidePanel = false;
-  let flagHasSetClearSidePanel = false;
-
-  /**
-   * Get new id popup
-   * 
-   * @returns {string}
-   */
-  const getNewIdPopup = function () {
-    let idNew = MyUtils.randomId();
-
-    if ($(`#${idNew}`).length == 0) {
-      return idNew;
-    }
-
-    return getNewIdPopup();
-  }
 
   const getCurrentUser = () => {
     var current_user = '';
@@ -63,7 +46,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       }
     }
     return current_user;
-  }
+  };
 
   /**
    *
@@ -81,82 +64,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
       return true;
     }
     return false;
-  }
-
-  /**
-   * Handler when storage has value change
-   * 
-   * @param {Event} event 
-   */
-  const storageOnChanged = (payload, type) => {
-    // on has result send from side panel to add to reply or compose box
-    if ('side_panel_send_result' in payload) {
-      const newValue = payload.side_panel_send_result.newValue;
-      if (newValue.title && newValue.body) {
-        _MailAIGenerate.setTitleContentMail(newValue);
-      }
-      setTimeout(() => {
-        chrome.storage.local.set({ side_panel_send_result: {} });
-      }, 1000);
-    }
-    if ('toggle_side_prompt_builder' in payload) {
-      const newValue = payload.toggle_side_prompt_builder.newValue;
-
-      if (newValue) {
-        _PromptBuilder.toggleSide();
-      }
-
-      setTimeout(() => {
-        _StorageManager.removeToggleSidePromptBuilder();
-      }, 1000);
-    }
-  }
-
-  const setOpenSidePanel = () => {
-    // open side panel when action for compose
-    chrome.runtime.sendMessage({
-      method: 'open_side_panel',
-    })
   };
 
-  const setCloseSidePanel = (idTarget) => {
-    if (flagHasSetCloseSidePanel) return;
-    MyUtils.debugLog('setCloseSidePanel');
-
-    flagHasSetCloseSidePanel = true;
-    _StorageManager.setCloseSidePanel(idTarget, true, () => {
-      flagHasSetCloseSidePanel = false;
-    });
-  };
-
-  const setClearSidePanel = (idTarget) => {
-    if (flagHasSetClearSidePanel) return;
-    MyUtils.debugLog('setClearSidePanel');
-
-    flagHasSetClearSidePanel = true;
-    _StorageManager.triggerClearSidePanel(idTarget, () => {
-      flagHasSetClearSidePanel = false;
-    });
-  };
-
-  const checkUseExtension = () => {
-    var is_ok = true
-    if (!AddOnEmailSetting.is_ip_address_ok || AddOnEmailSetting.is_not_access_list) is_ok = false;
-    if (is_ok) {
-      if (!AddOnEmailSetting.is_domain_registered) {
-        MyUtils.debugLog('Domain register not yet')
-        return false;
-      } else {
-        MyUtils.debugLog('Domain registered')
-        return true;
-      }
-    } else {
-      MyUtils.debugLog('Extension deny')
-      return false;
-    }
-  }
-
-  const _PromptBuilder = {
+  const PromptBuilder = {
     shared_prompt_builders: [],
     prompt_labels: [],
     groupPrompts: [],
@@ -164,7 +74,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
     modal_id: "ai_user_builder_popup_modal",
 
     _init: () => {
-      const self = _PromptBuilder;
+      const self = PromptBuilder;
 
       self.renderHTMLAddOn();
 
@@ -172,7 +82,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
     },
 
     findPromptLabelDetail: (label_name) => {
-      const self = _PromptBuilder;
+      const self = PromptBuilder;
 
       let labelDetail = {
         bg_color: GROUP_PROMPT_LABEL_BG_COLOR,
@@ -190,7 +100,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
     // Setter
 
     toggleSide: (isClose) => {
-      const self = _PromptBuilder;
+      const self = PromptBuilder;
 
       if ($('#stateraito_addon_suggestion').hasClass("show") || isClose) {
         $('#stateraito_addon_suggestion').addClass('hidden');
@@ -202,7 +112,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
     },
 
     showHidePopup: (state) => {
-      const self = _PromptBuilder;
+      const self = PromptBuilder;
 
       if (state) {
         $(`#${self.modal_id}`).show()
@@ -212,7 +122,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
     },
 
     mergePromptGroup: (callback) => {
-      const self = _PromptBuilder;
+      const self = PromptBuilder;
 
       let newGroupPrompts = [];
       self.prompt_labels.forEach(function (prompt_label) {
@@ -243,7 +153,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
     },
 
     setEvent: () => {
-      self = _PromptBuilder;
+      self = PromptBuilder;
 
       $(document).on('click', `#stateraito_addon_suggestion .close-suggestion`, function (event) {
         self.toggleSide(true);
@@ -253,7 +163,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
     // Loader
 
     renderHTMLAddOn: () => {
-      const self = _PromptBuilder;
+      const self = PromptBuilder;
 
       self.createModalHtml()
 
@@ -261,7 +171,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       let elmSuggestion = FoDoc.createElement('div');
       elmSuggestion.setAttribute("id", 'stateraito_addon_suggestion');
-      elmSuggestion.setAttribute("class", "content-suggestion sate-addon");
+      elmSuggestion.setAttribute("class", "content-suggestion sate-addon hidden");
 
       let pencil_icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.1,9L15,9.9L5.9,19H5V18.1L14.1,9M17.7,3C17.5,3 17.2,3.1 17,3.3L15.2,5.1L18.9,8.9L20.7,7C21.1,6.6 21.1,6 20.7,5.6L18.4,3.3C18.2,3.1 17.9,3 17.7,3M14.1,6.2L3,17.2V21H6.8L17.8,9.9L14.1,6.2M7,2V5H10V7H7V10H5V7H2V5H5V2H7Z"/></svg>';
       let yourtab_icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,6A2,2 0 0,0 10,8A2,2 0 0,0 12,10A2,2 0 0,0 14,8A2,2 0 0,0 12,6M12,13C14.67,13 20,14.33 20,17V20H4V17C4,14.33 9.33,13 12,13M12,14.9C9.03,14.9 5.9,16.36 5.9,17V18.1H18.1V17C18.1,16.36 14.97,14.9 12,14.9Z"/></svg>';
@@ -280,7 +190,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       vhtml += '<div class="container-tab">'
 
       vhtml += '<div class="content-tab" >'
-      vhtml += '  <a class="show"><i class="item-icon ">' + buildertab_icon + '</i>ビルダーで利用<i class="item-icon chevron_icon ">' + chevron_icon + '</i></a>'
+      vhtml += '  <a class="show"><i class="item-icon ">' + buildertab_icon + '</i>ビルダーで利用</a>'
       vhtml += '  <section>'
       vhtml += '      <ul id="shared_prompt_builders_list" ></ul>'
       vhtml += '  </section>'
@@ -296,7 +206,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
     },
 
     renderHTMLPrompt: () => {
-      const self = _PromptBuilder;
+      const self = PromptBuilder;
 
       let chevron_icon = '<svg viewBox="0 0 24 24" ><path fill="currentColor" d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"></path></svg>';
       let texts_icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path  fill="currentColor"d="M16,15H9V13H16M19,11H9V9H19M19,7H9V5H19M21,1H7C5.89,1 5,1.89 5,3V17C5,18.11 5.9,19 7,19H21C22.11,19 23,18.11 23,17V3C23,1.89 22.1,1 21,1M3,5V21H19V23H3A2,2 0 0,1 1,21V5H3Z"/></svg>';
@@ -304,14 +214,16 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       let vHTML = ''
       self.groupPrompts.map((groupPrompt, group_prompt_index) => {
-        let style_group = `style="background-color: ${groupPrompt.bg_color};color: ${groupPrompt.text_color};"`
+        let color = '#8d5bef' || groupPrompt.bg_color;
+        let text_color = '#fff' || groupPrompt.text_color;
+        let style_group = `style="background-color: ${color};color: ${text_color};"`
         vHTML += `
           <div class="accordion-item" align="center">
               <h2 class="promt-lbl-header accordion-header" ${style_group}>
                   <button type="button" aria-expanded="true" class="accordion-button">
-                      <i class="item-icon " style=" color: ${groupPrompt.text_color}!important;">${texts_icon}</i>
+                      <i class="item-icon " style=" color: ${text_color}!important;">${texts_icon}</i>
                       ${groupPrompt.name}
-                      <i class=" item-icon  chevron_icon " style=" color: ${groupPrompt.text_color}!important;">${chevron_icon}</i>
+                      <i class=" item-icon  chevron_icon " style=" color: ${text_color}!important;">${chevron_icon}</i>
                   </button>
               </h2>`
 
@@ -338,7 +250,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
     },
 
     createModalHtml: () => {
-      const self = _PromptBuilder;
+      const self = PromptBuilder;
 
       if ($(document).find('#' + self.modal_id).length) {
         return;
@@ -371,7 +283,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       // END modal-body
 
       vHtml += '  	<div class="modal-footer">';
-      vHtml += '  	  <button type="button" class="btn btn-cancel st-btn-material-outline">戻る</button>';
+      vHtml += '  	  <button type="button" class="btn-cancel st-btn-material-outline">戻る</button>';
 
       // switch auto send
       vHtml += '<div class="custom-switch auto-summary form-check">';
@@ -380,7 +292,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       vHtml += "</div>";
       // end switch auto send
 
-      vHtml += '  	  <button type="button" class="btn btn-submit st-btn-material" >上の質問内容を採用する</button>';
+      vHtml += '  	  <button type="button" class="btn-submit st-btn-material" >上の質問内容を採用する</button>';
       vHtml += '  	</div>';
       vHtml += '  </div>';
       vHtml += '</div>';
@@ -400,7 +312,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
     },
 
     detectPromptBuilder: (vhtml) => {
-      const self = _PromptBuilder;
+      const self = PromptBuilder;
 
       let elmTmp = document.getElementById("shared_prompt_builders_list");
       if (elmTmp) {
@@ -426,7 +338,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
     },
 
     renderPromptList: (data) => {
-      const self = _PromptBuilder;
+      const self = PromptBuilder;
 
       if (data.prompt_labels) {
         self.prompt_labels = data.prompt_labels
@@ -441,9 +353,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
     },
 
     loadPromptSuggest: () => {
-      const self = _PromptBuilder;
+      const self = PromptBuilder;
 
-      getPromptsRequest({}, data => {
+      SateraitoRequest.getPrompts({}, data => {
         self.renderPromptList(data)
       });
     },
@@ -451,7 +363,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
     //
 
     onclickItemPromptBuilder: (e) => {
-      const self = _PromptBuilder;
+      const self = PromptBuilder;
       const targetEl = event.target;
 
       let group_index = parseInt(targetEl.getAttribute('data-group'));
@@ -479,14 +391,14 @@ document.addEventListener('RW759_connectExtension', function (e) {
     },
 
     handlerOnSubmitForm: (event) => {
-      const self = _PromptBuilder;
+      const self = PromptBuilder;
 
       var templateBody = self.formBuilder.getPrompt();
       MyUtils.debugLog(templateBody)
 
       let is_direct_send = $(`#${self.modal_id} :input[name="direct_send"]`).is(":checked");
 
-      _StorageManager.setGeneralContentReplySidePanel(templateBody, is_direct_send);
+      StorageManager.setGeneralContentReplySidePanel(templateBody, is_direct_send);
 
       self.showHidePopup(false)
       //close-suggestion
@@ -499,7 +411,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
    * Mail Add-on
    * 
    */
-  const _MailAIGenerate = {
+  const MailAIGenerate = {
     actionsMailEl: null,
     AIReplyBtnEl: null,
     bodyMailEl: null,
@@ -513,7 +425,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * 
      */
     _init: function () {
-      let self = _MailAIGenerate;
+      let self = MailAIGenerate;
       if (self.detectInterval_100 != null) {
         clearInterval(self.detectInterval_100);
       }
@@ -521,7 +433,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       function gText(e) {
         let sessionEl = (document.all) ? document.selection.createRange().text : document.getSelection();
-        _StorageManager.setOriginalTextSidePanel(sessionEl.toString());
+        StorageManager.setOriginalTextSidePanel(sessionEl.toString());
       }
       document.onmouseup = gText;
       if (!document.all) document.captureEvents(Event.MOUSEUP);
@@ -535,7 +447,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * @param {json} params 
      */
     setTitleContentMail: function (params) {
-      let self = _MailAIGenerate;
+      let self = MailAIGenerate;
       const { id_popup, title, body } = params;
 
       if (id_popup && $(`.sateraito-${id_popup}`).length > 0) {
@@ -590,7 +502,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * @param {string} idTarget 
      */
     setIDTargetMailReply: function (idTarget) {
-      let self = _MailAIGenerate;
+      let self = MailAIGenerate;
 
       if (self.trackingBoxReplyInterval != null) return;
 
@@ -629,7 +541,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
           setTimeout(() => {
             if (self.isReplyBoxClose()) {
               // Process close side panel
-              setClearSidePanel(idTarget);
+              MyUtils.setClearSidePanel(idTarget);
 
               clearInterval(self.trackingBoxReplyInterval)
               self.trackingBoxReplyInterval = null;
@@ -671,7 +583,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * @param {string} idTarget 
      */
     setIDTargetMailCompose: function (idTarget) {
-      let self = _MailAIGenerate;
+      let self = MailAIGenerate;
 
       if (self.trackingBoxComposeInterval != null) return;
 
@@ -702,7 +614,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
           setTimeout(() => {
             if (self.isReplyBoxClose()) {
               // Process close side panel
-              setClearSidePanel(idTarget);
+              MyUtils.setClearSidePanel(idTarget);
 
               clearInterval(self.trackingBoxComposeInterval)
               self.trackingBoxComposeInterval = null;
@@ -783,7 +695,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * @returns {string}
      */
     getContentBodyMail: function () {
-      let self = _MailAIGenerate;
+      let self = MailAIGenerate;
       let selection = window.getSelection();
       let range = document.createRange();
       range.setStartBefore(self.bodyMailEl.first()[0]);
@@ -812,7 +724,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * 
      */
     processAddAIReplyButton: function () {
-      let self = _MailAIGenerate;
+      let self = MailAIGenerate;
       let elmBtn = document.createElement('div');
       elmBtn.id = BTN_AI_REPLY_ID
       elmBtn.addEventListener('click', self.handlerReplyBtnClick);
@@ -834,7 +746,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * 
      */
     processAddAIReplyBtnForListBoxReply: function () {
-      let self = _MailAIGenerate;
+      let self = MailAIGenerate;
       let lisBBarReplyEl = FoDoc.querySelectorAll('.G3.G2 .IZ .btC');
 
       for (let i = 0; i < lisBBarReplyEl.length; i++) {
@@ -874,7 +786,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * 
      */
     processAddAIReplyBtnForListBoxCompose: function () {
-      let self = _MailAIGenerate;
+      let self = MailAIGenerate;
 
       // process for add button to bottom bar
       let lisBBarComposeEl = FoDoc.querySelectorAll('.nH .aaZ .btC');
@@ -946,11 +858,11 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * @param {string} contentMail 
      */
     processRequestToShowPopup: function (titleMail, contentMail) {
-      let self = _MailAIGenerate;
-      const idPopup = getNewIdPopup();
+      let self = MailAIGenerate;
+      const idPopup = MyUtils.getNewIdPopup();
 
       let emailInPage = getCurrentUser();
-      _StorageManager.setSecondEmail(emailInPage);
+      StorageManager.setSecondEmail(emailInPage);
 
       let btnReplyMailEl = FoDoc.body.querySelector('.ams.bkH');
       if (btnReplyMailEl) {
@@ -959,8 +871,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       self.setIDTargetMailReply(idPopup);
 
-      // _StorageManager.setIdPopupActive(idPopup);
-      _StorageManager.setTitleContentMailToWrite(idPopup, titleMail, contentMail);
+      // StorageManager.setIdPopupActive(idPopup);
+      StorageManager.setTitleContentMailToWrite(idPopup, titleMail, contentMail);
     },
 
     // Handler func
@@ -970,7 +882,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
      *  
      */
     handleDetect: function () {
-      let self = _MailAIGenerate;
+      let self = MailAIGenerate;
 
       self.bodyMailEl = self.getBodyMail();
       let hasBody = (self.bodyMailEl.length != 0);
@@ -996,14 +908,14 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * @param {Event} event 
      */
     handlerReplyBtnClick: function (event) {
-      const self = _MailAIGenerate;
+      const self = MailAIGenerate;
 
-      let titleMail = _MailAIGenerate.getTitleMail();
-      let contentMail = _MailAIGenerate.getContentBodyMail();
+      let titleMail = MailAIGenerate.getTitleMail();
+      let contentMail = MailAIGenerate.getContentBodyMail();
       self.processRequestToShowPopup(titleMail, contentMail);
 
       // open side panel when action for compose
-      setOpenSidePanel();
+      MyUtils.setOpenSidePanel();
     },
 
     /**
@@ -1012,29 +924,58 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * @param {Event} event 
      */
     handlerReplyBoxBtnClick: function (event) {
-      const self = _MailAIGenerate;
+      const self = MailAIGenerate;
       const btnEl = event.target;
 
       if (btnEl.getAttribute('role_btn') == 'reply') {
-        let titleMail = _MailAIGenerate.getTitleMail();
-        let contentMail = _MailAIGenerate.getContentBodyMail();
+        let titleMail = MailAIGenerate.getTitleMail();
+        let contentMail = MailAIGenerate.getContentBodyMail();
         self.processRequestToShowPopup(titleMail, contentMail);
 
       } else {
-        const idPopup = getNewIdPopup();
+        const idPopup = MyUtils.getNewIdPopup();
 
         let emailInPage = getCurrentUser();
-        _StorageManager.setSecondEmail(emailInPage);
+        StorageManager.setSecondEmail(emailInPage);
 
         self.setIDTargetMailCompose(idPopup);
 
-        // _StorageManager.setIdPopupActive(idPopup);
-        _StorageManager.setTitleContentMailToWrite(idPopup, '', '');
+        // StorageManager.setIdPopupActive(idPopup);
+        StorageManager.setTitleContentMailToWrite(idPopup, '', '');
       }
 
       // open side panel when action for compose
-      setOpenSidePanel();
+      MyUtils.setOpenSidePanel();
     },
+  };
+
+  /**
+   * Handler when storage has value change
+   * 
+   * @param {Event} event 
+   */
+  const storageOnChanged = (payload, type) => {
+    // on has result send from side panel to add to reply or compose box
+    if ('side_panel_send_result' in payload) {
+      const newValue = payload.side_panel_send_result.newValue;
+      if (newValue.title && newValue.body) {
+        MailAIGenerate.setTitleContentMail(newValue);
+      }
+      setTimeout(() => {
+        chrome.storage.local.set({ side_panel_send_result: {} });
+      }, 1000);
+    }
+    if ('toggle_side_prompt_builder' in payload) {
+      const newValue = payload.toggle_side_prompt_builder.newValue;
+
+      if (newValue) {
+        PromptBuilder.toggleSide();
+      }
+
+      setTimeout(() => {
+        StorageManager.removeToggleSidePromptBuilder();
+      }, 1000);
+    }
   };
 
   /**
@@ -1055,12 +996,14 @@ document.addEventListener('RW759_connectExtension', function (e) {
           USER_ADDON_LOGIN = userInfo.email;
 
           //addon setting
-          loadAddOnSetting(userInfo.email, function () {
+          SateraitoRequest.loadAddOnSetting(userInfo.email, function () {
 
-            if (checkUseExtension()) {
-              _MailAIGenerate._init();
+            if (MyUtils.checkUseExtension()) {
+              MailAIGenerate._init();
 
-              _PromptBuilder._init();
+              PromptBuilder._init();
+
+              MyUtils.loadSkin();
             }
 
             MyUtils.debugLog(`auto summary chat GPT: domain regist:[${AddOnEmailSetting.is_domain_registered}], permission deny:[${AddOnEmailSetting.is_not_access_list}]`);

@@ -2,101 +2,6 @@
   'use strict';
 
   /**
-   * Send message manager
-   * 
-   */
-  const _SendMessageManager = {
-    /**
-     * Get summary content mail
-     * 
-     * @param {string} titleMail 
-     * @param {string} contentMail 
-     * @param {Function} callback 
-     */
-    getSummaryContentMail: function (titleMail, contentMail, callback) {
-      // Get open ai KEY
-      _OpenAIManager.getOpenAIKey((gptAiKey) => {
-        let params = {
-          title_mail: titleMail,
-          content_mail: contentMail,
-          gpt_ai_key: gptAiKey,
-          lang: UserSetting.language_active
-        };
-
-        // Call request get data to show popup in mail
-        summaryContentMailRequest(params, (response) => {
-          callback({
-            summary: response.summarize,
-            key_points_list: response.key_points,
-            lang_content: response.language,
-            suggestion_list: response.answer_suggest,
-          });
-        })
-      })
-    },
-
-    /**
-     * Get suggest reply content mail request
-     * 
-     * @param {string} titleMail 
-     * @param {string} contentMail 
-     * @param {Function} callback 
-     */
-    getSuggestReplyMailRequest: function (titleMail, contentMail, callback) {
-      // Get open ai KEY
-      _OpenAIManager.getOpenAIKey((gptAiKey) => {
-        let params = {
-          title_mail: titleMail,
-          content_mail: contentMail,
-          gpt_ai_key: gptAiKey,
-          lang: UserSetting.language_active
-        };
-
-        // Call request get data to show popup in mail
-        getSuggestReplyMailRequest(params, (response) => {
-          callback(response.answer_suggest);
-        })
-      })
-    },
-
-    /**
-     * Generate content compose
-     * 
-     * @param {json} params 
-     * @param {Function} callback 
-     */
-    generateContentCompose: function (params, callback) {
-      chrome.runtime.sendMessage({
-        method: 'generate_content_compose_mail',
-        data: params
-      },
-        function (response) {
-          callback(response);
-        }
-      );
-    },
-
-    /**
-     * Generate content reply
-     * 
-     * @param {json} params 
-     * @param {Function} callback 
-     */
-    generateContentReply: function (params, callback) {
-      const self = _SendMessageManager;
-
-      // Get open ai KEY
-      _OpenAIManager.getOpenAIKey((gptAiKey) => {
-        params.gpt_ai_key = gptAiKey;
-
-        generateContentRequest(params, (response) => {
-          callback(response);
-        })
-      })
-    }
-  };
-
-  /**
    * Tab write manager
    * 
    */
@@ -151,9 +56,14 @@
                   <span id="reply_tab" class="tab-item">
 
                     <textarea class="original_text_reply" maxlength="${MAX_LENGTH_TEXTAREA_TOKEN}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_REPLY')}"></textarea>
-                    <textarea class="general_content_reply" maxlength="${MAX_LENGTH_TEXTAREA_TOKEN}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_GENERAL_CONTENT_REPLY')}"></textarea>
 
-                    <ul class="reply-suggestions">
+                    <div class="wrap-general-content-reply">
+                      <textarea class="general_content_reply" maxlength="${MAX_LENGTH_TEXTAREA_TOKEN}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_GENERAL_CONTENT_REPLY')}"></textarea>
+                      <div class="tips-icon"><img src="${tipsIconUrl}"></div>
+                    </div>
+
+                    <ul class="reply-suggestions hidden">
+                      <span> ${MyLang.getMsg('TXT_REPLY_SUGGESTIONS')} </span>
                     </ul>
 
                     <div class="loading-component">
@@ -288,13 +198,22 @@
         if (!topicCompose || topicCompose == '') {
           return MyLang.getMsg('DES_ERROR_TOPIC_COMPOSE');
         }
+        if (topicCompose.length > MAX_LENGTH_TEXTAREA_TOKEN) {
+          return MyLang.getMsg('DES_ERROR_TOPIC_COMPOSE_MAX_LENGTH_TOKEN');
+        }
       }
       if (typeGenerate == 'reply') {
         if (!originalTextReply || originalTextReply == '') {
           return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_REPLY');
         }
+        if (originalTextReply.length > MAX_LENGTH_TEXTAREA_TOKEN) {
+          return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_REPLY_MAX_LENGTH_TOKEN');
+        }
         if (!generalContentReply || generalContentReply == '') {
           return MyLang.getMsg('DES_ERROR_GENERAL_CONTENT_REPLY');
+        }
+        if (generalContentReply.length > MAX_LENGTH_TEXTAREA_TOKEN) {
+          return MyLang.getMsg('DES_ERROR_GENERAL_CONTENT_REPLY_MAX_LENGTH_TOKEN');
         }
       }
       if (self.formData.gpt_version == 'gemini') {
@@ -561,12 +480,6 @@
       swapTextEl.innerHTML = `<div class="item show-summary"></div> <div class="item show-original-text"></div>`
       $(`#${self.idTab} #reply_tab`).append(swapTextEl);
 
-      let iconEl = document.createElement('img');
-      iconEl.src = tipsIconUrl;
-      iconEl.className = 'tips-icon';
-      iconEl.onclick = self.onClickOpenTips;
-      $(`#${self.idTab} #reply_tab .reply-suggestions`).append(iconEl);
-
       for (let i = 0; i < self.list_suggest_reply_mail.length; i++) {
         const suggestItem = self.list_suggest_reply_mail[i];
 
@@ -580,6 +493,8 @@
 
         MyUtils.renderTextStyleChatGPT(pEl, suggestItem)
       }
+
+      $(`#${self.idTab} #reply_tab .reply-suggestions`).removeClass('hidden');
 
       setTimeout(() => {
         $(originalTextReplyEl).focus();
@@ -624,9 +539,18 @@
       $(`#${self.idTab} .tab .tab-title .item[key_tab="${tabActive}"]`).addClass('active');
       $(`#${self.idTab} .tab .tab-body .tab-item`).removeClass('active');
       $(`#${self.idTab} .tab .tab-body #${tabActive}`).addClass('active');
-      $(`#${self.idTab} .tab .tab-body #${tabActive} textarea`).focus();
 
       $('textarea').css('maxWidth', document.querySelector('textarea').clientWidth);
+
+      $(`#${self.idTab} .voice-config .formality`).removeClass('hidden');
+      $(`#${self.idTab} .voice-config .formality_reply`).removeClass('hidden');
+      if (tabActive == 'reply_tab') {
+        $(`#${self.idTab} .voice-config .formality`).addClass('hidden');
+      } else {
+        $(`#${self.idTab} .voice-config .formality_reply`).addClass('hidden');
+      }
+
+      $(`#${self.idTab} .tab .tab-body #${tabActive} textarea`)[0].focus();
     },
 
     /**
@@ -679,25 +603,26 @@
         const keyTab = targetEl.getAttribute('key_tab');
 
         if (self.is_summarizing) return;
+        self.setActiveTab(keyTab);
 
-        $(`#${self.idTab} .voice-config .formality`).removeClass('hidden');
-        $(`#${self.idTab} .voice-config .formality_reply`).removeClass('hidden');
-        if (keyTab == 'reply_tab') {
-          $(`#${self.idTab} .voice-config .formality`).addClass('hidden');
-        } else {
-          $(`#${self.idTab} .voice-config .formality_reply`).addClass('hidden');
-        }
+        // $(`#${self.idTab} .voice-config .formality`).removeClass('hidden');
+        // $(`#${self.idTab} .voice-config .formality_reply`).removeClass('hidden');
+        // if (keyTab == 'reply_tab') {
+        //   $(`#${self.idTab} .voice-config .formality`).addClass('hidden');
+        // } else {
+        //   $(`#${self.idTab} .voice-config .formality_reply`).addClass('hidden');
+        // }
 
-        $(`#${self.idTab} .tab .tab-title .item`).removeClass('active');
-        $(targetEl).addClass('active');
+        // $(`#${self.idTab} .tab .tab-title .item`).removeClass('active');
+        // $(targetEl).addClass('active');
 
-        $(`#${self.idTab} .tab .tab-body .tab-item`).removeClass('active');
-        $(`#${self.idTab} .tab .tab-body #${keyTab}.tab-item`).addClass('active');
+        // $(`#${self.idTab} .tab .tab-body .tab-item`).removeClass('active');
+        // $(`#${self.idTab} .tab .tab-body #${keyTab}.tab-item`).addClass('active');
 
-        setTimeout(() => {
-          let inputFocusEl = document.body.querySelector(`#${self.idTab} .tab.content-config .tab-item.active textarea`);
-          $(inputFocusEl).focus();
-        });
+        // setTimeout(() => {
+        //   let inputFocusEl = document.body.querySelector(`#${self.idTab} .tab.content-config .tab-item.active textarea`);
+        //   $(inputFocusEl).focus();
+        // });
       });
 
       const handlerActive = () => {
@@ -739,54 +664,11 @@
       $(document).on('click', `#${self.idTab} .result-footer .btn.re-generate`, self.onSubmitGenerate);
       $(document).on('click', `#${self.idTab} .result-footer .btn.copy-content`, self.onClickCopyContentResult);
       $(document).on('click', `#${self.idTab} .result-footer .btn.send-to-site`, self.onClickSendContentResultToBrowserPage);
-
+      
       document.body.querySelector(`#${self.idTab} #version_gpt`).onSelect = self.onSelectVersionGptConfig;
-
-      // For input original text
-      // $(document).on('focus', `#${self.idTab} #reply_tab .original_text_reply`, event => {
-      //   setTimeout(() => {
-      //     if (self.swap_original_text_flag) {
-      //       self.swap_original_text_flag = false;
-      //     } else {
-      //       $('.swap-text-original').addClass('show');
-      //     }
-      //   }, 200);
-      // })
-      // $(document).on('focusout', `#${self.idTab} #reply_tab .original_text_reply`, event => {
-      //   setTimeout(() => {
-      //     if (self.swap_original_text_flag) {
-      //       self.swap_original_text_flag = false;
-      //     } else {
-      //       $('.swap-text-original').removeClass('show');
-      //     }
-      //   }, 200);
-      // })
-      // $(document).on('click', `#${self.idTab} .show-summary`, event => {
-      //   if (self.is_loading || self.is_summarizing) return;
-      //   $('.original_text_reply').val(self.summaryMailData.summary);
-
-      //   self.swap_original_text_flag = true;
-
-      //   $('.original_text_reply').focus();
-      //   $('#reply_tab .original_text_reply').scrollTop(0);
-      // });
-      // $(document).on('click', `#${self.idTab} .show-original-text`, event => {
-      //   if (self.is_loading || self.is_summarizing) return;
-      //   $('.original_text_reply').val(self.title_content_mail_to_write.original_text);
-
-      //   self.swap_original_text_flag = true;
-
-      //   $('.original_text_reply').focus();
-      //   $('#reply_tab .original_text_reply').scrollTop(0);
-      // });
-
+      
       // For reply suggestions
-      $(document).on('mouseover', `#${self.idTab} #reply_tab .reply-suggestions li`, event => {
-        $('.general_content_reply').attr('placeholder', event.target.getAttribute('value'));
-      })
-      $(document).on('mouseleave', `#${self.idTab} #reply_tab .reply-suggestions li`, event => {
-        $('.general_content_reply').attr('placeholder', MyLang.getMsg('TXT_PLACEHOLDER_GENERAL_CONTENT_REPLY'));
-      })
+      $(document).on('click', `#${self.idTab} .tips-icon`, self.onClickOpenTips);
       $(document).on('click', `#${self.idTab} #reply_tab .reply-suggestions li`, event => {
         if (self.is_loading || self.is_summarizing) return;
 
@@ -925,7 +807,7 @@
         }
 
         // Save to storage
-        _StorageManager.setVoiceConfigWrite(voiceConfig);
+        StorageManager.setVoiceConfigWrite(voiceConfig);
       }
     },
 
@@ -956,10 +838,10 @@
       params.original_text_reply = originalTextReply;
       params.general_content_reply = generalContentReply;
 
-      $('#write_tab #result .result-title .left .icon').attr('src', _OpenAIManager.getPropGptByVersion('icon', self.formData.gpt_version))
-      $('#write_tab #result .result-title .left .name-gpt').text(_OpenAIManager.getPropGptByVersion('name', self.formData.gpt_version))
+      $('#write_tab #result .result-title .left .icon').attr('src', MyUtils.getPropGptByVersion('icon', self.formData.gpt_version))
+      $('#write_tab #result .result-title .left .name-gpt').text(MyUtils.getPropGptByVersion('name', self.formData.gpt_version))
 
-      _SendMessageManager.generateContentReply(params, (data) => {
+      OpenAIManager.generateContentReply(params, (data) => {
         self.generate_result_list.push(data);
 
         self.handlerShowGenerateResult();
@@ -982,11 +864,11 @@
       if (title == '' || original_text == '') return;
 
       $('#reply_tab').addClass('is-loading');
-
+      
       self.setActiveTab('reply_tab');
 
       self.is_summarizing = true;
-      _SendMessageManager.getSuggestReplyMailRequest(title, original_text, (dataRes) => {
+      OpenAIManager.getSuggestReplyMail(title, original_text, (dataRes) => {
         self.list_suggest_reply_mail = dataRes;
 
         self.loadContentDataMailReply();
@@ -995,7 +877,7 @@
         $('#reply_tab').removeClass('is-loading');
       });
 
-      _StorageManager.setTitleContentMailToWrite(null);
+      StorageManager.setTitleContentMailToWrite(null);
     },
 
     /**
@@ -1010,12 +892,12 @@
       self.generate_result_list = [];
 
       $(`#${self.idTab} #result`).addClass('hidden');
+      $(`#${self.idTab} #reply_tab .reply-suggestions`).addClass('hidden');
 
       $(`#${self.idTab} #compose_tab .topic_to_compose`).val('');
       $(`#${self.idTab} #reply_tab .original_text_reply`).val('');
       $(`#${self.idTab} #reply_tab .general_content_reply`).val('');
       $(`#${self.idTab} #reply_tab .swap-text-original`).remove();
-      $(`#${self.idTab} #reply_tab .reply-suggestions .tips-icon`).remove();
       $(`#${self.idTab} #reply_tab .reply-suggestions li`).remove();
     },
 
@@ -1050,9 +932,6 @@
         tabActive = 'reply_tab'
       }
       self.setActiveTab(tabActive);
-
-      $(`#${self.idTab} .voice-config .formality`).removeClass('hidden');
-      $(`#${self.idTab} .voice-config .formality_reply`).addClass('hidden');
     },
 
     /**
@@ -1162,7 +1041,7 @@
         }
 
         // Save to storage
-        _StorageManager.setVoiceConfigWrite(voiceConfig);
+        StorageManager.setVoiceConfigWrite(voiceConfig);
       }
     },
 
@@ -1212,7 +1091,7 @@
         }
 
         // Save to storage
-        _StorageManager.setVoiceConfigWrite(voiceConfig);
+        StorageManager.setVoiceConfigWrite(voiceConfig);
       }
     },
 
@@ -1241,7 +1120,7 @@
     onClickOpenTips: (event) => {
       const self = TabWriteManager;
 
-      _StorageManager.toggleSidePromptBuilder();
+      StorageManager.toggleSidePromptBuilder();
     },
   }
 
@@ -1448,7 +1327,7 @@
     if ('original_text_side_panel' in payload) {
       let originalTextNew = payload.original_text_side_panel.newValue;
       if (originalTextNew) {
-        _StorageManager.removeOriginalTextSidePanel();
+        StorageManager.removeOriginalTextSidePanel();
 
         TabWriteManager.setOriginalText(originalTextNew);
         TabWriteManager.setActiveTab('reply_tab');
@@ -1462,7 +1341,7 @@
         TabWriteManager.setGeneralContentReply(general_content_reply, is_direct_send);
         TabWriteManager.setActiveTab('reply_tab');
 
-        _StorageManager.removeGeneralContentReplySidePanel();
+        StorageManager.removeGeneralContentReplySidePanel();
       }
     }
     if ('write_voice_config' in payload) {
@@ -1515,7 +1394,7 @@
       let { is_close, id_popup } = payload.trigger_close_side_panel.newValue;
 
       if (is_close == true) {
-        _StorageManager.setCloseSidePanel(null, null, () => {
+        StorageManager.setCloseSidePanel(null, null, () => {
           window.close();
         });
       }
@@ -1523,7 +1402,7 @@
     if ('trigger_clear_side_panel' in payload) {
       let { id_popup } = payload.trigger_clear_side_panel.newValue;
 
-      _StorageManager.triggerClearSidePanel(null, () => {
+      StorageManager.triggerClearSidePanel(null, () => {
         TabWriteManager.clearForm();
       });
     }
@@ -1543,7 +1422,7 @@
       }
     };
 
-    _StorageManager.getVoiceConfigWrite(voiceConfig => {
+    StorageManager.getVoiceConfigWrite(voiceConfig => {
       if (!voiceConfig) {
         voiceConfig = [];
       }
@@ -1569,7 +1448,7 @@
       proceedByPallaFinishedCount();
     })
 
-    _StorageManager.getTitleContentMailToWrite(titleContent => {
+    StorageManager.getTitleContentMailToWrite(titleContent => {
       TabWriteManager.title_content_mail_to_write = { ...titleContent };
 
       proceedByPallaFinishedCount();
@@ -1582,7 +1461,7 @@
       WrapperManager.setEmailFooter(USER_ADDON_LOGIN);
 
       //addon setting
-      loadAddOnSetting(userInfo.email, function (result) {
+      SateraitoRequest.loadAddOnSetting(userInfo.email, function (result) {
         MyUtils.debugLog(`auto summary chat GPT: domain regist:[${AddOnEmailSetting.is_domain_registered}], permission deny:[${AddOnEmailSetting.is_not_access_list}]`);
       });
 

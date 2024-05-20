@@ -230,11 +230,20 @@
   "des_error_empty_topic_compose": {
     "message": "「作成したいトピックを入力してください」"
   },
+  "des_error_empty_topic_compose_max_length_token": {
+    "message": "Maximum 4000 characters for the topic to compose"
+  },
   "des_error_empty_original_text_reply": {
     "message": "「返信したい元のテキストを入力してください」"
   },
+  "des_error_empty_original_text_reply_max_length_token": {
+    "message": "Maximum 4000 characters for the original text to which you want to reply"
+  },
   "des_error_empty_general_content_reply": {
     "message": "「上記のテキストに対する返信の一般的な内容を入力してください」"
+  },
+  "des_error_empty_general_content_reply_max_length_token": {
+    "message": "Maximum 4000 characters for the general content of your reply to the above text"
   },
   "des_error_gemini_not_released": {
     "message": "「おっと！Gemini 1.0 Proはまだリリースされていません」"
