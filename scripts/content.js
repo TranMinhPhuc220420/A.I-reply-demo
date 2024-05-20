@@ -1,6 +1,3 @@
-/** @define {boolean} デバッグモード */
-let DEBUG_MODE = true;
-
 /** @define {object} GLOBALS_GMAIL*/
 let GLOBALS_GMAIL = null;
 
@@ -46,7 +43,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
    * @returns {string}
    */
   const getNewIdPopup = function () {
-    let idNew = randomId();
+    let idNew = MyUtils.randomId();
 
     if ($(`#${idNew}`).length == 0) {
       return idNew;
@@ -55,7 +52,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
     return getNewIdPopup();
   }
 
-  function getCurrentUser() {
+  const getCurrentUser = () => {
     var current_user = '';
     if (GLOBALS_GMAIL != null) {
       if (typeof (GLOBALS_GMAIL) != "undefined") {
@@ -72,7 +69,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
    *
    * @return {boolean} 拡張機能がインストール済みかを返す
    */
-  function isExtensionInstalled() {
+  const isExtensionInstalled = () => {
     let domNode;
 
     if (!document.getElementById(NODE_ID_EXTENSION_INSTALLED)) {
@@ -80,7 +77,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       domNode.id = NODE_ID_EXTENSION_INSTALLED;
       document.body.appendChild(domNode);
     } else {
-      debugLog('Already, Extension is installed!');
+      MyUtils.debugLog('Already, Extension is installed!');
       return true;
     }
     return false;
@@ -91,7 +88,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
    * 
    * @param {Event} event 
    */
-  function storageOnChanged(payload, type) {
+  const storageOnChanged = (payload, type) => {
     // on has result send from side panel to add to reply or compose box
     if ('side_panel_send_result' in payload) {
       const newValue = payload.side_panel_send_result.newValue;
@@ -115,16 +112,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
     }
   }
 
-  /**
-   * Debug log
-   * @param {string} strMsg
-   */
-  const debugLog = (strMsg) => {
-    if (DEBUG_MODE === true) {
-      console.log(chrome.i18n.getMessage('@@extension_id') + ' ' + (new Date()).toLocaleString() + ':', strMsg);
-    }
-  }
-
   const setOpenSidePanel = () => {
     // open side panel when action for compose
     chrome.runtime.sendMessage({
@@ -134,7 +121,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
   const setCloseSidePanel = (idTarget) => {
     if (flagHasSetCloseSidePanel) return;
-    debugLog('setCloseSidePanel');
+    MyUtils.debugLog('setCloseSidePanel');
 
     flagHasSetCloseSidePanel = true;
     _StorageManager.setCloseSidePanel(idTarget, true, () => {
@@ -144,7 +131,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
   const setClearSidePanel = (idTarget) => {
     if (flagHasSetClearSidePanel) return;
-    debugLog('setClearSidePanel');
+    MyUtils.debugLog('setClearSidePanel');
 
     flagHasSetClearSidePanel = true;
     _StorageManager.triggerClearSidePanel(idTarget, () => {
@@ -152,19 +139,19 @@ document.addEventListener('RW759_connectExtension', function (e) {
     });
   };
 
-  function checkUseExtension() {
+  const checkUseExtension = () => {
     var is_ok = true
     if (!AddOnEmailSetting.is_ip_address_ok || AddOnEmailSetting.is_not_access_list) is_ok = false;
     if (is_ok) {
       if (!AddOnEmailSetting.is_domain_registered) {
-        console.log('Domain register not yet')
+        MyUtils.debugLog('Domain register not yet')
         return false;
       } else {
-        console.log('Domain registered')
+        MyUtils.debugLog('Domain registered')
         return true;
       }
     } else {
-      console.log('Extension deny')
+      MyUtils.debugLog('Extension deny')
       return false;
     }
   }
@@ -251,7 +238,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
         }),
       });
 
-      //console.log(newGroupPrompts)
       self.groupPrompts = newGroupPrompts
       callback()
     },
@@ -318,7 +304,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       let vHTML = ''
       self.groupPrompts.map((groupPrompt, group_prompt_index) => {
-        // console.log(groupPrompt)
         let style_group = `style="background-color: ${groupPrompt.bg_color};color: ${groupPrompt.text_color};"`
         vHTML += `
           <div class="accordion-item" align="center">
@@ -333,7 +318,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
         // detail
         groupPrompt.prompts.map(
           (suggestion, index) => {
-            // console.log(suggestion)
             vHTML += `
                       <div class="accordion-collapse  show">
                           <div class="accordion-body">
@@ -476,10 +460,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
       if (self.groupPrompts.length > 0 && group_index < self.groupPrompts.length) {
         let group_prompt = self.groupPrompts[group_index]
-        // console.log(group_prompt)
         if (group_prompt.prompts.length > 0 && prompt_index < group_prompt.prompts.length) {
           let prompt = group_prompt.prompts[prompt_index]
-          // console.log(prompt)
           let template_builder_div = document.querySelector('.content-item[data-content_type="template_builder"]');
           if (template_builder_div) {
             self.formBuilder = new sateraitoAI.BuilderTemplate.initFormBuilder(template_builder_div, {
@@ -488,7 +470,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
             });
 
             //direct_send
-            // console.log(prompt.direct_send)
             $(`#${self.modal_id} :input[name="direct_send"]`).prop("checked", prompt.direct_send);
 
             self.showHidePopup(true)
@@ -499,9 +480,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
     handlerOnSubmitForm: (event) => {
       const self = _PromptBuilder;
-      
+
       var templateBody = self.formBuilder.getPrompt();
-      console.log(templateBody)
+      MyUtils.debugLog(templateBody)
 
       let is_direct_send = $(`#${self.modal_id} :input[name="direct_send"]`).is(":checked");
 
@@ -1061,7 +1042,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
    * 
    */
   function initialize() {
-    debugLog('▼▼▼ initialize started ! ');
+    MyUtils.debugLog('▼▼▼ initialize started ! ');
 
     let strUrl = document.URL;
     if ((window === window.top) && (isExtensionInstalled() === false)) {
@@ -1082,7 +1063,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
               _PromptBuilder._init();
             }
 
-            debugLog(`auto summary chat GPT: domain regist:[${AddOnEmailSetting.is_domain_registered}], permission deny:[${AddOnEmailSetting.is_not_access_list}]`);
+            MyUtils.debugLog(`auto summary chat GPT: domain regist:[${AddOnEmailSetting.is_domain_registered}], permission deny:[${AddOnEmailSetting.is_not_access_list}]`);
           });
         });
 
@@ -1090,7 +1071,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       }
     }
 
-    debugLog('▲▲▲ initilize ended ! ');
+    MyUtils.debugLog('▲▲▲ initilize ended ! ');
   }
 
   // __main__

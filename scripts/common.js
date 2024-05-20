@@ -28,7 +28,6 @@ let syncAltIconUrl = chrome.runtime.getURL("icons/sync_alt.svg");
 let expandMoreIconUrl = chrome.runtime.getURL("icons/expand_more.svg");
 
 let AddOnEmailSetting = {
-  chat_gpt_api_key: null,
   is_domain_registered: false,
   is_not_access_list: false,
   chat_gpt_access_list: "",
@@ -40,6 +39,8 @@ let AddOnEmailSetting = {
   restricted_rule_email_flag: false,
   restricted_rule_phone_flag: false,
 }
+/** @define {boolean} デバッグモード */
+const DEBUG_MODE = true;
 
 let TAB_ID, WINDOW_ID, ID_USER_ADDON_LOGIN, USER_ADDON_LOGIN, DOMAIN_ADDON_LOGIN = '';
 
@@ -49,76 +50,8 @@ const MAX_LENGTH_TEXTAREA_TOKEN = 4000;
 const GROUP_PROMPT_LABEL_BG_COLOR = "#2196F3";
 const GROUP_PROMPT_LABEL_TEXT_COLOR = "#ffffff";
 
-const USER_SETTING = {
-};
-
-const LOCALE_CODES = {
-  "ar": "Arabic",
-  "am": "Amharic",
-  "bg": "Bulgarian",
-  "bn": "Bengali",
-  "ca": "Catalan",
-  "cs": "Czech",
-  "da": "Danish",
-  "de": "German",
-  "el": "Greek",
-  "en": "English",
-  "en_AU": "English (Australia)",
-  "en_GB": "English (Great Britain)",
-  "en_US": "English (USA)",
-  "es": "Spanish",
-  "es_419": "Spanish (Latin America and Caribbean)",
-  "et": "Estonian",
-  "fa": "Persian",
-  "fi": "Finnish",
-  "fil": "Filipino",
-  "fr": "French",
-  "gu": "Gujarati",
-  "he": "Hebrew",
-  "hi": "Hindi",
-  "hr": "Croatian",
-  "hu": "Hungarian",
-  "id": "Indonesian",
-  "it": "Italian",
-  "ja": "Japanese",
-  "kn": "Kannada",
-  "ko": "Korean",
-  "lt": "Lithuanian",
-  "lv": "Latvian",
-  "ml": "Malayalam",
-  "mr": "Marathi",
-  "ms": "Malay",
-  "nl": "Dutch",
-  "no": "Norwegian",
-  "pl": "Polish",
-  "pt_BR": "Portuguese (Brazil)",
-  "pt_PT": "Portuguese (Portugal)",
-  "ro": "Romanian",
-  "ru": "Russian",
-  "sk": "Slovak",
-  "sl": "Slovenian",
-  "sr": "Serbian",
-  "sv": "Swedish",
-  "sw": "Swahili",
-  "ta": "Tamil",
-  "te": "Telugu",
-  "th": "Thai",
-  "tr": "Turkish",
-  "uk": "Ukrainian",
-  "vi": "Vietnamese",
-  "zh_CN": "Chinese (China)",
-  "zh_TW": "Chinese (Taiwan)",
-
-  getNameLocale: () => {
-    if (USER_SETTING && USER_SETTING.language) {
-      return LOCALE_CODES[USER_SETTING.language] || 'Japanese';
-    }
-    return LOCALE_CODES[chrome.i18n.getUILanguage().replaceAll('-', '_')] || 'Japanese';
-  },
-
-  getLangUI: () => {
-    return chrome.i18n.getUILanguage().replaceAll('-', '_');
-  }
+const UserSetting = {
+  language_active: 'japanese'
 };
 
 const LIST_TAB = [
@@ -149,337 +82,6 @@ const LIST_TAB = [
 ];
 
 const VOICE_SETTING_DATA = [
-  {
-    name_kind: "formality",
-    name: MyLang.getMsg('TXT_FORMAT'),
-    icon: descriptionIconUrl,
-    options: [
-      {
-        value: 'email',
-        name: MyLang.getMsg('TXT_EMAIL'),
-        display: MyLang.getMsg('TXT_EMAIL'),
-      },
-      {
-        value: 'casual',
-        name: MyLang.getMsg('TXT_CASUAL'),
-        display: MyLang.getMsg('TXT_CASUAL'),
-      },
-      {
-        value: 'neutral',
-        name: MyLang.getMsg('TXT_NEUTRAL'),
-        display: MyLang.getMsg('TXT_NEUTRAL'),
-      },
-      {
-        value: 'formal',
-        name: MyLang.getMsg('TXT_FORMAL'),
-        display: MyLang.getMsg('TXT_FORMAL'),
-      },
-      {
-        value: 'paragraph',
-        name: MyLang.getMsg('TXT_PARAGRAPH'),
-        display: MyLang.getMsg('TXT_PARAGRAPH'),
-      },
-      {
-        value: 'blog post',
-        name: MyLang.getMsg('TXT_BLOG_POST'),
-        display: MyLang.getMsg('TXT_BLOG_POST'),
-      },
-      {
-        value: 'idea',
-        name: MyLang.getMsg('TXT_IDEA'),
-        display: MyLang.getMsg('TXT_IDEA'),
-      },
-      {
-        value: 'essay',
-        name: MyLang.getMsg('TXT_ESSAY'),
-        display: MyLang.getMsg('TXT_ESSAY'),
-      },
-      {
-        value: 'summary',
-        name: MyLang.getMsg('TXT_SUMMARY'),
-        display: MyLang.getMsg('TXT_SUMMARY'),
-      },
-      {
-        value: 'report',
-        name: MyLang.getMsg('TXT_REPORT'),
-        display: MyLang.getMsg('TXT_REPORT'),
-      },
-      {
-        value: 'daily report',
-        name: MyLang.getMsg('TXT_DAILY_REPORT'),
-        display: MyLang.getMsg('TXT_DAILY_REPORT'),
-      },
-      {
-        value: 'todo',
-        name: MyLang.getMsg('TXT_TODO'),
-        display: MyLang.getMsg('TXT_TODO'),
-      },
-    ]
-  },
-  {
-    name_kind: "formality_reply",
-    name: MyLang.getMsg('TXT_FORMAT'),
-    icon: descriptionIconUrl,
-    options: [
-      {
-        value: 'email',
-        name: MyLang.getMsg('TXT_EMAIL'),
-        display: MyLang.getMsg('TXT_EMAIL'),
-      },
-      {
-        value: 'comment',
-        name: MyLang.getMsg('TXT_COMMENT'),
-        display: MyLang.getMsg('TXT_COMMENT'),
-      },
-      {
-        value: 'message',
-        name: MyLang.getMsg('TXT_MESSAGE'),
-        display: MyLang.getMsg('TXT_MESSAGE'),
-      },
-      {
-        value: 'twitter',
-        name: MyLang.getMsg('TXT_TWITTER'),
-        display: MyLang.getMsg('TXT_TWITTER'),
-      },
-    ]
-  },
-  {
-    name_kind: "tone",
-    name: MyLang.getMsg('TXT_TONE'),
-    icon: emojiIconUrl,
-    options: [
-      {
-        value: 'formal',
-        name: MyLang.getMsg('TXT_FORMAL'),
-        display: MyLang.getMsg('TXT_FORMAL'),
-      },
-      {
-        value: 'casual',
-        name: MyLang.getMsg('TXT_CASUAL'),
-        display: MyLang.getMsg('TXT_CASUAL'),
-      },
-      {
-        value: 'professional',
-        name: MyLang.getMsg('TXT_PROFESSIONAL'),
-        display: MyLang.getMsg('TXT_PROFESSIONAL'),
-      },
-      {
-        value: 'enthusiastic',
-        name: MyLang.getMsg('TXT_ENTHUSIASTIC'),
-        display: MyLang.getMsg('TXT_ENTHUSIASTIC'),
-      },
-      {
-        value: 'informational',
-        name: MyLang.getMsg('TXT_INFORMATIONAL'),
-        display: MyLang.getMsg('TXT_INFORMATIONAL'),
-      },
-      {
-        value: 'funny',
-        name: MyLang.getMsg('TXT_FUNNY'),
-        display: MyLang.getMsg('TXT_FUNNY'),
-      },
-    ],
-  },
-  {
-    name_kind: "email_length",
-    name: MyLang.getMsg('TXT_EMAIL_LENGTH'),
-    icon: formatAlignIconUrl,
-    options: [
-      {
-        value: 'short',
-        name: MyLang.getMsg('TXT_SHORT'),
-        display: MyLang.getMsg('TXT_SHORT'),
-      },
-      {
-        value: 'medium',
-        name: MyLang.getMsg('TXT_MEDIUM'),
-        display: MyLang.getMsg('TXT_MEDIUM'),
-      },
-      {
-        value: 'long',
-        name: MyLang.getMsg('TXT_LONG'),
-        display: MyLang.getMsg('TXT_LONG'),
-      },
-    ],
-  },
-  {
-    name_kind: "your_role",
-    name: MyLang.getMsg('TXT_YOUR_ROLE'),
-    icon: accountCircleIconUrl,
-    options: [
-      {
-        value: ' ',
-        name: '---',
-        display: `---`
-      },
-      {
-        value: 'leader',
-        name: MyLang.getMsg('TXT_LEADER'),
-        display: MyLang.getMsg('TXT_LEADER'),
-      },
-      {
-        value: 'subordinate',
-        name: MyLang.getMsg('TXT_SUBORDINATE'),
-        display: MyLang.getMsg('TXT_SUBORDINATE'),
-      },
-      {
-        value: 'colleague',
-        name: MyLang.getMsg('TXT_COLLEAGUE'),
-        display: MyLang.getMsg('TXT_COLLEAGUE'),
-      },
-      {
-        value: 'sales representative',
-        name: MyLang.getMsg('TXT_SALES_REPRESENTATIVE'),
-        display: MyLang.getMsg('TXT_SALES_REPRESENTATIVE'),
-      },
-      {
-        value: 'applicant',
-        name: MyLang.getMsg('TXT_APPLICANT'),
-        display: MyLang.getMsg('TXT_APPLICANT'),
-      },
-      {
-        value: 'customer service staff',
-        name: MyLang.getMsg('TXT_CUSTOMER_SERVICE_STAFF'),
-        display: MyLang.getMsg('TXT_CUSTOMER_SERVICE_STAFF'),
-      },
-      {
-        value: 'project manager',
-        name: MyLang.getMsg('TXT_PROJECT_MANAGER'),
-        display: MyLang.getMsg('TXT_PROJECT_MANAGER'),
-      },
-      {
-        value: 'human resources',
-        name: MyLang.getMsg('TXT_HUMAN_RESOURCES'),
-        display: MyLang.getMsg('TXT_HUMAN_RESOURCES'),
-      },
-    ],
-  },
-];
-
-const VOICE_SETTING_DATA_1 = [
-  {
-    name_kind: "format",
-    name: MyLang.getMsg('TXT_FORMAT'),
-    icon: descriptionIconUrl,
-    options: [
-      {
-        value: 'essay',
-        display: MyLang.getMsg('TXT_ESSAY')
-      },
-      {
-        value: 'paragraph',
-        display: MyLang.getMsg('TXT_PARAGRAPH')
-      },
-      {
-        value: 'email',
-        display: MyLang.getMsg('TXT_EMAIL')
-      },
-      {
-        value: 'idea',
-        display: MyLang.getMsg('TXT_IDEA')
-      },
-      {
-        value: 'blog post',
-        display: MyLang.getMsg('TXT_BLOG_POST')
-      },
-      {
-        value: 'outline',
-        display: MyLang.getMsg('TXT_OUTLINE')
-      },
-      {
-        value: 'marketing ads',
-        display: MyLang.getMsg('TXT_MARKETING_ADS')
-      },
-      {
-        value: 'comment',
-        display: MyLang.getMsg('TXT_COMMENT')
-      },
-      {
-        value: 'message',
-        display: MyLang.getMsg('TXT_MESSAGE')
-      },
-      {
-        value: 'twitter',
-        display: MyLang.getMsg('TXT_TWITTER')
-      },
-    ]
-  },
-  {
-    name_kind: "format_reply",
-    name: MyLang.getMsg('TXT_FORMAT'),
-    icon: descriptionIconUrl,
-    options: [
-      {
-        value: 'comment',
-        display: MyLang.getMsg('TXT_COMMENT')
-      },
-      {
-        value: 'email',
-        display: MyLang.getMsg('TXT_EMAIL')
-      },
-      {
-        value: 'message',
-        display: MyLang.getMsg('TXT_MESSAGE')
-      },
-      {
-        value: 'twitter',
-        display: MyLang.getMsg('TXT_TWITTER')
-      },
-    ]
-  },
-  {
-    name_kind: "tone",
-    name: MyLang.getMsg('TXT_TONE'),
-    icon: emojiIconUrl,
-    options: [
-      {
-        value: 'formal',
-        display: MyLang.getMsg('TXT_FORMAL'),
-      },
-      {
-        value: 'casual',
-        display: MyLang.getMsg('TXT_CASUAL'),
-      },
-      {
-        value: 'professional',
-        display: MyLang.getMsg('TXT_PROFESSIONAL'),
-      },
-      {
-        value: 'enthusiastic',
-        display: MyLang.getMsg('TXT_ENTHUSIASTIC'),
-      },
-      {
-        value: 'informational',
-        display: MyLang.getMsg('TXT_INFORMATIONAL'),
-      },
-      {
-        value: 'funny',
-        display: MyLang.getMsg('TXT_FUNNY'),
-      },
-    ],
-  },
-  {
-    name_kind: "email_length",
-    name: MyLang.getMsg('TXT_EMAIL_LENGTH'),
-    icon: formatAlignIconUrl,
-    options: [
-      {
-        value: 'medium',
-        display: MyLang.getMsg('TXT_MEDIUM'),
-      },
-      {
-        value: 'short',
-        display: MyLang.getMsg('TXT_SHORT'),
-      },
-      {
-        value: 'long',
-        display: MyLang.getMsg('TXT_LONG'),
-      },
-    ],
-  },
-];
-
-const VOICE_SETTING_DATA_2 = [
   {
     name_kind: "formality",
     name: MyLang.getMsg('TXT_FORMAT'),
@@ -723,39 +325,6 @@ const VOICE_SETTING_DATA_2 = [
   },
 ];
 
-const LANGUAGE_SETTING_DATA = [
-  {
-    value: 'japanese',
-    name: '日本語',
-    sub: MyLang.getMsg('TXT_JAPANESE'),
-  },
-  {
-    value: 'english',
-    name: 'English',
-    sub: MyLang.getMsg('TXT_ENGLISH'),
-  },
-  {
-    value: 'simplified chinese',
-    name: '中文(简体)',
-    sub: MyLang.getMsg('TXT_S_CHINESE'),
-  },
-  {
-    value: 'traditional chinese',
-    name: '中文(繁體)',
-    sub: MyLang.getMsg('TXT_T_CHINESE'),
-  },
-  {
-    value: 'vietnamese',
-    name: 'Tiếng Việt',
-    sub: MyLang.getMsg('TXT_VIETNAMESE'),
-  },
-  {
-    value: 'korean',
-    name: '한국어',
-    sub: MyLang.getMsg('TXT_KOREAN'),
-  },
-];
-
 const GPT_VERSION_SETTING_DATA = [
   {
     value: 'gpt-3.5-turbo-0125',
@@ -773,6 +342,118 @@ const GPT_VERSION_SETTING_DATA = [
     name: 'Gemini 1.0 Pro',
   },
 ];
+
+const MyUtils = {
+
+  /**
+   * Debug log
+   * @param {string} strMsg
+   */
+  debugLog: (strMsg) => {
+    if (DEBUG_MODE === true) {
+      console.log(chrome.i18n.getMessage('@@extension_id') + ' ' + (new Date()).toLocaleString() + ':', strMsg);
+    }
+  },
+
+  encodeBase64: (value) => {
+    const encodedWord = CryptoJS.enc.Utf8.parse(value);
+    const encoded = CryptoJS.enc.Base64.stringify(encodedWord);
+    return encoded;
+  },
+
+  decodeBase64: (value) => {
+    // PROCESS
+    const encodedWord = CryptoJS.enc.Base64.parse(value);
+    const decoded = CryptoJS.enc.Utf8.stringify(encodedWord);
+    return decoded;
+  },
+
+  generateToken: () => {
+    let date_str = MyUtils.getDateUTCString();
+    return CryptoJS.MD5(PREFIX_KEY + date_str);
+  },
+
+  generateTokenByTenant: (tenant) => {
+    let date_str = MyUtils.getDateUTCString();
+    return CryptoJS.MD5(tenant + date_str);
+  },
+
+  getDateUTCString: () => {
+    let curr_date = new Date();
+    let dt_str = curr_date.getUTCFullYear() +
+      ('00' + (curr_date.getUTCMonth() + 1)).slice(-2) +
+      ('00' + curr_date.getUTCDate()).slice(-2) +
+      ('00' + curr_date.getUTCHours()).slice(-2) +
+      ('00' + curr_date.getUTCMinutes()).slice(-2);
+    return dt_str;
+  },
+
+  /**
+   * Render text to element style chat GPT
+   * 
+   * @param {element} elToRender 
+   * @param {string} stringRender 
+   * @param {Function} callback 
+   */
+  renderTextStyleChatGPT: (elToRender, stringRender, callback) => {
+    let indexText = 0;
+    let timeT = setInterval(() => {
+      elToRender.innerHTML += stringRender[indexText];
+      indexText++;
+      if (indexText >= stringRender.length) {
+        clearInterval(timeT);
+
+        if (callback) {
+          callback(elToRender);
+        }
+      }
+    }, 5);
+  },
+
+  /**
+   * Get radom string
+   * 
+   * @returns {string}
+   */
+  randomId: () => {
+    return Math.random().toString(36).slice(-8);
+  },
+
+  isTopOutOfViewport: (elem) => {
+    let bounding = elem.getBoundingClientRect();
+
+    let heightTitleWrap = 51;
+
+    return (bounding.top - heightTitleWrap < 0);
+  },
+
+  isLeftOutOfViewport: (elem) => {
+    let bounding = elem.getBoundingClientRect();
+    return (bounding.left < 0);
+  },
+
+  isRightSideOutOfViewport: (elem) => {
+    let bounding = elem.getBoundingClientRect();
+
+    let widthNavbar = 45;
+
+    if (bounding.right + widthNavbar > (window.innerWidth || document.documentElement.clientWidth)) {
+      return true;
+    }
+
+    return false;
+  },
+
+  isBottomSideOutOfViewport: (elem) => {
+    let bounding = elem.getBoundingClientRect();
+
+    if (bounding.bottom > (window.innerHeight || document.documentElement.clientHeight)) {
+      return true;
+    }
+    return false;
+  },
+
+};
 
 const _StorageManager = {
   setSecondEmail: (email) => {
@@ -853,122 +534,247 @@ const _StorageManager = {
   removeToggleSidePromptBuilder: () => {
     chrome.storage.local.remove('toggle_side_prompt_builder');
   },
-}
+};
 
-/**
- * Render text to element style chat GPT
- * 
- * @param {element} elToRender 
- * @param {string} stringRender 
- * @param {Function} callback 
- */
-const renderTextStyleChatGPT = (elToRender, stringRender, callback) => {
-  let indexText = 0;
-  let timeT = setInterval(() => {
-    elToRender.innerHTML += stringRender[indexText];
-    indexText++;
-    if (indexText >= stringRender.length) {
-      clearInterval(timeT);
+const _OpenAIManager = {
+  chat_gpt_api_key: '',
 
-      if (callback) {
-        callback(elToRender);
+  /**
+   * Get properties in gpt record by gpt version
+   * 
+   * @param {string} keyGet 
+   * @param {string} gptVersion 
+   * @returns string
+   */
+  getPropGptByVersion: (keyGet, gptVersion) => {
+    for (let i = 0; i < GPT_VERSION_SETTING_DATA.length; i++) {
+      const element = GPT_VERSION_SETTING_DATA[i];
+
+      if (element.value == gptVersion) {
+        return element[keyGet];
       }
     }
-  }, 5);
-}
+  },
 
-/**
- * Get radom string
- * 
- * @returns {string}
- */
-const randomId = () => {
-  return Math.random().toString(36).slice(-8);
-}
-
-/**
- * Get properties in gpt record by gpt version
- * 
- * @param {string} keyGet 
- * @param {string} gptVersion 
- * @returns string
- */
-const getPropGptByVersion = (keyGet, gptVersion) => {
-  for (let i = 0; i < GPT_VERSION_SETTING_DATA.length; i++) {
-    const element = GPT_VERSION_SETTING_DATA[i];
-
-    if (element.value == gptVersion) {
-      return element[keyGet];
-    }
-  }
-}
-
-/**
- * Load chat GPT AI key
- * 
- */
-const loadChatGPTAIKey = () => {
-  if (!AddOnEmailSetting.chat_gpt_api_key) {
-    fetchChatGPTAIKey(function (api_key, version_ext) {
-      if (typeof (api_key) != "undefined") {
-        AddOnEmailSetting.chat_gpt_api_key = api_key;
-      }
-    })
-  }
-}
-
-/**
- * Get chat GPT AI key
+  /**
+ * Get key api Open AI
  * 
  * @param {Function} callback 
  */
-const getChatGPTAIKey = (callback) => {
-  if (!AddOnEmailSetting.chat_gpt_api_key) {
-    fetchChatGPTAIKey(function (api_key, version_ext) {
-      if (typeof (api_key) != "undefined") {
-        AddOnEmailSetting.chat_gpt_api_key = api_key;
-        callback(api_key)
-        return;
+  getOpenAIKey: (callback) => {
+    const self = _OpenAIManager;
+
+    if (!self.chat_gpt_api_key) {
+      fetchChatGPTAIKey(function (api_key, version_ext) {
+        if (api_key) {
+          self.chat_gpt_api_key = api_key;
+          callback(api_key)
+          return;
+        }
+        //fail
+        callback()
+      });
+    } else {
+      // exist key
+      callback(self.chat_gpt_api_key)
+    }
+  }
+};
+
+const SateraitoRequest = {
+  SERVER_URL: 'https://tambh-dot-sateraito-gpt-api.appspot.com',
+  PREFIX_KEY: 'Sateraito-WzNyEGIZoaF7Z1R8',
+  MD5_SUFFIX_KEY: '6a8a0a5a5bf94c95aa0f39d0eedbe71e',
+
+  addParameters: (data) => {
+    const self = SateraitoRequest;
+
+    if (typeof (data) == "undefined") data = {};
+    const params = new URLSearchParams();
+    for (let key in data) {
+      params.append(key, data[key]);
+    }
+
+    //create token
+    if (!(params.get('token'))) {
+      let date_str = MyUtils.getDateUTCString();
+      let check_key = CryptoJS.MD5(DOMAIN_ADDON_LOGIN + date_str + self.MD5_SUFFIX_KEY);
+      params.append('ck', check_key);
+    }
+
+    return params
+  },
+
+  deCryptChatAIKey: (token, enc_key, aes_iv) => {
+    const self = SateraitoRequest;
+
+    let enc_token = MyUtils.encodeBase64(token)
+    let derived_key = CryptoJS.enc.Base64.parse(enc_token)
+    let iv = CryptoJS.enc.Utf8.parse(aes_iv);
+    let decrypted = CryptoJS.AES.decrypt(enc_key, derived_key, { iv: iv, mode: CryptoJS.mode.CBC }).toString(CryptoJS.enc.Utf8);
+
+    return decrypted
+  },
+
+  getChatAIKey: (enc_key) => {
+    const self = SateraitoRequest;
+
+    let keys = [];
+    if (!enc_key) return '';
+    enc_key = MyUtils.decodeBase64(enc_key)
+    let temp_keys = enc_key.split("@@");
+    if (temp_keys.length > 2) {
+      let aes_iv = temp_keys[temp_keys.length - 1];
+      let token = temp_keys[temp_keys.length - 2];
+      if (token) {
+        for (let i = 0; i < temp_keys.length - 2; i++) {
+          let sub_key_enc = temp_keys[i];
+          let sub_key_dec = deCryptChatAIKey(token, sub_key_enc, aes_iv);
+          keys.push(sub_key_dec)
+        }
       }
-      //fail
+    }
+
+    return keys.join('');
+  },
+
+  fetchData: (url, data, callback) => {
+    const self = SateraitoRequest;
+
+    if (typeof (data) == "undefined") data = {};
+
+    const params = self.addParameters(data);
+
+    try {
+      fetch(url, {
+        method: "POST",
+        body: params,
+      }).then((response) => {
+        if (response.status !== 200) {
+          callback({ code: 500, msg: response.status, data: {} })
+        } else {
+          response.json().then(function (data) {
+            callback(data)
+          });
+        }
+      }).catch(function (error) {
+        // There was an error
+        console.error(error);
+        callback({ code: 500, msg: error.message, data: {} })
+      });
+    } catch (err) {
+      console.info("ERROR", err);
+      callback({ code: 500, msg: err.message, data: {} })
+    }
+  },
+
+  fetchChatGPTAIKey: (callback) => {
+    const self = SateraitoRequest;
+
+    let url = `${self.SERVER_URL}/a/extension/chatgpt/aikey`;
+    let token = MyUtils.generateToken();
+    let data = { token: token };
+
+    self.fetchData(url, data, function (res) {
+      if (res) {
+        if (res.code == 0) {
+          let api_key_dec = ''
+          if (typeof (res.data.key) != "undefined") {
+            api_key_dec = self.getChatAIKey(res.data.key);
+          }
+
+          let version_ext = ''
+          if (typeof (res.data.version) != "undefined") {
+            version_ext = res.data.version
+          }
+
+          callback(api_key_dec, version_ext)
+          return;
+        }
+      }
+
       callback()
     })
-  } else {
-    // exist key
-    callback(AddOnEmailSetting.chat_gpt_api_key)
+  },
+
+  fetchChatGPTSetting: (tenant, callback) => {
+    const self = SateraitoRequest;
+
+    let url = `${self.SERVER_URL}/a/${tenant}/addon/email/setting`;
+    let token = MyUtils.generateTokenByTenant(tenant);
+    let data = { token: token };
+
+    self.fetchData(url, data, function (res) {
+      if (res) {
+        if (res.code == 0) {
+          callback(res.data);
+          return;
+        }
+      }
+
+      callback();
+    });
+  },
+
+  fetchChatGPTAddLog: (tenant, data, callback) => {
+    const self = SateraitoRequest;
+
+    let url = `${self.SERVER_URL}/a/${tenant}/addon/email/addlog`;
+    let token = MyUtils.generateTokenByTenant(tenant);
+    if (typeof (data) == "undefined") data = {};
+
+    data['token'] = token
+    self.fetchData(url, data, function (res) {
+      if (res) {
+        if (res.code == 0) {
+          callback(res.data);
+          return;
+        }
+      }
+
+      callback();
+    });
+  },
+
+  fetchChatGPTCountRequest: (tenant, data, callback) => {
+    const self = SateraitoRequest;
+
+    let url = `${self.SERVER_URL}/a/${tenant}/addon/email/countrequest`;
+    let token = MyUtils.generateTokenByTenant(tenant);
+    if (typeof (data) == "undefined") data = {};
+
+    data['token'] = token
+    self.fetchData(url, data, function (res) {
+      if (res) {
+        if (res.code == 0) {
+          callback(res.data);
+          return;
+        }
+      }
+
+      callback();
+    });
+  },
+
+  fetchPromptsRequest: (tenant, data, callback) => {
+    const self = SateraitoRequest;
+
+    let url = `${self.SERVER_URL}/a/${tenant}/addon/api/prompt`;
+    if (typeof (data) == "undefined") data = {}
+
+    if (!('user_id' in data)) {
+      data['user_id'] = USER_ADDON_LOGIN
+    }
+
+    self.fetchData(url, data, function (res) {
+      if (res) {
+        if (res.code == 0) {
+          callback(res.data);
+          return;
+        }
+      }
+
+      callback();
+    });
   }
-}
-
-const isTopOutOfViewport = (elem) => {
-  var bounding = elem.getBoundingClientRect();
-
-  let heightTitleWrap = 51;
-
-  return (bounding.top - heightTitleWrap < 0);
-}
-
-const isLeftOutOfViewport = (elem) => {
-  var bounding = elem.getBoundingClientRect();
-  return (bounding.left < 0);
-}
-
-const isRightSideOutOfViewport = (elem) => {
-  var bounding = elem.getBoundingClientRect();
-
-  let widthNavbar = 45;
-
-  if (bounding.right + widthNavbar > (window.innerWidth || document.documentElement.clientWidth)) {
-    return true;
-  }
-
-  return false;
-}
-
-const isBottomSideOutOfViewport = (elem) => {
-  var bounding = elem.getBoundingClientRect();
-
-  if (bounding.bottom > (window.innerHeight || document.documentElement.clientHeight)) {
-    return true;
-  }
-  return false;
 }

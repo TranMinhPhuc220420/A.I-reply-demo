@@ -11,8 +11,7 @@ var MAXIMIZE_TIME_AUTO = 1000 * 60 * 5 //milisecond 5p == 1000*60*5
  * @param {*} accesslist_str 
  * @returns {boolean}
  */
-function checkChatGptAccesslist(accesslist_str) {
-  // console.log('============checkChatGptAccesslist==============')
+function checkChatGptAccessList(accesslist_str) {
   var is_allow = true, is_not_access_list = false
 
   if (USER_ADDON_LOGIN && accesslist_str) {
@@ -28,7 +27,6 @@ function checkChatGptAccesslist(accesslist_str) {
   }
 
   if (!is_allow) is_not_access_list = true;
-  // console.log(is_not_access_list)
   return is_not_access_list
 }
 
@@ -47,10 +45,9 @@ function loadAddOnSetting(email, callback) {
       DOMAIN_ADDON_LOGIN = suffix.pop();
     }
   }
-  // console.log(USER_ADDON)
-  console.log(`domain login: ${DOMAIN_ADDON_LOGIN}`)
+  MyUtils.debugLog(`domain login: ${DOMAIN_ADDON_LOGIN}`)
   if (USER_ADDON_LOGIN) {
-    fetchChatGPTSetting(DOMAIN_ADDON_LOGIN, function (data) {
+    SateraitoRequest.fetchChatGPTSetting(DOMAIN_ADDON_LOGIN, function (data) {
       AddOnEmailSetting = data;
 
       if ('is_domain_regist' in data) {
@@ -58,7 +55,7 @@ function loadAddOnSetting(email, callback) {
       }
 
       if ('chat_gpt_accesslist' in data) {
-        AddOnEmailSetting.is_not_access_list = checkChatGptAccesslist(data['chat_gpt_accesslist']);
+        AddOnEmailSetting.is_not_access_list = checkChatGptAccessList(data['chat_gpt_accesslist']);
       }
 
       callback(true);
@@ -110,11 +107,9 @@ function saveLog(question, answer, type_chat, error = '') {
     environment_type: type_chat,
     // options: options,
   }
-  // console.log(data)
-  // console.log(DOMAIN_ADDON_LOGIN)
   if (DOMAIN_ADDON_LOGIN) {
     fetchChatGPTAddLog(DOMAIN_ADDON_LOGIN, data, function (res) {
-      console.log(res)
+      MyUtils.debugLog(res)
     })
   }
 }
@@ -135,7 +130,7 @@ async function saveCountRequest(prompt, error = '') {
   }
   if (DOMAIN_ADDON_LOGIN) {
     fetchChatGPTCountRequest(DOMAIN_ADDON_LOGIN, data, function (res) {
-      console.log(res)
+      MyUtils.debugLog(res)
     })
   }
 }
@@ -163,7 +158,7 @@ async function callGPT(key_api, prompt_or_messages = null, gpt_model = false, re
     myHeaders.append("Authorization", "Bearer " + key_api);
     myHeaders.append("Content-Type", "application/json");
   } catch (err) {
-    console.log(err)
+    MyUtils.debugLog(err)
     return false
   }
 
@@ -240,7 +235,8 @@ async function getSuggestReplyMailRequest(params, callback, retry) {
     callback({answer_suggest: []})
     return false;
   }
-
+  callback({answer_suggest: []})
+  return false;
   const { gpt_ai_key, gpt_model, title_mail, content_mail, lang } = params;
 
   const messages = [
@@ -367,7 +363,7 @@ async function getPromptsRequest(params, callback, retry) {
   if (!AddOnEmailSetting.is_domain_registered) return
 
   if (DOMAIN_ADDON_LOGIN) {
-    fetchPromptsRequest(DOMAIN_ADDON_LOGIN, params, function (res) {
+    SateraitoRequest.fetchPromptsRequest(DOMAIN_ADDON_LOGIN, params, function (res) {
       callback(res)
     })
   }

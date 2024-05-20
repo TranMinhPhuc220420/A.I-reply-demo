@@ -5,7 +5,6 @@
 /*jslint indent: 2 */
 /*jslint browser: true */
 /*jslint plusplus: true */
-//console.log('===========LOAD BACKGROUND==============')
 let StorageArea = chrome.storage.local;
 
 /** @define {boolean} */

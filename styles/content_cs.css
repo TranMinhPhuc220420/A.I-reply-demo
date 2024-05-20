@@ -186,16 +186,16 @@ html.dark{
     bottom: 0px;
     height: 100vh;
     right: 0px;
-    animation: slide-in-left-alt .4s cubic-bezier(.25,.46,.45,.94) .15s both;
+    animation: slide-in-left-alt .25s cubic-bezier(.25,.46,.45,.94) .15s both;
     /* animation: slide-out-right-alt .5s cubic-bezier(.25,.46,.45,.94) .15s both; */
 }
 .content-suggestion.show{
     display: block!important;
-    animation: slide-in-left-alt .4s cubic-bezier(.25,.46,.45,.94) .15s both;
+    animation: slide-in-left-alt .25s cubic-bezier(.25,.46,.45,.94) .15s both;
 }
 .content-suggestion.hidden{
     display: block!important;
-     animation: slide-out-right-alt .5s cubic-bezier(.25,.46,.45,.94) .15s both;
+     animation: slide-out-right-alt .4s cubic-bezier(.25,.46,.45,.94) .15s both;
 }
 .detail-suggestion {
     height: calc(100% - 40px);

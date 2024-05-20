@@ -1,152 +1,139 @@
-/** @define {boolean} デバッグモード */
-let DEBUG_MODE = true;
+(function () {
+  'use strict';
 
-// (function () {
-'use strict';
-
-/**
- * Debug log
- * @param {string} strMsg
- */
-const debugLog = (strMsg) => {
-  if (DEBUG_MODE === true) {
-    console.log(chrome.i18n.getMessage('@@extension_id') + ' ' + (new Date()).toLocaleString() + ':', strMsg);
-  }
-}
-
-/**
- * Send message manager
- * 
- */
-const _SendMessageManager = {
   /**
-   * Get summary content mail
+   * Send message manager
    * 
-   * @param {string} titleMail 
-   * @param {string} contentMail 
-   * @param {Function} callback 
    */
-  getSummaryContentMail: function (titleMail, contentMail, callback) {
-    // Get open ai KEY
-    getChatGPTAIKey((gptAiKey) => {
-      let params = {
-        title_mail: titleMail,
-        content_mail: contentMail,
-        gpt_ai_key: gptAiKey,
-        lang: USER_SETTING.language_active
-      };
+  const _SendMessageManager = {
+    /**
+     * Get summary content mail
+     * 
+     * @param {string} titleMail 
+     * @param {string} contentMail 
+     * @param {Function} callback 
+     */
+    getSummaryContentMail: function (titleMail, contentMail, callback) {
+      // Get open ai KEY
+      _OpenAIManager.getOpenAIKey((gptAiKey) => {
+        let params = {
+          title_mail: titleMail,
+          content_mail: contentMail,
+          gpt_ai_key: gptAiKey,
+          lang: UserSetting.language_active
+        };
 
-      // Call request get data to show popup in mail
-      summaryContentMailRequest(params, (response) => {
-        callback({
-          summary: response.summarize,
-          key_points_list: response.key_points,
-          lang_content: response.language,
-          suggestion_list: response.answer_suggest,
-        });
+        // Call request get data to show popup in mail
+        summaryContentMailRequest(params, (response) => {
+          callback({
+            summary: response.summarize,
+            key_points_list: response.key_points,
+            lang_content: response.language,
+            suggestion_list: response.answer_suggest,
+          });
+        })
       })
-    })
-  },
-
-  /**
-   * Get suggest reply content mail request
-   * 
-   * @param {string} titleMail 
-   * @param {string} contentMail 
-   * @param {Function} callback 
-   */
-  getSuggestReplyMailRequest: function (titleMail, contentMail, callback) {
-    // Get open ai KEY
-    getChatGPTAIKey((gptAiKey) => {
-      let params = {
-        title_mail: titleMail,
-        content_mail: contentMail,
-        gpt_ai_key: gptAiKey,
-        lang: USER_SETTING.language_active
-      };
-
-      // Call request get data to show popup in mail
-      getSuggestReplyMailRequest(params, (response) => {
-        callback(response.answer_suggest);
-      })
-    })
-  },
-
-  /**
-   * Generate content compose
-   * 
-   * @param {json} params 
-   * @param {Function} callback 
-   */
-  generateContentCompose: function (params, callback) {
-    chrome.runtime.sendMessage({
-      method: 'generate_content_compose_mail',
-      data: params
     },
-      function (response) {
-        callback(response);
-      }
-    );
-  },
 
-  /**
-   * Generate content reply
-   * 
-   * @param {json} params 
-   * @param {Function} callback 
-   */
-  generateContentReply: function (params, callback) {
-    const self = _SendMessageManager;
+    /**
+     * Get suggest reply content mail request
+     * 
+     * @param {string} titleMail 
+     * @param {string} contentMail 
+     * @param {Function} callback 
+     */
+    getSuggestReplyMailRequest: function (titleMail, contentMail, callback) {
+      // Get open ai KEY
+      _OpenAIManager.getOpenAIKey((gptAiKey) => {
+        let params = {
+          title_mail: titleMail,
+          content_mail: contentMail,
+          gpt_ai_key: gptAiKey,
+          lang: UserSetting.language_active
+        };
 
-    // Get open ai KEY
-    getChatGPTAIKey((gptAiKey) => {
-      params.gpt_ai_key = gptAiKey;
-
-      generateContentRequest(params, (response) => {
-        callback(response);
+        // Call request get data to show popup in mail
+        getSuggestReplyMailRequest(params, (response) => {
+          callback(response.answer_suggest);
+        })
       })
-    })
-  }
-};
+    },
 
-/**
- * Tab write manager
- * 
- */
-const TabWriteManager = {
-  is_loading: false,
-  is_summarizing: false,
-  combobox_flag: false,
-  swap_original_text_flag: false,
+    /**
+     * Generate content compose
+     * 
+     * @param {json} params 
+     * @param {Function} callback 
+     */
+    generateContentCompose: function (params, callback) {
+      chrome.runtime.sendMessage({
+        method: 'generate_content_compose_mail',
+        data: params
+      },
+        function (response) {
+          callback(response);
+        }
+      );
+    },
 
-  idTab: LIST_TAB[0].id,
-  formData: {
-    type_generate: null,
-    topic_compose: null,
-    original_text_reply: null,
-    general_content_reply: null,
-    gpt_version: null,
-  },
-  result_active: 0,
-  generate_result_list: [],
-  voice_config_of_user: [],
+    /**
+     * Generate content reply
+     * 
+     * @param {json} params 
+     * @param {Function} callback 
+     */
+    generateContentReply: function (params, callback) {
+      const self = _SendMessageManager;
 
-  list_suggest_reply_mail: null,
-  title_content_mail_to_write: null,
+      // Get open ai KEY
+      _OpenAIManager.getOpenAIKey((gptAiKey) => {
+        params.gpt_ai_key = gptAiKey;
 
-  // Getter
+        generateContentRequest(params, (response) => {
+          callback(response);
+        })
+      })
+    }
+  };
 
   /**
-   * Get inner html for tab write
+   * Tab write manager
    * 
-   * @returns {string}
    */
-  getVHtml: () => {
-    let reloadIconUrl = chrome.runtime.getURL("icons/refresh-icon.png");
-    let copyIconUrl = chrome.runtime.getURL("icons/content-copy-icon.png");
-    let doneIconUrl = chrome.runtime.getURL("icons/done.svg");
+  const TabWriteManager = {
+    is_loading: false,
+    is_summarizing: false,
+    combobox_flag: false,
+    swap_original_text_flag: false,
 
-    return `
+    idTab: LIST_TAB[0].id,
+    formData: {
+      type_generate: null,
+      topic_compose: null,
+      original_text_reply: null,
+      general_content_reply: null,
+      gpt_version: null,
+    },
+    result_active: 0,
+    generate_result_list: [],
+    voice_config_of_user: [],
+
+    list_suggest_reply_mail: null,
+    title_content_mail_to_write: null,
+
+    // Getter
+
+    /**
+     * Get inner html for tab write
+     * 
+     * @returns {string}
+     */
+    getVHtml: () => {
+      let reloadIconUrl = chrome.runtime.getURL("icons/refresh-icon.png");
+      let copyIconUrl = chrome.runtime.getURL("icons/content-copy-icon.png");
+      let doneIconUrl = chrome.runtime.getURL("icons/done.svg");
+
+      return `
             <div class="form-config">
               <div class="tab content-config">
                 <div class="tab-title">
@@ -244,130 +231,130 @@ const TabWriteManager = {
 
             </div>
           `
-  },
+    },
 
-  /**
-   * Create panel
-   * 
-   * @returns {Element}
-   */
-  createPanel: () => {
-    const self = TabWriteManager;
+    /**
+     * Create panel
+     * 
+     * @returns {Element}
+     */
+    createPanel: () => {
+      const self = TabWriteManager;
 
-    self.result_active = 0;
-    self.generate_result_list = [];
+      self.result_active = 0;
+      self.generate_result_list = [];
 
-    self.formData['gpt_version'] = GPT_VERSION_SETTING_DATA[0].value;
+      self.formData['gpt_version'] = GPT_VERSION_SETTING_DATA[0].value;
 
-    const panelEl = document.createElement('div');
-    panelEl.id = self.idTab
-    panelEl.innerHTML = self.getVHtml();
+      const panelEl = document.createElement('div');
+      panelEl.id = self.idTab
+      panelEl.innerHTML = self.getVHtml();
 
-    LIST_TAB[0].onActive = self.onActive;
+      LIST_TAB[0].onActive = self.onActive;
 
-    return panelEl;
-  },
+      return panelEl;
+    },
 
-  /**
-   * Fix height for session result
-   * 
-   */
-  fixHeightResult: () => {
-    const tabContainerEl = document.getElementById(`write_tab`);
-    const resultEl = document.body.querySelector(`#${self.idTab} #result`);
-    $(resultEl).css('height', tabContainerEl.offsetHeight + 'px');
-  },
+    /**
+     * Fix height for session result
+     * 
+     */
+    fixHeightResult: () => {
+      const tabContainerEl = document.getElementById(`write_tab`);
+      const resultEl = document.body.querySelector(`#${self.idTab} #result`);
+      $(resultEl).css('height', tabContainerEl.offsetHeight + 'px');
+    },
 
-  /**
-   * Check form data is validate to call GPT
-   * 
-   * @returns {boolean}
-   */
-  isValidateToCallGPT: () => {
-    const self = TabWriteManager;
+    /**
+     * Check form data is validate to call GPT
+     * 
+     * @returns {boolean}
+     */
+    isValidateToCallGPT: () => {
+      const self = TabWriteManager;
 
-    let typeGenerate = '';
-    if ($('#write_tab div[key_tab="compose_tab"]').hasClass('active')) {
-      typeGenerate = 'compose'
-    } else {
-      typeGenerate = 'reply'
-    }
-
-    let topicCompose = $('#write_tab #compose_tab textarea.topic_to_compose').val().trim();
-    let originalTextReply = $('#write_tab #reply_tab textarea.original_text_reply').val().trim();
-    let generalContentReply = $('#write_tab #reply_tab textarea.general_content_reply').val().trim();
-
-    if (typeGenerate == 'compose') {
-      if (!topicCompose || topicCompose == '') {
-        return MyLang.getMsg('DES_ERROR_TOPIC_COMPOSE');
+      let typeGenerate = '';
+      if ($('#write_tab div[key_tab="compose_tab"]').hasClass('active')) {
+        typeGenerate = 'compose'
+      } else {
+        typeGenerate = 'reply'
       }
-    }
-    if (typeGenerate == 'reply') {
-      if (!originalTextReply || originalTextReply == '') {
-        return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_REPLY');
+
+      let topicCompose = $('#write_tab #compose_tab textarea.topic_to_compose').val().trim();
+      let originalTextReply = $('#write_tab #reply_tab textarea.original_text_reply').val().trim();
+      let generalContentReply = $('#write_tab #reply_tab textarea.general_content_reply').val().trim();
+
+      if (typeGenerate == 'compose') {
+        if (!topicCompose || topicCompose == '') {
+          return MyLang.getMsg('DES_ERROR_TOPIC_COMPOSE');
+        }
       }
-      if (!generalContentReply || generalContentReply == '') {
-        return MyLang.getMsg('DES_ERROR_GENERAL_CONTENT_REPLY');
+      if (typeGenerate == 'reply') {
+        if (!originalTextReply || originalTextReply == '') {
+          return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_REPLY');
+        }
+        if (!generalContentReply || generalContentReply == '') {
+          return MyLang.getMsg('DES_ERROR_GENERAL_CONTENT_REPLY');
+        }
       }
-    }
-    if (self.formData.gpt_version == 'gemini') {
-      return MyLang.getMsg('DES_ERROR_GEMINI_NOT_RELEASED');
-    }
-    if (self.formData.gpt_version == 'gpt-4-turbo') {
-      return MyLang.getMsg('DES_ERROR_GPT4_NOT_RELEASED');
-    }
-  },
+      if (self.formData.gpt_version == 'gemini') {
+        return MyLang.getMsg('DES_ERROR_GEMINI_NOT_RELEASED');
+      }
+      if (self.formData.gpt_version == 'gpt-4-turbo') {
+        return MyLang.getMsg('DES_ERROR_GPT4_NOT_RELEASED');
+      }
+    },
 
-  getLanguageFromConfig: () => {
-    const self = TabWriteManager;
+    getLanguageFromConfig: () => {
+      const self = TabWriteManager;
 
-    const langOptions = self.voice_config_of_user.find(item => item.name_kind == 'your_language').options;
-    const languageItem = langOptions.find(item => (item.isActive == true))
+      const langOptions = self.voice_config_of_user.find(item => item.name_kind == 'your_language').options;
+      const languageItem = langOptions.find(item => (item.isActive == true))
 
-    return languageItem.value;
-  },
+      return languageItem.value;
+    },
 
-  // Setter
-  setOriginalText: (originalText) => {
-    const self = TabWriteManager;
-    if (self.is_loading) return;
+    // Setter
+    setOriginalText: (originalText) => {
+      const self = TabWriteManager;
+      if (self.is_loading) return;
 
-    let originalTextReplyEl = document.body.querySelector(`#${self.idTab} #reply_tab .original_text_reply`);
-    $(originalTextReplyEl).val(originalText);
+      let originalTextReplyEl = document.body.querySelector(`#${self.idTab} #reply_tab .original_text_reply`);
+      $(originalTextReplyEl).val(originalText);
 
-    self.title_content_mail_to_write.original_text = originalText;
+      self.title_content_mail_to_write.original_text = originalText;
 
-    $(originalTextReplyEl).focus();
-    $(originalTextReplyEl).scrollTop(0);
-  },
+      $(originalTextReplyEl).focus();
+      $(originalTextReplyEl).scrollTop(0);
+    },
 
-  setGeneralContentReply: (general_content_reply, is_direct_send = false) => {
-    const self = TabWriteManager;
-    if (self.is_loading) return;
+    setGeneralContentReply: (general_content_reply, is_direct_send = false) => {
+      const self = TabWriteManager;
+      if (self.is_loading) return;
 
-    let generalContentReplyEl = document.body.querySelector(`#${self.idTab} #reply_tab .general_content_reply`);
-    $(generalContentReplyEl).val(general_content_reply);
+      let generalContentReplyEl = document.body.querySelector(`#${self.idTab} #reply_tab .general_content_reply`);
+      $(generalContentReplyEl).val(general_content_reply);
 
-    $(generalContentReplyEl).focus();
-    $(generalContentReplyEl).scrollTop(0);
+      $(generalContentReplyEl).focus();
+      $(generalContentReplyEl).scrollTop(0);
 
-    if (is_direct_send) {
-      self.onSubmitGenerate();
-    }
-  },
+      if (is_direct_send) {
+        self.onSubmitGenerate();
+      }
+    },
 
-  /**
-   * Load and show list option gpt version for user
-   * 
-   */
-  loadVersionGPTConfig: () => {
-    const self = TabWriteManager;
+    /**
+     * Load and show list option gpt version for user
+     * 
+     */
+    loadVersionGPTConfig: () => {
+      const self = TabWriteManager;
 
-    let itemActive = GPT_VERSION_SETTING_DATA[0];
-    let gpt_option = '';
-    for (let i = 0; i < GPT_VERSION_SETTING_DATA.length; i++) {
-      const item = GPT_VERSION_SETTING_DATA[i];
-      gpt_option += `
+      let itemActive = GPT_VERSION_SETTING_DATA[0];
+      let gpt_option = '';
+      for (let i = 0; i < GPT_VERSION_SETTING_DATA.length; i++) {
+        const item = GPT_VERSION_SETTING_DATA[i];
+        gpt_option += `
         <li class="combobox-item" value="${item.value}" kind="version_gpt">
           <div class="icon">
             <img src="${item.icon}" alt="" srcset="">
@@ -376,13 +363,13 @@ const TabWriteManager = {
         </li>
       `;
 
-      // get gpt version active
-      if (item.value == self.formData.gpt_version) {
-        itemActive = item;
+        // get gpt version active
+        if (item.value == self.formData.gpt_version) {
+          itemActive = item;
+        }
       }
-    }
 
-    let vHtml_init = `
+      let vHtml_init = `
         <button class="item text version-gpt combobox" id="version_gpt">
 
           <div class="content">
@@ -400,61 +387,61 @@ const TabWriteManager = {
         </button>
     `
 
-    $(`#${self.idTab} .version .options`).html(vHtml_init);
-  },
+      $(`#${self.idTab} .version .options`).html(vHtml_init);
+    },
 
-  /**
-   * Load and show voice config
-   * 
-   */
-  loadVoiceConfig: () => {
-    const self = TabWriteManager;
+    /**
+     * Load and show voice config
+     * 
+     */
+    loadVoiceConfig: () => {
+      const self = TabWriteManager;
 
-    $(`#${self.idTab} .voice-config .wrap-config`).remove();
+      $(`#${self.idTab} .voice-config .wrap-config`).remove();
 
-    for (let i = 0; i < self.voice_config_of_user.length; i++) {
-      const configItem = self.voice_config_of_user[i];
+      for (let i = 0; i < self.voice_config_of_user.length; i++) {
+        const configItem = self.voice_config_of_user[i];
 
-      // Shows all previously added
-      const optionsConfig = configItem.options;
-      let vHtmlItemConfig = '';
-      for (let i = 0; i < optionsConfig.length; i++) {
-        const optionConfigItem = optionsConfig[i];
+        // Shows all previously added
+        const optionsConfig = configItem.options;
+        let vHtmlItemConfig = '';
+        for (let i = 0; i < optionsConfig.length; i++) {
+          const optionConfigItem = optionsConfig[i];
 
-        if (optionConfigItem.isActive) {
-          // Set form data to call request API OpenAI
-          self.formData[configItem.name_kind] = optionConfigItem.value;
-        }
+          if (optionConfigItem.isActive) {
+            // Set form data to call request API OpenAI
+            self.formData[configItem.name_kind] = optionConfigItem.value;
+          }
 
-        vHtmlItemConfig += `
+          vHtmlItemConfig += `
           <button kind="${configItem.name_kind}" value="${optionConfigItem.value}" class="item text ${optionConfigItem.isActive ? 'active' : ''}">
             ${optionConfigItem.display}
             ${optionsConfig.length > 1 ?
-            `<div class="close">
+              `<div class="close">
                 <img class="icon" src="./icons/cancel.svg">
               </div>` : ''
-          }
+            }
           </button>
           `
-      }
+        }
 
-      // Add options not use to option combobox
-      let optionsDefault = VOICE_SETTING_DATA_2.find(config => config.name_kind == configItem.name_kind).options;
-      let vHtmlOptionsConfig = '';
-      for (let i = 0; i < optionsDefault.length; i++) {
-        const item = optionsDefault[i];
+        // Add options not use to option combobox
+        let optionsDefault = VOICE_SETTING_DATA.find(config => config.name_kind == configItem.name_kind).options;
+        let vHtmlOptionsConfig = '';
+        for (let i = 0; i < optionsDefault.length; i++) {
+          const item = optionsDefault[i];
 
-        let hasInConfig = optionsConfig.find(configItem => configItem.value == item.value);
-        vHtmlOptionsConfig += `
+          let hasInConfig = optionsConfig.find(configItem => configItem.value == item.value);
+          vHtmlOptionsConfig += `
             <li class="combobox-item ${hasInConfig ? 'hidden' : ''}" kind="${configItem.name_kind}" value="${item.value}">
               <div class="name">${item.display}</div>
               ${item.sub ? `<div class="sub">${item.sub}</div>` : ''}
             </li>
           `;
-      }
+        }
 
-      // Button combobox
-      let vHtml = ` <div class="title">
+        // Button combobox
+        let vHtml = ` <div class="title">
                         <img class="icon" src="${configItem.icon}" alt="${configItem.name_kind}">
                         <span class="text">${configItem.name}:</span>
                       </div>
@@ -469,82 +456,12 @@ const TabWriteManager = {
                       </div>
                     `
 
-      let wrap = document.createElement('div');
-      wrap.className = `wrap-config ${configItem.name_kind} ${configItem.name_kind == 'formality_reply' ? 'hidden' : ''}`
-      wrap.innerHTML = vHtml;
-
-      // Add to html side panel
-      $(`#${self.idTab} .voice-config`).append(wrap);
-
-      // Set event on select item in combobox
-      document.body.querySelector(`#${self.idTab} #${configItem.name_kind}_cbx`).onSelect = self.onSelectComboboxConfig;
-
-      // Hidden combobox element when add all to html side panel
-      if ($(`#${self.idTab} .wrap-config.${configItem.name_kind} .combobox-item.hidden`).length == $(`#${self.idTab} .wrap-config.${configItem.name_kind} .combobox-item`).length) {
-        $(`#${configItem.name_kind}_cbx`).addClass('hidden');
-      }
-    }
-  },
-
-  /**
-   * reload and re-show session voice config item
-   * 
-   */
-  reloadVoiceConfigItem: (nameKind) => {
-    const self = TabWriteManager;
-
-    $(`#${self.idTab} .voice-config .wrap-config.${nameKind} .options .item`).remove();
-
-    for (let i = 0; i < self.voice_config_of_user.length; i++) {
-      const configItem = self.voice_config_of_user[i];
-
-      if (configItem.name_kind == nameKind) {
-        // Shows all previously added
-        const optionsConfig = configItem.options;
-        let vHtmlItemConfig = '';
-        for (let i = 0; i < optionsConfig.length; i++) {
-          const optionConfigItem = optionsConfig[i];
-
-          if (optionConfigItem.isActive) {
-            // Set form data to call request API OpenAI
-            self.formData[configItem.name_kind] = optionConfigItem.value;
-          }
-
-          vHtmlItemConfig += `<button kind="${configItem.name_kind}" value="${optionConfigItem.value}" class="item text ${optionConfigItem.isActive ? 'active' : ''}">
-                                  ${optionConfigItem.display}
-                                  ${optionsConfig.length > 1 ?
-              `<div class="close">
-                                      <img class="icon" src="./icons/cancel.svg">
-                                    </div>` : ''
-            }
-                                </button>
-                              `
-        }
-
-        // Add options not use to option combobox
-        let optionsDefault = VOICE_SETTING_DATA_2.find(config => config.name_kind == configItem.name_kind).options;
-        let vHtmlOptionsConfig = '';
-        for (let i = 0; i < optionsDefault.length; i++) {
-          const item = optionsDefault[i];
-
-          let hasInConfig = optionsConfig.find(configItem => configItem.value == item.value);
-          vHtmlOptionsConfig += ` <li class="combobox-item ${hasInConfig ? 'hidden' : ''}" kind="${configItem.name_kind}" value="${item.value}">
-                                      <div class="name">${item.display}</div>
-                                      ${item.sub ? `<div class="sub">${item.sub}</div>` : ''}
-                                    </li>`;
-        }
-
-        // Button combobox
-        let vHtml = ` ${vHtmlItemConfig}
-                        <button class="item combobox" id="${configItem.name_kind}_cbx">
-                          <img class="icon" src="${expandMoreIconUrl}" />
-                          <ul class="popover-cbx wrap-item">
-                            ${vHtmlOptionsConfig}
-                          </ul>
-                        </button>`
+        let wrap = document.createElement('div');
+        wrap.className = `wrap-config ${configItem.name_kind} ${configItem.name_kind == 'formality_reply' ? 'hidden' : ''}`
+        wrap.innerHTML = vHtml;
 
         // Add to html side panel
-        $(`#${self.idTab} .voice-config .wrap-config.${nameKind} .options`).html(vHtml);
+        $(`#${self.idTab} .voice-config`).append(wrap);
 
         // Set event on select item in combobox
         document.body.querySelector(`#${self.idTab} #${configItem.name_kind}_cbx`).onSelect = self.onSelectComboboxConfig;
@@ -554,1059 +471,1127 @@ const TabWriteManager = {
           $(`#${configItem.name_kind}_cbx`).addClass('hidden');
         }
       }
-    }
-  },
+    },
 
-  /**
-   * Load content data mail reply
-   * 
-   */
-  loadContentDataMailReply: () => {
-    const self = TabWriteManager;
-    if (self.is_loading) return;
-    if (!self.list_suggest_reply_mail) return;
+    /**
+     * reload and re-show session voice config item
+     * 
+     */
+    reloadVoiceConfigItem: (nameKind) => {
+      const self = TabWriteManager;
 
-    let originalTextReplyEl = document.body.querySelector(`#${self.idTab} #reply_tab .original_text_reply`);
-    $(originalTextReplyEl).val(self.title_content_mail_to_write.original_text);
+      $(`#${self.idTab} .voice-config .wrap-config.${nameKind} .options .item`).remove();
 
-    let swapTextEl = document.createElement('div');
-    swapTextEl.className = 'swap-text-original';
-    swapTextEl.innerHTML = `<div class="item show-summary"></div> <div class="item show-original-text"></div>`
-    $(`#${self.idTab} #reply_tab`).append(swapTextEl);
+      for (let i = 0; i < self.voice_config_of_user.length; i++) {
+        const configItem = self.voice_config_of_user[i];
 
-    let iconEl = document.createElement('img');
-    iconEl.src = tipsIconUrl;
-    iconEl.className = 'tips-icon';
-    iconEl.onclick = self.onClickOpenTips;
-    $(`#${self.idTab} #reply_tab .reply-suggestions`).append(iconEl);
+        if (configItem.name_kind == nameKind) {
+          // Shows all previously added
+          const optionsConfig = configItem.options;
+          let vHtmlItemConfig = '';
+          for (let i = 0; i < optionsConfig.length; i++) {
+            const optionConfigItem = optionsConfig[i];
 
-    for (let i = 0; i < self.list_suggest_reply_mail.length; i++) {
-      const suggestItem = self.list_suggest_reply_mail[i];
+            if (optionConfigItem.isActive) {
+              // Set form data to call request API OpenAI
+              self.formData[configItem.name_kind] = optionConfigItem.value;
+            }
 
-      let pEl = document.createElement('p');
-      let suggestEl = document.createElement('li');
-      suggestEl.className = 'd-flex content-center align-center'
-      suggestEl.setAttribute('value', suggestItem);
-      suggestEl.append(pEl);
+            vHtmlItemConfig += `<button kind="${configItem.name_kind}" value="${optionConfigItem.value}" class="item text ${optionConfigItem.isActive ? 'active' : ''}">
+                                  ${optionConfigItem.display}
+                                  ${optionsConfig.length > 1 ?
+                `<div class="close">
+                                      <img class="icon" src="./icons/cancel.svg">
+                                    </div>` : ''
+              }
+                                </button>
+                              `
+          }
 
-      $(`#${self.idTab} #reply_tab .reply-suggestions`).append(suggestEl);
+          // Add options not use to option combobox
+          let optionsDefault = VOICE_SETTING_DATA.find(config => config.name_kind == configItem.name_kind).options;
+          let vHtmlOptionsConfig = '';
+          for (let i = 0; i < optionsDefault.length; i++) {
+            const item = optionsDefault[i];
 
-      renderTextStyleChatGPT(pEl, suggestItem)
-    }
+            let hasInConfig = optionsConfig.find(configItem => configItem.value == item.value);
+            vHtmlOptionsConfig += ` <li class="combobox-item ${hasInConfig ? 'hidden' : ''}" kind="${configItem.name_kind}" value="${item.value}">
+                                      <div class="name">${item.display}</div>
+                                      ${item.sub ? `<div class="sub">${item.sub}</div>` : ''}
+                                    </li>`;
+          }
 
-    setTimeout(() => {
-      $(originalTextReplyEl).focus();
-      $(originalTextReplyEl).scrollTop(0);
-    }, 200);
-  },
+          // Button combobox
+          let vHtml = ` ${vHtmlItemConfig}
+                        <button class="item combobox" id="${configItem.name_kind}_cbx">
+                          <img class="icon" src="${expandMoreIconUrl}" />
+                          <ul class="popover-cbx wrap-item">
+                            ${vHtmlOptionsConfig}
+                          </ul>
+                        </button>`
 
-  /**
-   * Show alert
-   * 
-   * @param {string} type 
-   * @param {string} message 
-   */
-  showAlert: (type, message) => {
-    const self = TabWriteManager;
+          // Add to html side panel
+          $(`#${self.idTab} .voice-config .wrap-config.${nameKind} .options`).html(vHtml);
 
-    let alertEl = document.createElement('div');
-    alertEl.className = 'item ' + type;
-    alertEl.innerHTML = message;
+          // Set event on select item in combobox
+          document.body.querySelector(`#${self.idTab} #${configItem.name_kind}_cbx`).onSelect = self.onSelectComboboxConfig;
 
-    $(`#${self.idTab} .form-config .alert`).append(alertEl);
-
-    alertEl.onclick = (event) => {
-      alertEl.remove();
-    }
-    setTimeout(() => {
-      alertEl.remove();
-    }, 3000);
-  },
-
-  /**
-   * Set active tab
-   * 
-   * @param {string} tabActive 
-   */
-  setActiveTab: (tabActive) => {
-    const self = TabWriteManager;
-    if (self.is_loading) return;
-    if (self.is_summarizing) return;
-
-    $(`#${self.idTab} .tab .tab-title .item`).removeClass('active');
-    $(`#${self.idTab} .tab .tab-title .item[key_tab="${tabActive}"]`).addClass('active');
-    $(`#${self.idTab} .tab .tab-body .tab-item`).removeClass('active');
-    $(`#${self.idTab} .tab .tab-body #${tabActive}`).addClass('active');
-    $(`#${self.idTab} .tab .tab-body #${tabActive} textarea`).focus();
-
-    $('textarea').css('maxWidth', document.querySelector('textarea').clientWidth);
-  },
-
-  /**
-   * Set event for element in panel
-   * 
-   */
-  resetEvent: () => {
-    const self = TabWriteManager;
-
-    // For combobox component
-    // $(document).on('click', `#${self.idTab} .combobox`, function (event) {
-    $(document).on('click', `#${self.idTab} .wrap-config .options`, function (event) {
-      const targetEl = event.target;
-
-      const popoverEl = targetEl.querySelector(`#${self.idTab} .popover-cbx`);
-      if (!popoverEl) return;
-
-      $(`#${self.idTab} .popover-cbx`).removeClass('show');
-      self.combobox_flag = true;
-
-      popoverEl.classList.add('show');
-
-      if (isRightSideOutOfViewport(popoverEl)) {
-        popoverEl.style.left = 'unset'
-        popoverEl.style.right = `${targetEl.offsetWidth - 20}px`;
+          // Hidden combobox element when add all to html side panel
+          if ($(`#${self.idTab} .wrap-config.${configItem.name_kind} .combobox-item.hidden`).length == $(`#${self.idTab} .wrap-config.${configItem.name_kind} .combobox-item`).length) {
+            $(`#${configItem.name_kind}_cbx`).addClass('hidden');
+          }
+        }
       }
-      if (isBottomSideOutOfViewport(popoverEl)) {
-        popoverEl.style.top = 'unset'
-        popoverEl.style.bottom = `35px`;
+    },
+
+    /**
+     * Load content data mail reply
+     * 
+     */
+    loadContentDataMailReply: () => {
+      const self = TabWriteManager;
+      if (self.is_loading) return;
+      if (!self.list_suggest_reply_mail) return;
+
+      let originalTextReplyEl = document.body.querySelector(`#${self.idTab} #reply_tab .original_text_reply`);
+      $(originalTextReplyEl).val(self.title_content_mail_to_write.original_text);
+
+      let swapTextEl = document.createElement('div');
+      swapTextEl.className = 'swap-text-original';
+      swapTextEl.innerHTML = `<div class="item show-summary"></div> <div class="item show-original-text"></div>`
+      $(`#${self.idTab} #reply_tab`).append(swapTextEl);
+
+      let iconEl = document.createElement('img');
+      iconEl.src = tipsIconUrl;
+      iconEl.className = 'tips-icon';
+      iconEl.onclick = self.onClickOpenTips;
+      $(`#${self.idTab} #reply_tab .reply-suggestions`).append(iconEl);
+
+      for (let i = 0; i < self.list_suggest_reply_mail.length; i++) {
+        const suggestItem = self.list_suggest_reply_mail[i];
+
+        let pEl = document.createElement('p');
+        let suggestEl = document.createElement('li');
+        suggestEl.className = 'd-flex content-center align-center'
+        suggestEl.setAttribute('value', suggestItem);
+        suggestEl.append(pEl);
+
+        $(`#${self.idTab} #reply_tab .reply-suggestions`).append(suggestEl);
+
+        MyUtils.renderTextStyleChatGPT(pEl, suggestItem)
       }
 
       setTimeout(() => {
-        self.combobox_flag = false;
-      }, 100)
-    });
-    $(document).on('click', `#${self.idTab} .popover-cbx.wrap-item .combobox-item`, function (event) {
-      if (self.is_loading) return;
-      const kind = event.target.getAttribute('kind');
-      const value = event.target.getAttribute('value');
+        $(originalTextReplyEl).focus();
+        $(originalTextReplyEl).scrollTop(0);
+      }, 200);
+    },
 
-      const comboboxEl = $(event.target).parents('button.combobox')[0];
-      if (comboboxEl.onSelect) {
-        comboboxEl.onSelect(comboboxEl, event.target, kind, value);
+    /**
+     * Show alert
+     * 
+     * @param {string} type 
+     * @param {string} message 
+     */
+    showAlert: (type, message) => {
+      const self = TabWriteManager;
+
+      let alertEl = document.createElement('div');
+      alertEl.className = 'item ' + type;
+      alertEl.innerHTML = message;
+
+      $(`#${self.idTab} .form-config .alert`).append(alertEl);
+
+      alertEl.onclick = (event) => {
+        alertEl.remove();
       }
-    });
+      setTimeout(() => {
+        alertEl.remove();
+      }, 3000);
+    },
 
-    // For tab component
-    $(`#${self.idTab} .tab .tab-title .item`).click(event => {
-      const targetEl = event.target;
-      const keyTab = targetEl.getAttribute('key_tab');
-
+    /**
+     * Set active tab
+     * 
+     * @param {string} tabActive 
+     */
+    setActiveTab: (tabActive) => {
+      const self = TabWriteManager;
+      if (self.is_loading) return;
       if (self.is_summarizing) return;
 
-      $(`#${self.idTab} .voice-config .formality`).removeClass('hidden');
-      $(`#${self.idTab} .voice-config .formality_reply`).removeClass('hidden');
-      if (keyTab == 'reply_tab') {
-        $(`#${self.idTab} .voice-config .formality`).addClass('hidden');
-      } else {
-        $(`#${self.idTab} .voice-config .formality_reply`).addClass('hidden');
+      $(`#${self.idTab} .tab .tab-title .item`).removeClass('active');
+      $(`#${self.idTab} .tab .tab-title .item[key_tab="${tabActive}"]`).addClass('active');
+      $(`#${self.idTab} .tab .tab-body .tab-item`).removeClass('active');
+      $(`#${self.idTab} .tab .tab-body #${tabActive}`).addClass('active');
+      $(`#${self.idTab} .tab .tab-body #${tabActive} textarea`).focus();
+
+      $('textarea').css('maxWidth', document.querySelector('textarea').clientWidth);
+    },
+
+    /**
+     * Set event for element in panel
+     * 
+     */
+    resetEvent: () => {
+      const self = TabWriteManager;
+
+      // For combobox component
+      // $(document).on('click', `#${self.idTab} .combobox`, function (event) {
+      $(document).on('click', `#${self.idTab} .wrap-config .options`, function (event) {
+        const targetEl = event.target;
+
+        const popoverEl = targetEl.querySelector(`#${self.idTab} .popover-cbx`);
+        if (!popoverEl) return;
+
+        $(`#${self.idTab} .popover-cbx`).removeClass('show');
+        self.combobox_flag = true;
+
+        popoverEl.classList.add('show');
+
+        if (MyUtils.isRightSideOutOfViewport(popoverEl)) {
+          popoverEl.style.left = 'unset'
+          popoverEl.style.right = `${targetEl.offsetWidth - 20}px`;
+        }
+        if (MyUtils.isBottomSideOutOfViewport(popoverEl)) {
+          popoverEl.style.top = 'unset'
+          popoverEl.style.bottom = `35px`;
+        }
+
+        setTimeout(() => {
+          self.combobox_flag = false;
+        }, 100)
+      });
+      $(document).on('click', `#${self.idTab} .popover-cbx.wrap-item .combobox-item`, function (event) {
+        if (self.is_loading) return;
+        const kind = event.target.getAttribute('kind');
+        const value = event.target.getAttribute('value');
+
+        const comboboxEl = $(event.target).parents('button.combobox')[0];
+        if (comboboxEl.onSelect) {
+          comboboxEl.onSelect(comboboxEl, event.target, kind, value);
+        }
+      });
+
+      // For tab component
+      $(`#${self.idTab} .tab .tab-title .item`).click(event => {
+        const targetEl = event.target;
+        const keyTab = targetEl.getAttribute('key_tab');
+
+        if (self.is_summarizing) return;
+
+        $(`#${self.idTab} .voice-config .formality`).removeClass('hidden');
+        $(`#${self.idTab} .voice-config .formality_reply`).removeClass('hidden');
+        if (keyTab == 'reply_tab') {
+          $(`#${self.idTab} .voice-config .formality`).addClass('hidden');
+        } else {
+          $(`#${self.idTab} .voice-config .formality_reply`).addClass('hidden');
+        }
+
+        $(`#${self.idTab} .tab .tab-title .item`).removeClass('active');
+        $(targetEl).addClass('active');
+
+        $(`#${self.idTab} .tab .tab-body .tab-item`).removeClass('active');
+        $(`#${self.idTab} .tab .tab-body #${keyTab}.tab-item`).addClass('active');
+
+        setTimeout(() => {
+          let inputFocusEl = document.body.querySelector(`#${self.idTab} .tab.content-config .tab-item.active textarea`);
+          $(inputFocusEl).focus();
+        });
+      });
+
+      const handlerActive = () => {
+        $(`#${self.idTab} #result .result-generate .result-item`).removeClass('active');
+        let itemActiveEl = $(`#${self.idTab} #result .result-generate .result-item[data-index="${self.result_active}"]`);
+        itemActiveEl.addClass('active');
+
+        $(`#${self.idTab} #result .result-generate`).css('height', `${itemActiveEl[0].offsetHeight}px`)
+
+        self.handlerUpdatePaging();
+      };
+      $(`#${self.idTab} #result .result-title .right .prev`).click((event) => {
+        if (self.is_loading) return;
+        if (event.target.className.baseVal.indexOf('disable') != -1) {
+          return;
+        }
+        self.result_active--;
+        handlerActive();
+      })
+      $(`#${self.idTab} #result .result-title .right .next`).click((event) => {
+        if (self.is_loading) return;
+        if (event.target.className.baseVal.indexOf('disable') != -1) {
+          return;
+        }
+        self.result_active++;
+        handlerActive();
+      })
+
+      // For button submit generate
+      $(document).on('click', `#${self.idTab} .submit-generate`, self.onSubmitGenerate);
+
+      // For items options voice config
+      $(document).on('click', `#${self.idTab} .form-config .wrap-config .item`, self.onClickConfigItem);
+
+      // Remove and save language config
+      $(document).on('click', `#${self.idTab} .form-config .wrap-config .item .close`, self.handlerRemoveOptionVoiceConfig);
+
+      // For action button session result footer
+      $(document).on('click', `#${self.idTab} .result-footer .btn.re-generate`, self.onSubmitGenerate);
+      $(document).on('click', `#${self.idTab} .result-footer .btn.copy-content`, self.onClickCopyContentResult);
+      $(document).on('click', `#${self.idTab} .result-footer .btn.send-to-site`, self.onClickSendContentResultToBrowserPage);
+
+      document.body.querySelector(`#${self.idTab} #version_gpt`).onSelect = self.onSelectVersionGptConfig;
+
+      // For input original text
+      // $(document).on('focus', `#${self.idTab} #reply_tab .original_text_reply`, event => {
+      //   setTimeout(() => {
+      //     if (self.swap_original_text_flag) {
+      //       self.swap_original_text_flag = false;
+      //     } else {
+      //       $('.swap-text-original').addClass('show');
+      //     }
+      //   }, 200);
+      // })
+      // $(document).on('focusout', `#${self.idTab} #reply_tab .original_text_reply`, event => {
+      //   setTimeout(() => {
+      //     if (self.swap_original_text_flag) {
+      //       self.swap_original_text_flag = false;
+      //     } else {
+      //       $('.swap-text-original').removeClass('show');
+      //     }
+      //   }, 200);
+      // })
+      // $(document).on('click', `#${self.idTab} .show-summary`, event => {
+      //   if (self.is_loading || self.is_summarizing) return;
+      //   $('.original_text_reply').val(self.summaryMailData.summary);
+
+      //   self.swap_original_text_flag = true;
+
+      //   $('.original_text_reply').focus();
+      //   $('#reply_tab .original_text_reply').scrollTop(0);
+      // });
+      // $(document).on('click', `#${self.idTab} .show-original-text`, event => {
+      //   if (self.is_loading || self.is_summarizing) return;
+      //   $('.original_text_reply').val(self.title_content_mail_to_write.original_text);
+
+      //   self.swap_original_text_flag = true;
+
+      //   $('.original_text_reply').focus();
+      //   $('#reply_tab .original_text_reply').scrollTop(0);
+      // });
+
+      // For reply suggestions
+      $(document).on('mouseover', `#${self.idTab} #reply_tab .reply-suggestions li`, event => {
+        $('.general_content_reply').attr('placeholder', event.target.getAttribute('value'));
+      })
+      $(document).on('mouseleave', `#${self.idTab} #reply_tab .reply-suggestions li`, event => {
+        $('.general_content_reply').attr('placeholder', MyLang.getMsg('TXT_PLACEHOLDER_GENERAL_CONTENT_REPLY'));
+      })
+      $(document).on('click', `#${self.idTab} #reply_tab .reply-suggestions li`, event => {
+        if (self.is_loading || self.is_summarizing) return;
+
+        $('.general_content_reply').val(event.target.getAttribute('value'));
+        $('.general_content_reply').focus();
+      })
+    },
+
+    /**
+     * Handler show generate result
+     * 
+     */
+    handlerShowGenerateResult: function () {
+      const self = TabWriteManager;
+
+      const result = self.generate_result_list;
+      self.result_active = (result.length - 1);
+
+      $(`#${self.idTab} #result`).removeClass('is-loading');
+      $(`#${self.idTab} #result .result-generate .result-item`).remove();
+
+      let resultActiveEl = null;
+      for (let i = 0; i < result.length; i++) {
+        const item = result[i];
+        let isActive = (i == self.result_active)
+
+        let titleEl = document.createElement('div');
+        titleEl.className = 'title'
+        titleEl.innerHTML = `<span class="bold">Subject: </span> ${item.title}`
+
+        let textEl = document.createElement('div');
+        textEl.setAttribute('disabled', true);
+
+        textEl.innerHTML = item.body.replaceAll('\n', '<br/>');
+
+        let resultDivEl = document.createElement('div');
+        resultDivEl.classList = ['result-item'];
+        resultDivEl.setAttribute('data-index', i);
+        if (isActive) {
+          resultActiveEl = resultDivEl
+          resultDivEl.classList.add('active');
+        }
+
+        resultDivEl.append(titleEl);
+        resultDivEl.append(textEl);
+
+        $(`#${self.idTab} #result .result-generate`).append(resultDivEl);
       }
 
-      $(`#${self.idTab} .tab .tab-title .item`).removeClass('active');
-      $(targetEl).addClass('active');
+      let height = 0;
+      if (resultActiveEl) {
+        height = resultActiveEl.offsetHeight;
+      }
+      $(`#${self.idTab} #result .result-generate`).css('height', `${height}px`)
 
-      $(`#${self.idTab} .tab .tab-body .tab-item`).removeClass('active');
-      $(`#${self.idTab} .tab .tab-body #${keyTab}.tab-item`).addClass('active');
-
-      setTimeout(() => {
-        let inputFocusEl = document.body.querySelector(`#${self.idTab} .tab.content-config .tab-item.active textarea`);
-        $(inputFocusEl).focus();
-      });
-    });
-
-    const handlerActive = () => {
-      $(`#${self.idTab} #result .result-generate .result-item`).removeClass('active');
-      let itemActiveEl = $(`#${self.idTab} #result .result-generate .result-item[data-index="${self.result_active}"]`);
-      itemActiveEl.addClass('active');
-
-      $(`#${self.idTab} #result .result-generate`).css('height', `${itemActiveEl[0].offsetHeight}px`)
+      self.is_loading = false;
 
       self.handlerUpdatePaging();
-    };
-    $(`#${self.idTab} #result .result-title .right .prev`).click((event) => {
+    },
+
+    /**
+     * Handler update paging status
+     * 
+     */
+    handlerUpdatePaging: function () {
+      const self = TabWriteManager;
       if (self.is_loading) return;
-      if (event.target.className.baseVal.indexOf('disable') != -1) {
-        return;
+
+      const result_list = self.generate_result_list;
+
+      $(`#${self.idTab} #result .result-title .right .text`).html(`${self.result_active + 1}/${result_list.length}`)
+
+      // paging prev
+      if (self.result_active <= 0) {
+        $(`#${self.idTab} #result .result-title .right .prev`)[0].classList.add('disable');
+      } else {
+        $(`#${self.idTab} #result .result-title .right .prev`)[0].classList.remove('disable');
       }
-      self.result_active--;
-      handlerActive();
-    })
-    $(`#${self.idTab} #result .result-title .right .next`).click((event) => {
+
+      // paging next
+      if (self.result_active >= (result_list.length - 1)) {
+        $(`#${self.idTab} #result .result-title .right .next`)[0].classList.add('disable');
+      } else {
+        $(`#${self.idTab} #result .result-title .right .next`)[0].classList.remove('disable');
+      }
+    },
+
+    /**
+     * Handler remove option voice config
+     * 
+     * @param {Event} event 
+     */
+    handlerRemoveOptionVoiceConfig: (event) => {
+      const self = TabWriteManager;
+      const targetEl = event.target;
       if (self.is_loading) return;
-      if (event.target.className.baseVal.indexOf('disable') != -1) {
-        return;
-      }
-      self.result_active++;
-      handlerActive();
-    })
 
-    // For button submit generate
-    $(document).on('click', `#${self.idTab} .submit-generate`, self.onSubmitGenerate);
+      const parentBtnEl = $(targetEl).parents('button.item.text');
+      const kind = parentBtnEl.attr('kind');
+      const value = parentBtnEl.attr('value');
 
-    // For items options voice config
-    $(document).on('click', `#${self.idTab} .form-config .wrap-config .item`, self.onClickConfigItem);
+      const configItemDefault = VOICE_SETTING_DATA.find(item => item.name_kind == kind);
+      let record = configItemDefault.options.find(item => {
+        return value == item.value
+      });
 
-    // Remove and save language config
-    $(document).on('click', `#${self.idTab} .form-config .wrap-config .item .close`, self.handlerRemoveOptionVoiceConfig);
+      if (record) {
+        const voiceConfig = [...self.voice_config_of_user]
 
-    // For action button session result footer
-    $(document).on('click', `#${self.idTab} .result-footer .btn.re-generate`, self.onSubmitGenerate);
-    $(document).on('click', `#${self.idTab} .result-footer .btn.copy-content`, self.onClickCopyContentResult);
-    $(document).on('click', `#${self.idTab} .result-footer .btn.send-to-site`, self.onClickSendContentResultToBrowserPage);
+        for (let i = 0; i < voiceConfig.length; i++) {
+          const configItem = voiceConfig[i];
 
-    document.body.querySelector(`#${self.idTab} #version_gpt`).onSelect = self.onSelectVersionGptConfig;
+          if (configItem.name_kind == kind) {
 
-    // For input original text
-    // $(document).on('focus', `#${self.idTab} #reply_tab .original_text_reply`, event => {
-    //   setTimeout(() => {
-    //     if (self.swap_original_text_flag) {
-    //       self.swap_original_text_flag = false;
-    //     } else {
-    //       $('.swap-text-original').addClass('show');
-    //     }
-    //   }, 200);
-    // })
-    // $(document).on('focusout', `#${self.idTab} #reply_tab .original_text_reply`, event => {
-    //   setTimeout(() => {
-    //     if (self.swap_original_text_flag) {
-    //       self.swap_original_text_flag = false;
-    //     } else {
-    //       $('.swap-text-original').removeClass('show');
-    //     }
-    //   }, 200);
-    // })
-    // $(document).on('click', `#${self.idTab} .show-summary`, event => {
-    //   if (self.is_loading || self.is_summarizing) return;
-    //   $('.original_text_reply').val(self.summaryMailData.summary);
-
-    //   self.swap_original_text_flag = true;
-
-    //   $('.original_text_reply').focus();
-    //   $('#reply_tab .original_text_reply').scrollTop(0);
-    // });
-    // $(document).on('click', `#${self.idTab} .show-original-text`, event => {
-    //   if (self.is_loading || self.is_summarizing) return;
-    //   $('.original_text_reply').val(self.title_content_mail_to_write.original_text);
-
-    //   self.swap_original_text_flag = true;
-
-    //   $('.original_text_reply').focus();
-    //   $('#reply_tab .original_text_reply').scrollTop(0);
-    // });
-
-    // For reply suggestions
-    $(document).on('mouseover', `#${self.idTab} #reply_tab .reply-suggestions li`, event => {
-      $('.general_content_reply').attr('placeholder', event.target.getAttribute('value'));
-    })
-    $(document).on('mouseleave', `#${self.idTab} #reply_tab .reply-suggestions li`, event => {
-      $('.general_content_reply').attr('placeholder', MyLang.getMsg('TXT_PLACEHOLDER_GENERAL_CONTENT_REPLY'));
-    })
-    $(document).on('click', `#${self.idTab} #reply_tab .reply-suggestions li`, event => {
-      if (self.is_loading || self.is_summarizing) return;
-
-      $('.general_content_reply').val(event.target.getAttribute('value'));
-      $('.general_content_reply').focus();
-    })
-  },
-
-  /**
-   * Handler show generate result
-   * 
-   */
-  handlerShowGenerateResult: function () {
-    const self = TabWriteManager;
-
-    const result = self.generate_result_list;
-    self.result_active = (result.length - 1);
-
-    $(`#${self.idTab} #result`).removeClass('is-loading');
-    $(`#${self.idTab} #result .result-generate .result-item`).remove();
-
-    let resultActiveEl = null;
-    for (let i = 0; i < result.length; i++) {
-      const item = result[i];
-      let isActive = (i == self.result_active)
-
-      let titleEl = document.createElement('div');
-      titleEl.className = 'title'
-      titleEl.innerHTML = `<span class="bold">Subject: </span> ${item.title}`
-
-      let textEl = document.createElement('div');
-      textEl.setAttribute('disabled', true);
-
-      textEl.innerHTML = item.body.replaceAll('\n', '<br/>');
-
-      let resultDivEl = document.createElement('div');
-      resultDivEl.classList = ['result-item'];
-      resultDivEl.setAttribute('data-index', i);
-      if (isActive) {
-        resultActiveEl = resultDivEl
-        resultDivEl.classList.add('active');
-      }
-
-      resultDivEl.append(titleEl);
-      resultDivEl.append(textEl);
-
-      $(`#${self.idTab} #result .result-generate`).append(resultDivEl);
-    }
-
-    let height = 0;
-    if (resultActiveEl) {
-      height = resultActiveEl.offsetHeight;
-    }
-    $(`#${self.idTab} #result .result-generate`).css('height', `${height}px`)
-
-    self.is_loading = false;
-
-    self.handlerUpdatePaging();
-  },
-
-  /**
-   * Handler update paging status
-   * 
-   */
-  handlerUpdatePaging: function () {
-    const self = TabWriteManager;
-    if (self.is_loading) return;
-
-    const result_list = self.generate_result_list;
-
-    $(`#${self.idTab} #result .result-title .right .text`).html(`${self.result_active + 1}/${result_list.length}`)
-
-    // paging prev
-    if (self.result_active <= 0) {
-      $(`#${self.idTab} #result .result-title .right .prev`)[0].classList.add('disable');
-    } else {
-      $(`#${self.idTab} #result .result-title .right .prev`)[0].classList.remove('disable');
-    }
-
-    // paging next
-    if (self.result_active >= (result_list.length - 1)) {
-      $(`#${self.idTab} #result .result-title .right .next`)[0].classList.add('disable');
-    } else {
-      $(`#${self.idTab} #result .result-title .right .next`)[0].classList.remove('disable');
-    }
-  },
-
-  /**
-   * Handler remove option voice config
-   * 
-   * @param {Event} event 
-   */
-  handlerRemoveOptionVoiceConfig: (event) => {
-    const self = TabWriteManager;
-    const targetEl = event.target;
-    if (self.is_loading) return;
-
-    const parentBtnEl = $(targetEl).parents('button.item.text');
-    const kind = parentBtnEl.attr('kind');
-    const value = parentBtnEl.attr('value');
-
-    const configItemDefault = VOICE_SETTING_DATA_2.find(item => item.name_kind == kind);
-    let record = configItemDefault.options.find(item => {
-      return value == item.value
-    });
-
-    if (record) {
-      const voiceConfig = [...self.voice_config_of_user]
-
-      for (let i = 0; i < voiceConfig.length; i++) {
-        const configItem = voiceConfig[i];
-
-        if (configItem.name_kind == kind) {
-
-          if (configItem.options.length <= 1) {
-            return;
-          }
-
-
-          // Update all flag is active to false and save index item remove
-          let indexOfRemove = -1;
-          for (let j = 0; j < configItem.options.length; j++) {
-            const option = configItem.options[j];
-            configItem.options[j].isActive = false;
-
-            if (option.value == value) {
-              indexOfRemove = j;
+            if (configItem.options.length <= 1) {
+              return;
             }
-          }
 
-          configItem.options.splice(indexOfRemove, 1);
-          configItem.options[0].isActive = true;
 
-          voiceConfig[i] = configItem;
-        }
-      }
-
-      // Save to storage
-      _StorageManager.setVoiceConfigWrite(voiceConfig);
-    }
-  },
-
-  /**
-   * Process add generate write
-   * 
-   */
-  processAddGenerateWrite: () => {
-    const self = TabWriteManager;
-    if (self.is_loading) return;
-
-    self.is_loading = true;
-
-    let typeGenerate = '';
-    if ($('#write_tab div[key_tab="compose_tab"]').hasClass('active')) {
-      typeGenerate = 'compose'
-    } else {
-      typeGenerate = 'reply'
-    }
-
-    let topicCompose = $('#write_tab #compose_tab textarea.topic_to_compose').val()
-    let originalTextReply = $('#write_tab #reply_tab textarea.original_text_reply').val()
-    let generalContentReply = $('#write_tab #reply_tab textarea.general_content_reply').val()
-
-    let params = self.formData;
-    params.type_generate = typeGenerate;
-    params.topic_compose = topicCompose;
-    params.original_text_reply = originalTextReply;
-    params.general_content_reply = generalContentReply;
-
-    $('#write_tab #result .result-title .left .icon').attr('src', getPropGptByVersion('icon', self.formData.gpt_version))
-    $('#write_tab #result .result-title .left .name-gpt').text(getPropGptByVersion('name', self.formData.gpt_version))
-
-    _SendMessageManager.generateContentReply(params, (data) => {
-      self.generate_result_list.push(data);
-
-      self.handlerShowGenerateResult();
-    });
-  },
-
-  /**
-   * Process show data title content mail to write
-   * 
-   */
-  processTitleContentMailToWrite: () => {
-    const self = TabWriteManager;
-    if (self.is_loading) return;
-    if (!self.title_content_mail_to_write) return;
-
-    let { title, original_text } = self.title_content_mail_to_write;
-    if (!title || !original_text) return;
-
-    title = title.trim(), original_text = original_text.trim();
-    if (title == '' || original_text == '') return;
-
-    $('#reply_tab').addClass('is-loading');
-
-    self.setActiveTab('reply_tab');
-
-    self.is_summarizing = true;
-    _SendMessageManager.getSuggestReplyMailRequest(title, original_text, (dataRes) => {
-      self.list_suggest_reply_mail = dataRes;
-
-      self.loadContentDataMailReply();
-
-      self.is_summarizing = false;
-      $('#reply_tab').removeClass('is-loading');
-    });
-
-    _StorageManager.setTitleContentMailToWrite(null);
-  },
-
-  /**
-   * Clear title content mail to write
-   * 
-   */
-  clearTitleContentMailToWrite: () => {
-    const self = TabWriteManager;
-    if (self.is_loading) return;
-
-    self.summaryMailData = null;
-    self.generate_result_list = [];
-
-    $(`#${self.idTab} #result`).addClass('hidden');
-
-    $(`#${self.idTab} #compose_tab .topic_to_compose`).val('');
-    $(`#${self.idTab} #reply_tab .original_text_reply`).val('');
-    $(`#${self.idTab} #reply_tab .general_content_reply`).val('');
-    $(`#${self.idTab} #reply_tab .swap-text-original`).remove();
-    $(`#${self.idTab} #reply_tab .reply-suggestions .tips-icon`).remove();
-    $(`#${self.idTab} #reply_tab .reply-suggestions li`).remove();
-  },
-
-  /**
-   * Clear form data
-   * 
-   */
-  clearForm: () => {
-    const self = TabWriteManager;
-    if (self.is_loading) return;
-
-    self.clearTitleContentMailToWrite();
-  },
-
-  // Event
-
-  /**
-   * On active tab
-   * 
-   */
-  onActive: () => {
-    const self = TabWriteManager;
-
-    self.loadVersionGPTConfig();
-    self.loadVoiceConfig();
-    self.processTitleContentMailToWrite();
-
-    self.resetEvent();
-
-    let tabActive = 'compose_tab';
-    if (self.is_summarizing) {
-      tabActive = 'reply_tab'
-    }
-    self.setActiveTab(tabActive);
-
-    $(`#${self.idTab} .voice-config .formality`).removeClass('hidden');
-    $(`#${self.idTab} .voice-config .formality_reply`).addClass('hidden');
-  },
-
-  /**
-   * On submit generate content
-   * 
-   * @param {event} event 
-   */
-  onSubmitGenerate: (event) => {
-    const self = TabWriteManager;
-    if (self.is_loading) return;
-
-    let messValidate = self.isValidateToCallGPT();
-    if (messValidate) {
-      self.showAlert('error', messValidate);
-      return;
-    }
-
-    // process add generate write
-    self.processAddGenerateWrite();
-
-    const containerEl = document.getElementById(`tab_container`);
-    const formConfigEl = document.body.querySelector(`#${self.idTab} .form-config`);
-    const resultEl = document.body.querySelector(`#${self.idTab} #result`);
-    $(resultEl).css('marginTop', (containerEl.offsetHeight - formConfigEl.offsetHeight) + 'px');
-
-    $(resultEl).removeClass('hidden');
-    $(containerEl).animate({
-      scrollTop: $(resultEl).offset().top + containerEl.scrollTop
-    }, 500);
-
-    $(resultEl).addClass('is-loading');
-  },
-
-  /**
-   * On click copy content result
-   * 
-   * @param {event} event 
-   */
-  onClickCopyContentResult: (event) => {
-    const self = TabWriteManager;
-    if (self.is_loading) return;
-
-    $(event.target).addClass('done');
-    navigator.clipboard.writeText(self.generate_result_list[self.result_active].body);
-
-    setTimeout(() => {
-      $(event.target).removeClass('done');
-    }, 1000);
-  },
-
-  /**
-   * On click send content result to browser page
-   * 
-   * @param {event} event 
-   */
-  onClickSendContentResultToBrowserPage: (event) => {
-    const self = TabWriteManager;
-    if (self.is_loading) return;
-
-    let itemActive = self.generate_result_list[self.result_active];
-
-    let params = {
-      id_popup: self.title_content_mail_to_write.id_popup,
-      title: itemActive.title,
-      body: itemActive.body,
-    }
-    chrome.storage.local.set({ side_panel_send_result: params });
-  },
-
-  /**
-   * On click config item
-   * 
-   * @param {event} event 
-   */
-  onClickConfigItem: (event) => {
-    const self = TabWriteManager;
-    if (self.is_loading) return;
-
-    const targetEl = event.target;
-    const kind = targetEl.getAttribute('kind');
-    const value = targetEl.getAttribute('value');
-    if (!kind || !value) return;
-
-    const configItemDefault = VOICE_SETTING_DATA_2.find(item => item.name_kind == kind);
-    let record = configItemDefault.options.find(item => {
-      return value == item.value
-    });
-
-    if (record) {
-      const voiceConfig = [...self.voice_config_of_user]
-
-      for (let i = 0; i < voiceConfig.length; i++) {
-        const configItem = voiceConfig[i];
-
-        if (configItem.name_kind == kind) {
-
-          for (let j = 0; j < configItem.options.length; j++) {
-            if (configItem.options[j].value == value) {
-              configItem.options[j].isActive = true;
-            } else {
+            // Update all flag is active to false and save index item remove
+            let indexOfRemove = -1;
+            for (let j = 0; j < configItem.options.length; j++) {
+              const option = configItem.options[j];
               configItem.options[j].isActive = false;
-            }
-          }
 
-          voiceConfig[i] = configItem;
-        }
-      }
-
-      // Save to storage
-      _StorageManager.setVoiceConfigWrite(voiceConfig);
-    }
-  },
-
-  /**
-   * On select combobox component config
-   * 
-   * @param {Element} comboboxEl 
-   * @param {Element} itemEl 
-   * @param {string} value 
-   */
-  onSelectComboboxConfig: (comboboxEl, itemEl, kind, value) => {
-    const self = TabWriteManager;
-    if (self.is_loading) return;
-
-    const configItemDefault = VOICE_SETTING_DATA_2.find(item => item.name_kind == kind);
-    let record = configItemDefault.options.find(item => {
-      return value == item.value
-    });
-
-    if (record) {
-      const voiceConfig = [...self.voice_config_of_user]
-
-      for (let i = 0; i < voiceConfig.length; i++) {
-        const configItem = voiceConfig[i];
-
-        if (configItem.name_kind == kind) {
-
-          if (configItem.options.length == MAX_VOICE_CONFIG_OPTIONS_SHOW) {
-            // Swap the record into the active option item
-            configItem.options = configItem.options.map(item => {
-              if (item.isActive) {
-                return { ...record, isActive: true }
+              if (option.value == value) {
+                indexOfRemove = j;
               }
-              return item;
-            });
+            }
 
-          } else {
-            // Update all flag is active to false
-            configItem.options = configItem.options.map(item => {
-              return { ...item, isActive: false }
-            });
-            configItem.options.push({ ...record, isActive: true });
+            configItem.options.splice(indexOfRemove, 1);
+            configItem.options[0].isActive = true;
+
+            voiceConfig[i] = configItem;
           }
-
-          voiceConfig[i] = configItem;
         }
+
+        // Save to storage
+        _StorageManager.setVoiceConfigWrite(voiceConfig);
+      }
+    },
+
+    /**
+     * Process add generate write
+     * 
+     */
+    processAddGenerateWrite: () => {
+      const self = TabWriteManager;
+      if (self.is_loading) return;
+
+      self.is_loading = true;
+
+      let typeGenerate = '';
+      if ($('#write_tab div[key_tab="compose_tab"]').hasClass('active')) {
+        typeGenerate = 'compose'
+      } else {
+        typeGenerate = 'reply'
       }
 
-      // Save to storage
-      _StorageManager.setVoiceConfigWrite(voiceConfig);
-    }
-  },
+      let topicCompose = $('#write_tab #compose_tab textarea.topic_to_compose').val()
+      let originalTextReply = $('#write_tab #reply_tab textarea.original_text_reply').val()
+      let generalContentReply = $('#write_tab #reply_tab textarea.general_content_reply').val()
+
+      let params = self.formData;
+      params.type_generate = typeGenerate;
+      params.topic_compose = topicCompose;
+      params.original_text_reply = originalTextReply;
+      params.general_content_reply = generalContentReply;
+
+      $('#write_tab #result .result-title .left .icon').attr('src', _OpenAIManager.getPropGptByVersion('icon', self.formData.gpt_version))
+      $('#write_tab #result .result-title .left .name-gpt').text(_OpenAIManager.getPropGptByVersion('name', self.formData.gpt_version))
+
+      _SendMessageManager.generateContentReply(params, (data) => {
+        self.generate_result_list.push(data);
+
+        self.handlerShowGenerateResult();
+      });
+    },
+
+    /**
+     * Process show data title content mail to write
+     * 
+     */
+    processTitleContentMailToWrite: () => {
+      const self = TabWriteManager;
+      if (self.is_loading) return;
+      if (!self.title_content_mail_to_write) return;
+
+      let { title, original_text } = self.title_content_mail_to_write;
+      if (!title || !original_text) return;
+
+      title = title.trim(), original_text = original_text.trim();
+      if (title == '' || original_text == '') return;
+
+      $('#reply_tab').addClass('is-loading');
+
+      self.setActiveTab('reply_tab');
+
+      self.is_summarizing = true;
+      _SendMessageManager.getSuggestReplyMailRequest(title, original_text, (dataRes) => {
+        self.list_suggest_reply_mail = dataRes;
+
+        self.loadContentDataMailReply();
+
+        self.is_summarizing = false;
+        $('#reply_tab').removeClass('is-loading');
+      });
+
+      _StorageManager.setTitleContentMailToWrite(null);
+    },
+
+    /**
+     * Clear title content mail to write
+     * 
+     */
+    clearTitleContentMailToWrite: () => {
+      const self = TabWriteManager;
+      if (self.is_loading) return;
+
+      self.summaryMailData = null;
+      self.generate_result_list = [];
+
+      $(`#${self.idTab} #result`).addClass('hidden');
+
+      $(`#${self.idTab} #compose_tab .topic_to_compose`).val('');
+      $(`#${self.idTab} #reply_tab .original_text_reply`).val('');
+      $(`#${self.idTab} #reply_tab .general_content_reply`).val('');
+      $(`#${self.idTab} #reply_tab .swap-text-original`).remove();
+      $(`#${self.idTab} #reply_tab .reply-suggestions .tips-icon`).remove();
+      $(`#${self.idTab} #reply_tab .reply-suggestions li`).remove();
+    },
+
+    /**
+     * Clear form data
+     * 
+     */
+    clearForm: () => {
+      const self = TabWriteManager;
+      if (self.is_loading) return;
+
+      self.clearTitleContentMailToWrite();
+    },
+
+    // Event
+
+    /**
+     * On active tab
+     * 
+     */
+    onActive: () => {
+      const self = TabWriteManager;
+
+      self.loadVersionGPTConfig();
+      self.loadVoiceConfig();
+      self.processTitleContentMailToWrite();
+
+      self.resetEvent();
+
+      let tabActive = 'compose_tab';
+      if (self.is_summarizing) {
+        tabActive = 'reply_tab'
+      }
+      self.setActiveTab(tabActive);
+
+      $(`#${self.idTab} .voice-config .formality`).removeClass('hidden');
+      $(`#${self.idTab} .voice-config .formality_reply`).addClass('hidden');
+    },
+
+    /**
+     * On submit generate content
+     * 
+     * @param {event} event 
+     */
+    onSubmitGenerate: (event) => {
+      const self = TabWriteManager;
+      if (self.is_loading) return;
+
+      let messValidate = self.isValidateToCallGPT();
+      if (messValidate) {
+        self.showAlert('error', messValidate);
+        return;
+      }
+
+      // process add generate write
+      self.processAddGenerateWrite();
+
+      const containerEl = document.getElementById(`tab_container`);
+      const formConfigEl = document.body.querySelector(`#${self.idTab} .form-config`);
+      const resultEl = document.body.querySelector(`#${self.idTab} #result`);
+      $(resultEl).css('marginTop', (containerEl.offsetHeight - formConfigEl.offsetHeight) + 'px');
+
+      $(resultEl).removeClass('hidden');
+      $(containerEl).animate({
+        scrollTop: $(resultEl).offset().top + containerEl.scrollTop
+      }, 500);
+
+      $(resultEl).addClass('is-loading');
+    },
+
+    /**
+     * On click copy content result
+     * 
+     * @param {event} event 
+     */
+    onClickCopyContentResult: (event) => {
+      const self = TabWriteManager;
+      if (self.is_loading) return;
+
+      $(event.target).addClass('done');
+      navigator.clipboard.writeText(self.generate_result_list[self.result_active].body);
+
+      setTimeout(() => {
+        $(event.target).removeClass('done');
+      }, 1000);
+    },
+
+    /**
+     * On click send content result to browser page
+     * 
+     * @param {event} event 
+     */
+    onClickSendContentResultToBrowserPage: (event) => {
+      const self = TabWriteManager;
+      if (self.is_loading) return;
+
+      let itemActive = self.generate_result_list[self.result_active];
+
+      let params = {
+        id_popup: self.title_content_mail_to_write.id_popup,
+        title: itemActive.title,
+        body: itemActive.body,
+      }
+      chrome.storage.local.set({ side_panel_send_result: params });
+    },
+
+    /**
+     * On click config item
+     * 
+     * @param {event} event 
+     */
+    onClickConfigItem: (event) => {
+      const self = TabWriteManager;
+      if (self.is_loading) return;
+
+      const targetEl = event.target;
+      const kind = targetEl.getAttribute('kind');
+      const value = targetEl.getAttribute('value');
+      if (!kind || !value) return;
+
+      const configItemDefault = VOICE_SETTING_DATA.find(item => item.name_kind == kind);
+      let record = configItemDefault.options.find(item => {
+        return value == item.value
+      });
+
+      if (record) {
+        const voiceConfig = [...self.voice_config_of_user]
+
+        for (let i = 0; i < voiceConfig.length; i++) {
+          const configItem = voiceConfig[i];
+
+          if (configItem.name_kind == kind) {
+
+            for (let j = 0; j < configItem.options.length; j++) {
+              if (configItem.options[j].value == value) {
+                configItem.options[j].isActive = true;
+              } else {
+                configItem.options[j].isActive = false;
+              }
+            }
+
+            voiceConfig[i] = configItem;
+          }
+        }
+
+        // Save to storage
+        _StorageManager.setVoiceConfigWrite(voiceConfig);
+      }
+    },
+
+    /**
+     * On select combobox component config
+     * 
+     * @param {Element} comboboxEl 
+     * @param {Element} itemEl 
+     * @param {string} value 
+     */
+    onSelectComboboxConfig: (comboboxEl, itemEl, kind, value) => {
+      const self = TabWriteManager;
+      if (self.is_loading) return;
+
+      const configItemDefault = VOICE_SETTING_DATA.find(item => item.name_kind == kind);
+      let record = configItemDefault.options.find(item => {
+        return value == item.value
+      });
+
+      if (record) {
+        const voiceConfig = [...self.voice_config_of_user]
+
+        for (let i = 0; i < voiceConfig.length; i++) {
+          const configItem = voiceConfig[i];
+
+          if (configItem.name_kind == kind) {
+
+            if (configItem.options.length == MAX_VOICE_CONFIG_OPTIONS_SHOW) {
+              // Swap the record into the active option item
+              configItem.options = configItem.options.map(item => {
+                if (item.isActive) {
+                  return { ...record, isActive: true }
+                }
+                return item;
+              });
+
+            } else {
+              // Update all flag is active to false
+              configItem.options = configItem.options.map(item => {
+                return { ...item, isActive: false }
+              });
+              configItem.options.push({ ...record, isActive: true });
+            }
+
+            voiceConfig[i] = configItem;
+          }
+        }
+
+        // Save to storage
+        _StorageManager.setVoiceConfigWrite(voiceConfig);
+      }
+    },
+
+    /**
+     * On select version GPT config
+     * 
+     * @param {Element} comboboxEl 
+     * @param {Element} itemEl 
+     * @param {string} value 
+     */
+    onSelectVersionGptConfig: (comboboxEl, itemEl, kind, value) => {
+      const self = TabWriteManager;
+      if (self.is_loading) return;
+
+      let record = GPT_VERSION_SETTING_DATA.find(item => {
+        return value == item.value
+      });
+
+      if (record) {
+        self.formData['gpt_version'] = value;
+
+        $(`#${self.idTab} #version_gpt .content img`).attr('src', record.icon);
+      }
+    },
+
+    onClickOpenTips: (event) => {
+      const self = TabWriteManager;
+
+      _StorageManager.toggleSidePromptBuilder();
+    },
+  }
 
   /**
-   * On select version GPT config
+   * Wrapper manager
    * 
-   * @param {Element} comboboxEl 
-   * @param {Element} itemEl 
-   * @param {string} value 
    */
-  onSelectVersionGptConfig: (comboboxEl, itemEl, kind, value) => {
-    const self = TabWriteManager;
-    if (self.is_loading) return;
+  const WrapperManager = {
+    sidebar_flag: false,
 
-    let record = GPT_VERSION_SETTING_DATA.find(item => {
-      return value == item.value
-    });
+    /**
+     * Initialize wrapper manager
+     */
+    _init: () => {
+      const self = WrapperManager;
 
-    if (record) {
-      self.formData['gpt_version'] = value;
+      self.initTab();
+      self.setActiveTab();
 
-      $(`#${self.idTab} #version_gpt .content img`).attr('src', record.icon);
-    }
-  },
+      self.fixHeightContainer();
+    },
 
-  onClickOpenTips: (event) => {
-    const self = TabWriteManager;
+    // UI
 
-    _StorageManager.toggleSidePromptBuilder();
-  },
-}
+    /**
+     * Set active tab
+     * 
+     * @param {string} idTab 
+     */
+    setActiveTab: (idTab) => {
+      if (!idTab) idTab = LIST_TAB[0].id;
 
-/**
- * Wrapper manager
- * 
- */
-const WrapperManager = {
-  sidebar_flag: false,
+      // sidebar
+      $(`.sidebar .menu .item`).removeClass('active');
+      $(`.sidebar .menu .item[tab_id=${idTab}]`).addClass('active');
 
-  /**
-   * Initialize wrapper manager
-   */
-  _init: () => {
-    const self = WrapperManager;
+      // title
+      $(`.title .left .title`).removeClass('active');
+      $(`.title .left .title[tab_id=${idTab}]`).addClass('active');
 
-    self.initTab();
-    self.setActiveTab();
+      // tab main
+      $(`#tab_container .tab-item`).removeClass('active');
+      $(`#tab_container #${idTab}`).addClass('active');
 
-    self.fixHeightContainer();
-  },
+      for (let i = 0; i < LIST_TAB.length; i++) {
+        const item = LIST_TAB[i];
 
-  // UI
-
-  /**
-   * Set active tab
-   * 
-   * @param {string} idTab 
-   */
-  setActiveTab: (idTab) => {
-    if (!idTab) idTab = LIST_TAB[0].id;
-
-    // sidebar
-    $(`.sidebar .menu .item`).removeClass('active');
-    $(`.sidebar .menu .item[tab_id=${idTab}]`).addClass('active');
-
-    // title
-    $(`.title .left .title`).removeClass('active');
-    $(`.title .left .title[tab_id=${idTab}]`).addClass('active');
-
-    // tab main
-    $(`#tab_container .tab-item`).removeClass('active');
-    $(`#tab_container #${idTab}`).addClass('active');
-
-    for (let i = 0; i < LIST_TAB.length; i++) {
-      const item = LIST_TAB[i];
-
-      if (item.id == idTab) {
-        if (item.onActive) {
-          item.onActive();
+        if (item.id == idTab) {
+          if (item.onActive) {
+            item.onActive();
+          }
         }
       }
-    }
-  },
+    },
 
-  setEmailFooter: (userEmail) => {
-    const self = WrapperManager;
+    setEmailFooter: (userEmail) => {
+      const self = WrapperManager;
 
-    let spanEl = document.createElement('span');
-    spanEl.className = 'user-email';
-    spanEl.textContent = userEmail;
+      let spanEl = document.createElement('span');
+      spanEl.className = 'user-email';
+      spanEl.textContent = userEmail;
 
-    $('footer').append(spanEl);
-  },
+      $('footer').append(spanEl);
+    },
 
-  /**
-   * Fix height container
-   * 
-   */
-  fixHeightContainer: () => {
-    const heightMain = document.body.querySelector('.gpt-layout main').offsetHeight;
-    const heightTitleMain = document.body.querySelector('.gpt-layout main .title').offsetHeight;
-    const heightFooterMain = document.body.querySelector('footer').offsetHeight;
+    /**
+     * Fix height container
+     * 
+     */
+    fixHeightContainer: () => {
+      const heightMain = document.body.querySelector('.gpt-layout main').offsetHeight;
+      const heightTitleMain = document.body.querySelector('.gpt-layout main .title').offsetHeight;
+      const heightFooterMain = document.body.querySelector('footer').offsetHeight;
 
-    $('main .wrap-content').css('height', `${heightMain - heightFooterMain}px`);
-    $('#tab_container').css('height', `${heightMain - (heightFooterMain + heightTitleMain)}px`);
-  },
+      $('main .wrap-content').css('height', `${heightMain - heightFooterMain}px`);
+      $('#tab_container').css('height', `${heightMain - (heightFooterMain + heightTitleMain)}px`);
+    },
 
-  /**
-   * Initialize all tab
-   * 
-   */
-  initTab: () => {
-    const self = WrapperManager;
+    /**
+     * Initialize all tab
+     * 
+     */
+    initTab: () => {
+      const self = WrapperManager;
 
-    self.addTabToSidebar();
-    self.addTabToTitleMain();
+      self.addTabToSidebar();
+      self.addTabToTitleMain();
 
-    // Init write tab
-    const writeTabItem = TabWriteManager.createPanel();
+      // Init write tab
+      const writeTabItem = TabWriteManager.createPanel();
 
-    $('#tab_container').append(writeTabItem);
+      $('#tab_container').append(writeTabItem);
 
-    self.initEvent();
-  },
+      self.initEvent();
+    },
 
-  /**
-   * Add tab to title main
-   *  
-   */
-  addTabToTitleMain: () => {
-    const self = WrapperManager;
+    /**
+     * Add tab to title main
+     *  
+     */
+    addTabToTitleMain: () => {
+      const self = WrapperManager;
 
-    LIST_TAB.forEach((item, index) => {
-      const itemEl = document.createElement('div');
-      itemEl.className = `title d-flex content-center align-center`;
-      itemEl.setAttribute('tab_id', item.id)
+      LIST_TAB.forEach((item, index) => {
+        const itemEl = document.createElement('div');
+        itemEl.className = `title d-flex content-center align-center`;
+        itemEl.setAttribute('tab_id', item.id)
 
-      itemEl.innerHTML = `
+        itemEl.innerHTML = `
                 ${item.icon}
                 <span>
                     ${item.name}
                 </span>
             `
 
-      $('main .title .left').append(itemEl);
-    });
-  },
+        $('main .title .left').append(itemEl);
+      });
+    },
 
-  /**
-   * Add tab to sidebar
-   * 
-   */
-  addTabToSidebar: () => {
-    const self = WrapperManager;
+    /**
+     * Add tab to sidebar
+     * 
+     */
+    addTabToSidebar: () => {
+      const self = WrapperManager;
 
-    LIST_TAB.forEach((item, index) => {
-      const itemEl = document.createElement('div');
-      itemEl.setAttribute('tab_id', item.id);
-      itemEl.className = `item`;
-      itemEl.innerHTML = `
+      LIST_TAB.forEach((item, index) => {
+        const itemEl = document.createElement('div');
+        itemEl.setAttribute('tab_id', item.id);
+        itemEl.className = `item`;
+        itemEl.innerHTML = `
                 ${item.icon}
                 <div class="label">
                     ${item.name}
                 </div>
             `
-      $('.sidebar .menu').append(itemEl);
-    });
+        $('.sidebar .menu').append(itemEl);
+      });
 
-    $('.sidebar .btn.collapse .label').html(MyLang.getMsg('TXT_COLLAPSE_NAVBAR'))
-    $('.sidebar .footer .setting .label').html(MyLang.getMsg('TXT_SETTING'))
-  },
+      $('.sidebar .btn.collapse .label').html(MyLang.getMsg('TXT_COLLAPSE_NAVBAR'))
+      $('.sidebar .footer .setting .label').html(MyLang.getMsg('TXT_SETTING'))
+    },
 
-  // Event
+    // Event
+
+    /**
+     * Init event for wrapper container
+     * 
+     */
+    initEvent: () => {
+      const self = WrapperManager;
+
+      // Resize event
+      window.addEventListener("resize", (event) => {
+        self.fixHeightContainer();
+
+        // TabWriteManager.fixHeightResult();
+      });
+
+      $('.gpt-layout').click(event => {
+        if (!TabWriteManager.combobox_flag) {
+          $('.popover-cbx').removeClass('show');
+        }
+
+        // For sidebar
+        if (!WrapperManager.sidebar_flag) {
+          $('.sidebar').removeClass('show');
+        }
+      });
+
+      $('.collapse-navbar').click(event => {
+        WrapperManager.sidebar_flag = true;
+
+        // For sidebar
+        $('.sidebar').addClass('show');
+
+        setTimeout(() => {
+          WrapperManager.sidebar_flag = false;
+        }, 100)
+      });
+
+      $('.sidebar .action .collapse').click(event => {
+        const root = $('#root_gpt');
+        const ui001 = 'ui-001'
+        const ui002 = 'ui-002'
+
+        if (root.hasClass(ui001)) {
+          root.removeClass(ui001)
+          root.addClass(ui002)
+        } else {
+          root.removeClass(ui002)
+          root.addClass(ui001)
+        }
+      });
+    },
+  };
 
   /**
-   * Init event for wrapper container
+   * Handler when storage has value change
    * 
+   * @param {Event} event 
    */
-  initEvent: () => {
-    const self = WrapperManager;
+  const storageOnChanged = (payload, type) => {
+    if ('original_text_side_panel' in payload) {
+      let originalTextNew = payload.original_text_side_panel.newValue;
+      if (originalTextNew) {
+        _StorageManager.removeOriginalTextSidePanel();
 
-    // Resize event
-    window.addEventListener("resize", (event) => {
-      self.fixHeightContainer();
-
-      // TabWriteManager.fixHeightResult();
-    });
-
-    $('.gpt-layout').click(event => {
-      if (!TabWriteManager.combobox_flag) {
-        $('.popover-cbx').removeClass('show');
+        TabWriteManager.setOriginalText(originalTextNew);
+        TabWriteManager.setActiveTab('reply_tab');
       }
-
-      // For sidebar
-      if (!WrapperManager.sidebar_flag) {
-        $('.sidebar').removeClass('show');
-      }
-    });
-
-    $('.collapse-navbar').click(event => {
-      WrapperManager.sidebar_flag = true;
-
-      // For sidebar
-      $('.sidebar').addClass('show');
-
-      setTimeout(() => {
-        WrapperManager.sidebar_flag = false;
-      }, 100)
-    });
-
-    $('.sidebar .action .collapse').click(event => {
-      const root = $('#root_gpt');
-      const ui001 = 'ui-001'
-      const ui002 = 'ui-002'
-
-      if (root.hasClass(ui001)) {
-        root.removeClass(ui001)
-        root.addClass(ui002)
-      } else {
-        root.removeClass(ui002)
-        root.addClass(ui001)
-      }
-    });
-  },
-};
-
-/**
- * Handler when storage has value change
- * 
- * @param {Event} event 
- */
-const storageOnChanged = (payload, type) => {
-  if ('original_text_side_panel' in payload) {
-    let originalTextNew = payload.original_text_side_panel.newValue;
-    if (originalTextNew) {
-      _StorageManager.removeOriginalTextSidePanel();
-
-      TabWriteManager.setOriginalText(originalTextNew);
-      TabWriteManager.setActiveTab('reply_tab');
     }
-  }
-  if ('general_content_reply_side_panel' in payload) {
-    let newValue = payload.general_content_reply_side_panel.newValue;
-    if (newValue) {
-      let { general_content_reply, is_direct_send } = newValue;
+    if ('general_content_reply_side_panel' in payload) {
+      let newValue = payload.general_content_reply_side_panel.newValue;
+      if (newValue) {
+        let { general_content_reply, is_direct_send } = newValue;
 
-      TabWriteManager.setGeneralContentReply(general_content_reply, is_direct_send);
-      TabWriteManager.setActiveTab('reply_tab');
+        TabWriteManager.setGeneralContentReply(general_content_reply, is_direct_send);
+        TabWriteManager.setActiveTab('reply_tab');
 
-      _StorageManager.removeGeneralContentReplySidePanel();
+        _StorageManager.removeGeneralContentReplySidePanel();
+      }
     }
-  }
-  if ('write_voice_config' in payload) {
-    let configNew = payload.write_voice_config.newValue;
-    let configOld = payload.write_voice_config.oldValue || [];
+    if ('write_voice_config' in payload) {
+      let configNew = payload.write_voice_config.newValue;
+      let configOld = payload.write_voice_config.oldValue || [];
 
-    for (let i = 0; i < configNew.length; i++) {
-      const itemConfigNew = configNew[i];
+      for (let i = 0; i < configNew.length; i++) {
+        const itemConfigNew = configNew[i];
 
-      let kindOld = configOld.find(item => item.name_kind == itemConfigNew.name_kind);
-      if (!kindOld) {
-        // Updated when there is a different name kind
-        TabWriteManager.reloadVoiceConfigItem(itemConfigNew.name_kind);
-
-      } else {
-        if (itemConfigNew.options.length != kindOld.options.length) {
-          // Updated when there is a different options length
+        let kindOld = configOld.find(item => item.name_kind == itemConfigNew.name_kind);
+        if (!kindOld) {
+          // Updated when there is a different name kind
           TabWriteManager.reloadVoiceConfigItem(itemConfigNew.name_kind);
 
         } else {
+          if (itemConfigNew.options.length != kindOld.options.length) {
+            // Updated when there is a different options length
+            TabWriteManager.reloadVoiceConfigItem(itemConfigNew.name_kind);
 
-          for (let j = 0; j < itemConfigNew.options.length; j++) {
-            const itemOptionNew = itemConfigNew.options[j];
-            let optionsOld = kindOld.options.find(item => (item.name_kind == itemOptionNew.name && item.value == itemOptionNew.value && item.isActive == itemOptionNew.isActive));
+          } else {
 
-            if (!optionsOld) {
-              // Updated when there is a different name and value options
-              TabWriteManager.reloadVoiceConfigItem(itemConfigNew.name_kind);
+            for (let j = 0; j < itemConfigNew.options.length; j++) {
+              const itemOptionNew = itemConfigNew.options[j];
+              let optionsOld = kindOld.options.find(item => (item.name_kind == itemOptionNew.name && item.value == itemOptionNew.value && item.isActive == itemOptionNew.isActive));
+
+              if (!optionsOld) {
+                // Updated when there is a different name and value options
+                TabWriteManager.reloadVoiceConfigItem(itemConfigNew.name_kind);
+              }
             }
-          }
 
+          }
         }
       }
+
+      TabWriteManager.voice_config_of_user = configNew;
+
+      UserSetting.language_active = TabWriteManager.getLanguageFromConfig();
     }
+    if ('title_content_mail_to_write' in payload) {
+      let dataNew = payload.title_content_mail_to_write.newValue;
 
-    TabWriteManager.voice_config_of_user = configNew;
-
-    USER_SETTING.language_active = TabWriteManager.getLanguageFromConfig();
-  }
-  if ('title_content_mail_to_write' in payload) {
-    let dataNew = payload.title_content_mail_to_write.newValue;
-
-    if (dataNew && typeof (dataNew.title) != 'undefined' && typeof (dataNew.original_text) != 'undefined') {
-      TabWriteManager.clearTitleContentMailToWrite();
-      TabWriteManager.title_content_mail_to_write = { ...dataNew };
-      TabWriteManager.processTitleContentMailToWrite();
+      if (dataNew && typeof (dataNew.title) != 'undefined' && typeof (dataNew.original_text) != 'undefined') {
+        TabWriteManager.clearTitleContentMailToWrite();
+        TabWriteManager.title_content_mail_to_write = { ...dataNew };
+        TabWriteManager.processTitleContentMailToWrite();
+      }
     }
-  }
-  if ('trigger_close_side_panel' in payload) {
-    let { is_close, id_popup } = payload.trigger_close_side_panel.newValue;
+    if ('trigger_close_side_panel' in payload) {
+      let { is_close, id_popup } = payload.trigger_close_side_panel.newValue;
 
-    if (is_close == true) {
-      _StorageManager.setCloseSidePanel(null, null, () => {
-        window.close();
+      if (is_close == true) {
+        _StorageManager.setCloseSidePanel(null, null, () => {
+          window.close();
+        });
+      }
+    }
+    if ('trigger_clear_side_panel' in payload) {
+      let { id_popup } = payload.trigger_clear_side_panel.newValue;
+
+      _StorageManager.triggerClearSidePanel(null, () => {
+        TabWriteManager.clearForm();
       });
     }
   }
-  if ('trigger_clear_side_panel' in payload) {
-    let { id_popup } = payload.trigger_clear_side_panel.newValue;
 
-    _StorageManager.triggerClearSidePanel(null, () => {
-      TabWriteManager.clearForm();
-    });
-  }
-}
-
-/**
- * Initialize side panel
- * 
- */
-const initialize_side = async () => {
-  $('body').addClass(LOCALE_CODES.getLangUI());
-
-  let pallaFinishedCount = 0;
-  let NUM_PROCEED_PALLA_FINISHED_COUNT = 3;
-  let proceedByPallaFinishedCount = function () {
-    pallaFinishedCount++;
-    if (pallaFinishedCount >= NUM_PROCEED_PALLA_FINISHED_COUNT) {
-      WrapperManager._init();
-    }
-  };
-
-  _StorageManager.getVoiceConfigWrite(voiceConfig => {
-    if (!voiceConfig) {
-      voiceConfig = [];
-    }
-
-    for (let i = 0; i < VOICE_SETTING_DATA_2.length; i++) {
-      const configItem = VOICE_SETTING_DATA_2[i];
-      const nameKind = configItem.name_kind, optionsConfig = [...configItem.options];
-
-      let hasConfig = voiceConfig.find(item => item.name_kind == nameKind);
-      if (!hasConfig) {
-        let optionsDefault = optionsConfig.splice(0, MAX_VOICE_CONFIG_OPTIONS_SHOW);
-        optionsDefault[0].isActive = true;
-        voiceConfig.push({
-          ...configItem,
-          options: optionsDefault
-        })
+  /**
+   * Initialize side panel
+   * 
+   */
+  const initialize_side = async () => {
+    let pallaFinishedCount = 0;
+    let NUM_PROCEED_PALLA_FINISHED_COUNT = 3;
+    let proceedByPallaFinishedCount = function () {
+      pallaFinishedCount++;
+      if (pallaFinishedCount >= NUM_PROCEED_PALLA_FINISHED_COUNT) {
+        WrapperManager._init();
       }
-    }
+    };
 
-    TabWriteManager.voice_config_of_user = voiceConfig;
-    USER_SETTING.language_active = TabWriteManager.getLanguageFromConfig();
+    _StorageManager.getVoiceConfigWrite(voiceConfig => {
+      if (!voiceConfig) {
+        voiceConfig = [];
+      }
 
-    proceedByPallaFinishedCount();
-  })
+      for (let i = 0; i < VOICE_SETTING_DATA.length; i++) {
+        const configItem = VOICE_SETTING_DATA[i];
+        const nameKind = configItem.name_kind, optionsConfig = [...configItem.options];
 
-  _StorageManager.getTitleContentMailToWrite(titleContent => {
-    TabWriteManager.title_content_mail_to_write = { ...titleContent };
+        let hasConfig = voiceConfig.find(item => item.name_kind == nameKind);
+        if (!hasConfig) {
+          let optionsDefault = optionsConfig.splice(0, MAX_VOICE_CONFIG_OPTIONS_SHOW);
+          optionsDefault[0].isActive = true;
+          voiceConfig.push({
+            ...configItem,
+            options: optionsDefault
+          })
+        }
+      }
 
-    proceedByPallaFinishedCount();
-  })
+      TabWriteManager.voice_config_of_user = voiceConfig;
+      UserSetting.language_active = TabWriteManager.getLanguageFromConfig();
 
-  chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
-    ID_USER_ADDON_LOGIN = userInfo.id;
-    USER_ADDON_LOGIN = userInfo.email;
+      proceedByPallaFinishedCount();
+    })
 
-    WrapperManager.setEmailFooter(USER_ADDON_LOGIN);
+    _StorageManager.getTitleContentMailToWrite(titleContent => {
+      TabWriteManager.title_content_mail_to_write = { ...titleContent };
 
-    //addon setting
-    loadAddOnSetting(userInfo.email, function (result) {
-      debugLog(`auto summary chat GPT: domain regist:[${AddOnEmailSetting.is_domain_registered}], permission deny:[${AddOnEmailSetting.is_not_access_list}]`);
+      proceedByPallaFinishedCount();
+    })
+
+    chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
+      ID_USER_ADDON_LOGIN = userInfo.id;
+      USER_ADDON_LOGIN = userInfo.email;
+
+      WrapperManager.setEmailFooter(USER_ADDON_LOGIN);
+
+      //addon setting
+      loadAddOnSetting(userInfo.email, function (result) {
+        MyUtils.debugLog(`auto summary chat GPT: domain regist:[${AddOnEmailSetting.is_domain_registered}], permission deny:[${AddOnEmailSetting.is_not_access_list}]`);
+      });
+
+      proceedByPallaFinishedCount();
     });
 
-    proceedByPallaFinishedCount();
-  });
+    chrome.storage.onChanged.addListener(storageOnChanged);
+  }
 
-  chrome.storage.onChanged.addListener(storageOnChanged);
-}
-
-// __main__
-initialize_side();
-// }());
+  // __main__
+  initialize_side();
+}());
