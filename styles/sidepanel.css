@@ -667,10 +667,10 @@ body ul li {
   height: 18px;
   transition: 0.25s all;
 }
-.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply {
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply, .gpt-layout #write_tab .tab .tab-body .tab-item .wrap-topic-to-compose {
   position: relative;
 }
-.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon {
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon, .gpt-layout #write_tab .tab .tab-body .tab-item .wrap-topic-to-compose .tips-icon {
   margin-right: 5px;
   position: absolute;
   right: 6px;
@@ -684,22 +684,19 @@ body ul li {
   cursor: pointer;
   transition: 0.15s all;
 }
-.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon:hover {
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon:hover, .gpt-layout #write_tab .tab .tab-body .tab-item .wrap-topic-to-compose .tips-icon:hover {
   box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }
-.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon.active {
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon.active, .gpt-layout #write_tab .tab .tab-body .tab-item .wrap-topic-to-compose .tips-icon.active {
   box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }
-.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon.active .action svg {
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon.active .action svg, .gpt-layout #write_tab .tab .tab-body .tab-item .wrap-topic-to-compose .tips-icon.active .action svg {
   fill: #ffd042;
 }
-.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon.active .close {
-  display: inline-block;
-}
-.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon .action {
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon .action, .gpt-layout #write_tab .tab .tab-body .tab-item .wrap-topic-to-compose .tips-icon .action {
   padding: 5px;
 }
-.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon .action svg {
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon .action svg, .gpt-layout #write_tab .tab .tab-body .tab-item .wrap-topic-to-compose .tips-icon .action svg {
   pointer-events: none;
   width: 18px;
   height: 18px;
@@ -707,24 +704,8 @@ body ul li {
      -moz-user-select: none;
           user-select: none;
 }
-.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon .action svg * {
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon .action svg *, .gpt-layout #write_tab .tab .tab-body .tab-item .wrap-topic-to-compose .tips-icon .action svg * {
   pointer-events: none;
-}
-.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon .close {
-  -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
-  display: none;
-  position: absolute;
-  top: -5px;
-  right: -5px;
-  border: none;
-  background-color: #fff;
-  border-radius: 50%;
-}
-.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon .close .icon {
-  height: 18px;
-  width: 18px;
 }
 .gpt-layout #write_tab .tab .tab-body .tab-item .reply-suggestions {
   display: flex;
@@ -1063,6 +1044,7 @@ body ul li {
   justify-content: space-between;
   align-items: center;
   margin-top: 50px;
+  padding-bottom: 10px;
 }
 .gpt-layout #write_tab #result .result-footer .btn {
   border: none;

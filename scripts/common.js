@@ -118,6 +118,10 @@ const VOICE_SETTING_DATA = [
     icon: descriptionIconUrl,
     options: [
       {
+        value: ' ',
+        display: `---`
+      },
+      {
         value: 'email',
         name: MyLang.getMsg('TXT_EMAIL'),
         display: MyLang.getMsg('TXT_EMAIL'),
@@ -185,6 +189,10 @@ const VOICE_SETTING_DATA = [
     icon: descriptionIconUrl,
     options: [
       {
+        value: ' ',
+        display: `---`
+      },
+      {
         value: 'email',
         name: MyLang.getMsg('TXT_EMAIL'),
         display: MyLang.getMsg('TXT_EMAIL'),
@@ -211,6 +219,10 @@ const VOICE_SETTING_DATA = [
     name: MyLang.getMsg('TXT_TONE'),
     icon: emojiIconUrl,
     options: [
+      {
+        value: ' ',
+        display: `---`
+      },
       {
         value: 'professional',
         display: MyLang.getMsg('TXT_PROFESSIONAL'),
@@ -258,6 +270,10 @@ const VOICE_SETTING_DATA = [
     name: MyLang.getMsg('TXT_EMAIL_LENGTH'),
     icon: formatAlignIconUrl,
     options: [
+      {
+        value: ' ',
+        display: `---`
+      },
       {
         value: 'short',
         display: MyLang.getMsg('TXT_SHORT'),
@@ -321,6 +337,10 @@ const VOICE_SETTING_DATA = [
     name: MyLang.getMsg('TXT_LANGUAGE'),
     icon: translateIconUrl,
     options: [
+      {
+        value: ' ',
+        display: `---`
+      },
       {
         value: 'japanese',
         display: '日本語',
@@ -1440,7 +1460,7 @@ Output in ${lang}`
     }
 
     const {
-      gpt_ai_key, gpt_version, is_use_prompt_sateraito,
+      gpt_ai_key, gpt_version,
 
       topic_compose, formality,
 
@@ -1449,25 +1469,27 @@ Output in ${lang}`
 
     let prompt;
     let role_trim = your_role.trim();
-    let role_str = ` as a ${role_trim} `;
+    let role_str = ` as a ${role_trim}`;
 
     const messages = [
-      { role: "system", content: `You are a helpful assistant designed to output JSON.` },
+      { role: "system", content: `You are a helpful assistant.` },
     ];
-    if (role_trim != '') {
-      messages.push({ role: 'user', content: `I am the ${your_role}` })
-      messages.push({ role: 'assistant', content: 'I remembered!' })
-    }
 
     prompt = '';
-    prompt += `Please write a ${formality}${(role_trim != '') ? role_str : ' '}with a ${tone} tone, a ${email_length} length, focusing on the topic "${topic_compose}" and in ${your_language}`;
-    prompt += `\nFormat Json: {title: <string>, body: <string>}`;
+    prompt += `Write a ${formality}${(role_trim != '') ? role_str : ''}, with ${tone} tone and ${email_length} length. The topic is:\n`
+    prompt += `"""\n`
+    prompt += `${topic_compose}\n`
+    prompt += `"""\n`
+    prompt += `Output in ${your_language}\n`;
     messages.push({ role: 'user', content: prompt })
 
     try {
-      const response = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, false, null, { "type": "json_object" })
+      const response = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, false, null)
       const contentRes = response.choices[0].message.content;
-      const dataJson = JSON.parse(contentRes);
+
+      const dataJson = {};
+      dataJson.title = EMPTY_KEY;
+      dataJson.body = contentRes;
 
       //Save log summary chat
       let question = MyUtils.getContentByRoleInMessage('user', messages);
@@ -1478,12 +1500,12 @@ Output in ${lang}`
 
       } else {
         retry++;
-        self._generateContentRequest(params, callback, retry);
+        self._generateComposeContentRequest(params, callback, retry);
       }
 
     } catch (error) {
       retry++;
-      self._generateContentRequest(params, callback, retry);
+      self._generateComposeContentRequest(params, callback, retry);
     }
   },
 
@@ -1503,39 +1525,47 @@ Output in ${lang}`
       return false;
     }
 
-    const {
-      gpt_ai_key, gpt_version, is_use_prompt_sateraito,
+    let {
+      gpt_ai_key, gpt_version,
 
-      general_content_reply, original_text_reply, formality_reply,
+      original_text_reply, general_content_reply, formality_reply,
 
       tone, email_length, your_role, your_language
     } = params;
 
-    let prompt;
+    let prompt = '';
     let role_trim = your_role.trim();
     let role_str = ` as a ${role_trim} `;
 
     const messages = [
-      { role: "system", content: `You are a helpful assistant designed to output JSON.` },
+      { role: "system", content: `You are a helpful assistant.` },
     ];
-    if (role_trim != '') {
-      messages.push({ role: 'user', content: `I am the ${your_role}` })
-      messages.push({ role: 'assistant', content: 'I remembered!' })
-    }
 
-    prompt = '';
-    prompt += `The original text`
-    prompt += `"""`
-    prompt += `${original_text_reply}`
-    prompt += `"""`
-    prompt += `Please write a ${formality_reply}${(role_trim != '') ? role_str : ' '}to reply to the original text with a ${tone} tone and a ${email_length} length, focusing on the topic "${general_content_reply}" and in ${your_language}. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.`
-    prompt += `\nFormat Json: {title: <string>, body: <string>}`
+    prompt += `Write a ${formality_reply}${(role_trim != '') ? role_str : ' '}to reply to the original text. Ensure your response has a ${tone} tone and a ${email_length} length. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.\n`
+    prompt += `Respond in the ${your_language} language.\n`
+    prompt += `\n`
+    prompt += `-----\n`
+    prompt += `\n`
+    prompt += `Original text:\n`
+    prompt += `"""\n`
+    prompt += `${original_text_reply}\n`
+    prompt += `"""\n`
+    prompt += `\n`
+    prompt += `The key points of the reply:\n`
+    prompt += `"""\n`
+    prompt += `${general_content_reply}`
+    prompt += `"""\n`
+    prompt += `\n`
+    
     messages.push({ role: 'user', content: prompt })
 
     try {
-      const response = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, false, null, { "type": "json_object" })
+      const response = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, false, null)
       const contentRes = response.choices[0].message.content;
-      const dataJson = JSON.parse(contentRes);
+
+      const dataJson = {};
+      dataJson.title = EMPTY_KEY;
+      dataJson.body = contentRes;
 
       //Save log summary chat
       let question = MyUtils.getContentByRoleInMessage('user', messages);
@@ -1546,12 +1576,12 @@ Output in ${lang}`
 
       } else {
         retry++;
-        self._generateContentRequest(params, callback, retry);
+        self._generateReplyContentRequest(params, callback, retry);
       }
 
     } catch (error) {
       retry++;
-      self._generateContentRequest(params, callback, retry);
+      self._generateReplyContentRequest(params, callback, retry);
     }
   },
 
@@ -1562,7 +1592,7 @@ Output in ${lang}`
     self.getOpenAIKey((gptAiKey) => {
       params.gpt_ai_key = gptAiKey;
 
-      if (type_generate == 'compose') {
+      if (params.type_generate == 'compose') {
         self._generateComposeContentRequest(params, (response) => {
           callback(response);
         });

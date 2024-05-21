@@ -6,7 +6,6 @@
    * 
    */
   const TabWriteManager = {
-    is_use_prompt_sateraito: false,
     is_loading: false,
     is_summarizing: false,
     combobox_flag: false,
@@ -53,7 +52,13 @@
                 </div>
                 <div class="tab-body">
                   <span id="compose_tab" class="tab-item">
-                    <textarea class="topic_to_compose" maxlength="${MAX_LENGTH_TEXTAREA_TOKEN}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_TOPIC_COMPOSE')}"></textarea>
+                    <div class="wrap-topic-to-compose">
+                      <textarea class="topic_to_compose" maxlength="${MAX_LENGTH_TEXTAREA_TOKEN}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_TOPIC_COMPOSE')}"></textarea><div class="tips-icon">
+                      <div class="action">
+                        ${tips_and_update_icon}
+                      </div>
+                    </div>
+                    </div>
                   </span>
                   <span id="reply_tab" class="tab-item">
 
@@ -71,10 +76,6 @@
                       <div class="tips-icon">
                         <div class="action">
                           ${tips_and_update_icon}
-                        </div>
-                        
-                        <div class="close">
-                          <img class="icon" src="./icons/cancel.svg">
                         </div>
                       </div>
                     </div>
@@ -250,6 +251,17 @@
       return languageItem.value;
     },
 
+    getIdTabActive: () => {
+      let typeGenerate = '';
+      if ($('#write_tab div[key_tab="compose_tab"]').hasClass('active')) {
+        typeGenerate = 'compose'
+      } else {
+        typeGenerate = 'reply'
+      }
+
+      return typeGenerate;
+    },
+
     // Setter
     setOriginalText: (originalText) => {
       const self = TabWriteManager;
@@ -277,10 +289,19 @@
       if (is_direct_send) {
         self.onSubmitGenerate();
       }
+    },
 
-      if (is_prompt_sateraito) {
-        self.is_use_prompt_sateraito = is_prompt_sateraito;
-        $('.tips-icon').addClass('active');
+    setTopicToCompose: (topic_to_compose, is_direct_send = false, is_prompt_sateraito = false) => {
+      const self = TabWriteManager;
+      if (self.is_loading) return;
+
+      let topicToComposeEl = document.body.querySelector(`#${self.idTab} #compose_tab .topic_to_compose`);
+      $(topicToComposeEl).val(topic_to_compose);
+      $(topicToComposeEl).focus();
+      $(topicToComposeEl).scrollTop(0);
+
+      if (is_direct_send) {
+        self.onSubmitGenerate();
       }
     },
 
@@ -692,7 +713,6 @@
 
       // For tips open use prompt from sateraito
       $(document).on('click', `#${self.idTab} .tips-icon .action`, self.onClickOpenTips);
-      $(document).on('click', `#${self.idTab} .tips-icon .close`, self.onClickRemoveTips);
 
       // For reply suggestions
       $(document).on('click', `#${self.idTab} #reply_tab .reply-suggestions li`, event => {
@@ -724,8 +744,10 @@
         let isActive = (i == self.result_active)
 
         let titleEl = document.createElement('div');
-        titleEl.className = 'title'
-        titleEl.innerHTML = `<span class="bold">Subject: </span> ${item.title}`
+        if (item.title != EMPTY_KEY) {
+          titleEl.className = 'title'
+          titleEl.innerHTML = `<span class="bold">Subject: </span> ${item.title}`
+        }
 
         let textEl = document.createElement('div');
         textEl.setAttribute('disabled', true);
@@ -865,7 +887,6 @@
       params.topic_compose = topicCompose;
       params.original_text_reply = originalTextReply;
       params.general_content_reply = generalContentReply;
-      params.is_use_prompt_sateraito = self.is_use_prompt_sateraito;
 
       $('#write_tab #result .result-title .left .icon').attr('src', MyUtils.getPropGptByVersion('icon', self.formData.gpt_version))
       $('#write_tab #result .result-title .left .name-gpt').text(MyUtils.getPropGptByVersion('name', self.formData.gpt_version))
@@ -930,8 +951,6 @@
       $(`#${self.idTab} #reply_tab .general_content_reply`).val('');
       $(`#${self.idTab} #reply_tab .swap-text-original`).remove();
       $(`#${self.idTab} #reply_tab .reply-suggestions li`).remove();
-
-      self.onClickRemoveTips();
     },
 
     /**
@@ -1186,21 +1205,6 @@
     },
 
     /**
-     * On click remove prompt sateraito
-     * 
-     * @param {Event} event 
-     */
-    onClickRemoveTips: (event) => {
-      const self = TabWriteManager;
-
-      self.is_use_prompt_sateraito = false;
-      $('.tips-icon').removeClass('active');
-
-      $(`#${self.idTab} #reply_tab .general_content_reply`).val('');
-      $(`#${self.idTab} #reply_tab .general_content_reply`).focus();
-    },
-
-    /**
      * On click paste selection to text original
      * 
      * @param {Event} event 
@@ -1431,8 +1435,11 @@
       if (newValue) {
         let { general_content_reply, is_direct_send, is_prompt_sateraito } = newValue;
 
-        TabWriteManager.setGeneralContentReply(general_content_reply, is_direct_send, is_prompt_sateraito);
-        TabWriteManager.setActiveTab('reply_tab');
+        if (TabWriteManager.getIdTabActive() == 'reply_tab') {
+          TabWriteManager.setGeneralContentReply(general_content_reply, is_direct_send, is_prompt_sateraito);
+        } else {
+          TabWriteManager.setTopicToCompose(general_content_reply, is_direct_send, is_prompt_sateraito);
+        }
 
         StorageManager.removeGeneralContentReplySidePanel();
       }

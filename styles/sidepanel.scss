@@ -863,7 +863,7 @@ body {
             }
           }
 
-          .wrap-general-content-reply {
+          .wrap-general-content-reply, .wrap-topic-to-compose {
             position: relative;
 
             .tips-icon {
@@ -892,10 +892,6 @@ body {
                     fill: #ffd042;
                   }
                 }
-
-                .close {
-                  display: inline-block;
-                }
               }
 
               .action {
@@ -910,22 +906,6 @@ body {
                   * {
                     pointer-events: none;
                   }
-                }
-              }
-
-              .close {
-                user-select: none;
-                display: none;
-                position: absolute;
-                top: -5px;
-                right: -5px;
-                border: none;
-                background-color: #fff;
-                border-radius: 50%;
-
-                .icon {
-                  height: 18px;
-                  width: 18px;
                 }
               }
             }
@@ -1377,6 +1357,7 @@ body {
         justify-content: space-between;
         align-items: center;
         margin-top: 50px;
+        padding-bottom: 10px;
 
         .btn {
           border: none;
