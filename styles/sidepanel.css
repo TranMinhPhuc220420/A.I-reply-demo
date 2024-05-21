@@ -629,6 +629,44 @@ body ul li {
 .gpt-layout #write_tab .tab .tab-body .tab-item .swap-text-original .item:hover {
   background-color: #575757;
 }
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-original-text-reply {
+  position: relative;
+  overflow: hidden;
+}
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-original-text-reply .paste-selection {
+  bottom: 10px;
+  left: -120px;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  padding: 3px 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.25s all;
+  border: 1px solid #fff;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-original-text-reply .paste-selection:hover {
+  color: #fff;
+  background-color: #d5bfff;
+  border: #d5bfff 1px solid;
+}
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-original-text-reply .paste-selection:hover svg {
+  fill: #fff;
+}
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-original-text-reply .paste-selection.show {
+  bottom: 10px;
+  left: 10px;
+}
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-original-text-reply .paste-selection svg {
+  fill: #8e44ad;
+  margin-right: 5px;
+  width: 18px;
+  height: 18px;
+  transition: 0.25s all;
+}
 .gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply {
   position: relative;
 }
@@ -638,25 +676,55 @@ body ul li {
   right: 6px;
   bottom: 12px;
   z-index: 1;
-  padding: 5px;
   border-radius: 12px;
   background-color: #fff;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  transition: 0.25s all;
+  transition: 0.15s all;
 }
 .gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon:hover {
   box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }
-.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon img {
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon.active {
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+}
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon.active .action svg {
+  fill: #ffd042;
+}
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon.active .close {
+  display: inline-block;
+}
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon .action {
+  padding: 5px;
+}
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon .action svg {
   pointer-events: none;
   width: 18px;
   height: 18px;
   -webkit-user-select: none;
      -moz-user-select: none;
           user-select: none;
+}
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon .action svg * {
+  pointer-events: none;
+}
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon .close {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  display: none;
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  border: none;
+  background-color: #fff;
+  border-radius: 50%;
+}
+.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon .close .icon {
+  height: 18px;
+  width: 18px;
 }
 .gpt-layout #write_tab .tab .tab-body .tab-item .reply-suggestions {
   display: flex;
@@ -849,8 +917,8 @@ body ul li {
   border: #fff 1px solid;
   position: relative;
 }
-.gpt-layout #write_tab .form-config .version .options .item.version-gpt {
-  padding: 5px;
+.gpt-layout #write_tab .form-config .version .options .item.version-gpt .content img {
+  margin-right: 5px;
 }
 .gpt-layout #write_tab .form-config .version .options .item:hover {
   background-color: #ececec;
@@ -864,8 +932,7 @@ body ul li {
   background-color: #f6f2ff;
 }
 .gpt-layout #write_tab .form-config .version .options .item.text {
-  padding-left: 15px;
-  padding-right: 15px;
+  padding: 5px 10px 5px 10px;
 }
 .gpt-layout #write_tab .form-config .version .options .item span:first-child {
   pointer-events: none;

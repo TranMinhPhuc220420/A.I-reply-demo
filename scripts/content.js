@@ -270,7 +270,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       vHtml += '  	</div>';
 
       // START modal-body
-      vHtml += '  	<div class="modal-body">';
+      vHtml += '  	<div class="modal-body my-scroll">';
       vHtml += '    <div class="block-wrap">'
 
       // START template_builder
@@ -283,16 +283,16 @@ document.addEventListener('RW759_connectExtension', function (e) {
       // END modal-body
 
       vHtml += '  	<div class="modal-footer">';
-      vHtml += '  	  <button type="button" class="btn-cancel st-btn-material-outline">戻る</button>';
 
       // switch auto send
       vHtml += '<div class="custom-switch auto-summary form-check">';
-      vHtml += '  <input type="checkbox" class="form-check-input" name="direct_send">';
-      vHtml += '  <label title="" class="form-check-label">ChatGPTへの問い合わせまで自動実行する</label>';
+      vHtml += '  <input type="checkbox" class="form-check-input" id="direct_send" name="direct_send">';
+      vHtml += '  <label title="" for="direct_send" class="form-check-label">ChatGPTへの問い合わせまで自動実行する</label>';
       vHtml += "</div>";
       // end switch auto send
 
       vHtml += '  	  <button type="button" class="btn-submit st-btn-material" >上の質問内容を採用する</button>';
+      vHtml += '  	  <button type="button" class="btn-cancel st-btn-material-outline">戻る</button>';
       vHtml += '  	</div>';
       vHtml += '  </div>';
       vHtml += '</div>';
@@ -397,8 +397,9 @@ document.addEventListener('RW759_connectExtension', function (e) {
       MyUtils.debugLog(templateBody)
 
       let is_direct_send = $(`#${self.modal_id} :input[name="direct_send"]`).is(":checked");
+      let is_prompt_sateraito = true;
 
-      StorageManager.setGeneralContentReplySidePanel(templateBody, is_direct_send);
+      StorageManager.setGeneralContentReplySidePanel(templateBody, is_direct_send, is_prompt_sateraito);
 
       self.showHidePopup(false)
       //close-suggestion
@@ -432,8 +433,13 @@ document.addEventListener('RW759_connectExtension', function (e) {
       self.detectInterval_100 = setInterval(self.handleDetect);
 
       function gText(e) {
-        let sessionEl = (document.all) ? document.selection.createRange().text : document.getSelection();
-        StorageManager.setOriginalTextSidePanel(sessionEl.toString());
+        setTimeout(() => {
+          let sessionEl = (document.all) ? document.selection.createRange().text : document.getSelection();
+          let textSelection = sessionEl.toString().trim();
+          if (textSelection == '') textSelection = EMPTY_KEY;
+          
+          StorageManager.setOriginalTextSidePanel(textSelection);
+        }, 100);
       }
       document.onmouseup = gText;
       if (!document.all) document.captureEvents(Event.MOUSEUP);

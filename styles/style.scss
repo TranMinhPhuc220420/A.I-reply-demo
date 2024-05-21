@@ -207,7 +207,46 @@
 
     }
 
+    .modal-body {
+      textarea {
+        min-width: 98%;
+        max-width: 98%;
+        min-height: 50px;
+
+        &::-webkit-scrollbar {
+          width: 10px;
+          border-radius: 9999px;
+        }
+        
+        &::-webkit-scrollbar-button {
+          display: none;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+          background: rgba(0, 0, 0, .15);
+          border-radius: 9999px;
+        }
+      }
+    }
+
     .modal-footer {
+      .custom-switch {
+        display: flex;
+        justify-content: start;
+        align-items: center;
+
+        label {
+          padding-left: 40px;
+
+          &::before {
+            top: 6.5px;
+          }
+          &::after {
+            top: 5px;
+          }
+        }
+      }
+
       input[type="checkbox"] {
         background-color: #8d5bef !important;
       }
@@ -228,6 +267,11 @@
             background-color: #8d5bef;
           }
         }
+
+        &.btn-cancel {
+          margin-right: 0;
+          margin-left: 10px;
+        }
       }
     }
   }
@@ -235,6 +279,23 @@
 
 .sateraito_ai_modal {
   z-index: 99999999999 !important;
+}
+
+.my-scroll {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+  }
+  
+  &::-webkit-scrollbar-button {
+    display: none;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, .15);
+    border-radius: 9999px;
+  }
 }
 
 @keyframes slide {

@@ -147,6 +147,36 @@
 #ai_user_builder_popup_modal .modal-content .block-form-builder .builder-lbl {
   color: #8d5bef;
 }
+#ai_user_builder_popup_modal .modal-content .modal-body textarea {
+  min-width: 98%;
+  max-width: 98%;
+  min-height: 50px;
+}
+#ai_user_builder_popup_modal .modal-content .modal-body textarea::-webkit-scrollbar {
+  width: 10px;
+  border-radius: 9999px;
+}
+#ai_user_builder_popup_modal .modal-content .modal-body textarea::-webkit-scrollbar-button {
+  display: none;
+}
+#ai_user_builder_popup_modal .modal-content .modal-body textarea::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 9999px;
+}
+#ai_user_builder_popup_modal .modal-content .modal-footer .custom-switch {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+}
+#ai_user_builder_popup_modal .modal-content .modal-footer .custom-switch label {
+  padding-left: 40px;
+}
+#ai_user_builder_popup_modal .modal-content .modal-footer .custom-switch label::before {
+  top: 6.5px;
+}
+#ai_user_builder_popup_modal .modal-content .modal-footer .custom-switch label::after {
+  top: 5px;
+}
 #ai_user_builder_popup_modal .modal-content .modal-footer input[type=checkbox] {
   background-color: #8d5bef !important;
 }
@@ -162,9 +192,26 @@
 #ai_user_builder_popup_modal .modal-content .modal-footer button:hover::before {
   background-color: #8d5bef;
 }
+#ai_user_builder_popup_modal .modal-content .modal-footer button.btn-cancel {
+  margin-right: 0;
+  margin-left: 10px;
+}
 
 .sateraito_ai_modal {
   z-index: 99999999999 !important;
+}
+
+.my-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+}
+.my-scroll::-webkit-scrollbar-button {
+  display: none;
+}
+.my-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 9999px;
 }
 
 @keyframes slide {

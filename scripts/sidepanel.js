@@ -6,6 +6,7 @@
    * 
    */
   const TabWriteManager = {
+    is_use_prompt_sateraito: false,
     is_loading: false,
     is_summarizing: false,
     combobox_flag: false,
@@ -25,6 +26,7 @@
 
     // list_suggest_reply_mail: null,
     title_content_mail_to_write: null,
+    originalTextTemp: null,
 
     // Getter
 
@@ -55,11 +57,26 @@
                   </span>
                   <span id="reply_tab" class="tab-item">
 
-                    <textarea class="original_text_reply" maxlength="${MAX_LENGTH_TEXTAREA_TOKEN}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_REPLY')}"></textarea>
+                    <div class="wrap-original-text-reply">
+                      <textarea class="original_text_reply" maxlength="${MAX_LENGTH_TEXTAREA_TOKEN}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_REPLY')}"></textarea>
+
+                      <div class="paste-selection">
+                        ${content_paste_icon}
+                        Paste selection
+                      </div>
+                    </div>
 
                     <div class="wrap-general-content-reply">
                       <textarea class="general_content_reply" maxlength="${MAX_LENGTH_TEXTAREA_TOKEN}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_GENERAL_CONTENT_REPLY')}"></textarea>
-                      <div class="tips-icon"><img src="${tipsIconUrl}"></div>
+                      <div class="tips-icon">
+                        <div class="action">
+                          ${tips_and_update_icon}
+                        </div>
+                        
+                        <div class="close">
+                          <img class="icon" src="./icons/cancel.svg">
+                        </div>
+                      </div>
                     </div>
 
                     <ul class="reply-suggestions hidden">
@@ -247,7 +264,7 @@
       $(originalTextReplyEl).scrollTop(0);
     },
 
-    setGeneralContentReply: (general_content_reply, is_direct_send = false) => {
+    setGeneralContentReply: (general_content_reply, is_direct_send = false, is_prompt_sateraito = false) => {
       const self = TabWriteManager;
       if (self.is_loading) return;
 
@@ -259,6 +276,11 @@
 
       if (is_direct_send) {
         self.onSubmitGenerate();
+      }
+
+      if (is_prompt_sateraito) {
+        self.is_use_prompt_sateraito = is_prompt_sateraito;
+        $('.tips-icon').addClass('active');
       }
     },
 
@@ -563,7 +585,7 @@
 
       // For combobox component
       // $(document).on('click', `#${self.idTab} .combobox`, function (event) {
-      $(document).on('click', `#${self.idTab} .wrap-config .options`, function (event) {
+      $(document).on('click', `#${self.idTab} .options`, function (event) {
         const targetEl = event.target;
 
         const popoverEl = targetEl.querySelector(`#${self.idTab} .popover-cbx`);
@@ -665,17 +687,22 @@
       $(document).on('click', `#${self.idTab} .result-footer .btn.re-generate`, self.onSubmitGenerate);
       $(document).on('click', `#${self.idTab} .result-footer .btn.copy-content`, self.onClickCopyContentResult);
       $(document).on('click', `#${self.idTab} .result-footer .btn.send-to-site`, self.onClickSendContentResultToBrowserPage);
-      
+
       document.body.querySelector(`#${self.idTab} #version_gpt`).onSelect = self.onSelectVersionGptConfig;
-      
+
+      // For tips open use prompt from sateraito
+      $(document).on('click', `#${self.idTab} .tips-icon .action`, self.onClickOpenTips);
+      $(document).on('click', `#${self.idTab} .tips-icon .close`, self.onClickRemoveTips);
+
       // For reply suggestions
-      $(document).on('click', `#${self.idTab} .tips-icon`, self.onClickOpenTips);
       $(document).on('click', `#${self.idTab} #reply_tab .reply-suggestions li`, event => {
         if (self.is_loading || self.is_summarizing) return;
 
         $('.general_content_reply').val(event.target.getAttribute('value'));
         $('.general_content_reply').focus();
       })
+
+      $(document).on('click', `#${self.idTab} #reply_tab .wrap-original-text-reply .paste-selection`, self.onClickPasteSelection);
     },
 
     /**
@@ -838,6 +865,7 @@
       params.topic_compose = topicCompose;
       params.original_text_reply = originalTextReply;
       params.general_content_reply = generalContentReply;
+      params.is_use_prompt_sateraito = self.is_use_prompt_sateraito;
 
       $('#write_tab #result .result-title .left .icon').attr('src', MyUtils.getPropGptByVersion('icon', self.formData.gpt_version))
       $('#write_tab #result .result-title .left .name-gpt').text(MyUtils.getPropGptByVersion('name', self.formData.gpt_version))
@@ -865,7 +893,7 @@
       if (title == '' || original_text == '') return;
 
       // $('#reply_tab').addClass('is-loading');
-      
+
       self.setActiveTab('reply_tab');
 
       self.is_summarizing = true;
@@ -902,6 +930,8 @@
       $(`#${self.idTab} #reply_tab .general_content_reply`).val('');
       $(`#${self.idTab} #reply_tab .swap-text-original`).remove();
       $(`#${self.idTab} #reply_tab .reply-suggestions li`).remove();
+
+      self.onClickRemoveTips();
     },
 
     /**
@@ -913,6 +943,30 @@
       if (self.is_loading) return;
 
       self.clearTitleContentMailToWrite();
+    },
+
+    checkAndSetOriginalText: (originalText) => {
+      const self = TabWriteManager;
+      if (self.is_loading) return;
+
+      let originalTextReply = $(`#${self.idTab} #reply_tab textarea.original_text_reply`).val().trim();
+      let pasteSelectionEl = $(`#${self.idTab} #reply_tab .wrap-original-text-reply .paste-selection`);
+
+      if (originalText == EMPTY_KEY) {
+        pasteSelectionEl.removeClass('show');
+        return;
+      }
+
+      if (originalTextReply == '') {
+        TabWriteManager.setOriginalText(originalText);
+        TabWriteManager.setActiveTab('reply_tab');
+      } else {
+        if (originalTextReply != originalText) {
+          TabWriteManager.originalTextTemp = originalText;
+          pasteSelectionEl.addClass('show');
+          TabWriteManager.setActiveTab('reply_tab');
+        }
+      }
     },
 
     // Event
@@ -1120,11 +1174,48 @@
       }
     },
 
+    /**
+     * On click open prompt sateraito
+     * 
+     * @param {Event} event 
+     */
     onClickOpenTips: (event) => {
       const self = TabWriteManager;
 
       StorageManager.toggleSidePromptBuilder();
     },
+
+    /**
+     * On click remove prompt sateraito
+     * 
+     * @param {Event} event 
+     */
+    onClickRemoveTips: (event) => {
+      const self = TabWriteManager;
+
+      self.is_use_prompt_sateraito = false;
+      $('.tips-icon').removeClass('active');
+
+      $(`#${self.idTab} #reply_tab .general_content_reply`).val('');
+      $(`#${self.idTab} #reply_tab .general_content_reply`).focus();
+    },
+
+    /**
+     * On click paste selection to text original
+     * 
+     * @param {Event} event 
+     */
+    onClickPasteSelection: (event) => {
+      const self = TabWriteManager;
+
+      if (self.originalTextTemp) {
+        self.setOriginalText(self.originalTextTemp);
+
+        self.originalTextTemp = null;
+      }
+
+      $(`#${self.idTab} #reply_tab .wrap-original-text-reply .paste-selection`).removeClass('show');
+    }
   }
 
   /**
@@ -1332,16 +1423,15 @@
       if (originalTextNew) {
         StorageManager.removeOriginalTextSidePanel();
 
-        TabWriteManager.setOriginalText(originalTextNew);
-        TabWriteManager.setActiveTab('reply_tab');
+        TabWriteManager.checkAndSetOriginalText(originalTextNew);
       }
     }
     if ('general_content_reply_side_panel' in payload) {
       let newValue = payload.general_content_reply_side_panel.newValue;
       if (newValue) {
-        let { general_content_reply, is_direct_send } = newValue;
+        let { general_content_reply, is_direct_send, is_prompt_sateraito } = newValue;
 
-        TabWriteManager.setGeneralContentReply(general_content_reply, is_direct_send);
+        TabWriteManager.setGeneralContentReply(general_content_reply, is_direct_send, is_prompt_sateraito);
         TabWriteManager.setActiveTab('reply_tab');
 
         StorageManager.removeGeneralContentReplySidePanel();

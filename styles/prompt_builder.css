@@ -419,19 +419,19 @@
   background-position: center;
 }
 .sateraito_ai_builder .mdi.mdi-order-bool-descending {
-  background-image: url("chrome-extension://__MSG_@@extension_id__/icons/order-bool-descending-custom.png");
+  background-image: url("chrome-extension://__MSG_@@extension_id__/icons/order-bool-descending-custom.svg");
 }
 .sateraito_ai_builder .mdi.mdi-order-bool-descending-variant {
-  background-image: url("chrome-extension://__MSG_@@extension_id__/icons/order-bool-descending-variant-custom.png");
+  background-image: url("chrome-extension://__MSG_@@extension_id__/icons/order-bool-descending-variant-custom.svg");
 }
 .sateraito_ai_builder .mdi.mdi-form-textarea {
-  background-image: url("chrome-extension://__MSG_@@extension_id__/icons/form-textarea-custom.png");
+  background-image: url("chrome-extension://__MSG_@@extension_id__/icons/form-textarea-custom.svg");
 }
 .sateraito_ai_builder .mdi.mdi-form-textbox {
-  background-image: url("chrome-extension://__MSG_@@extension_id__/icons/form-textbox-custom.png");
+  background-image: url("chrome-extension://__MSG_@@extension_id__/icons/form-textbox-custom.svg");
 }
 .sateraito_ai_builder .mdi.mdi-sticker-text-outline {
-  background-image: url("chrome-extension://__MSG_@@extension_id__/icons/sticker-text-outline-custom.png") !important;
+  background-image: url("chrome-extension://__MSG_@@extension_id__/icons/sticker-text-outline-custom.svg") !important;
 }
 .sateraito_ai_builder input[type=radio], .sateraito_ai_builder input[type=checkbox] {
   background-color: var(--base-color) !important;

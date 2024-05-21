@@ -16,6 +16,14 @@ let grammar_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                         <path d="M0 0h24v24H0z" fill="none" />
                         <path d="M14 17H4v2h10v-2zm6-8H4v2h16V9zM4 15h16v-2H4v2zM4 5v2h16V5H4z" />
                     </svg>`;
+let content_paste_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                            <path d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M19 2h-4.18C14.4.84 13.3 0 12 0c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm7 18H5V4h2v3h10V4h2v16z"/>
+                          </svg>`;
+let tips_and_update_icon = `<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#5f6368">
+                            <rect fill="none" height="24" width="24" y="0"/>
+                            <path d="M7,20h4c0,1.1-0.9,2-2,2S7,21.1,7,20z M5,19h8v-2H5V19z M16.5,9.5c0,3.82-2.66,5.86-3.77,6.5H5.27 C4.16,15.36,1.5,13.32,1.5,9.5C1.5,5.36,4.86,2,9,2S16.5,5.36,16.5,9.5z M21.37,7.37L20,8l1.37,0.63L22,10l0.63-1.37L24,8 l-1.37-0.63L22,6L21.37,7.37z M19,6l0.94-2.06L22,3l-2.06-0.94L19,0l-0.94,2.06L16,3l2.06,0.94L19,6z"/>
+                          </svg>`;
 
 let descriptionIconUrl = chrome.runtime.getURL("icons/description-icon.svg");
 let emojiIconUrl = chrome.runtime.getURL("icons/emoji-emotions-icon.svg");
@@ -24,7 +32,8 @@ let accountCircleIconUrl = chrome.runtime.getURL("icons/account-circle-icon.svg"
 let translateIconUrl = chrome.runtime.getURL("icons/translate.svg");
 let moreHorizIconUrl = chrome.runtime.getURL("icons/more_horiz.svg");
 let minimizeIconUrl = chrome.runtime.getURL("icons/minimize.svg");
-let tipsIconUrl = chrome.runtime.getURL("icons/tips_and_updates.svg");
+// let tipsIconUrl = chrome.runtime.getURL("icons/tips_and_updates.svg");
+let tipsIconUrl = chrome.runtime.getURL("icons/tips_and_updates_2.svg");
 let syncAltIconUrl = chrome.runtime.getURL("icons/sync_alt.svg");
 let expandMoreIconUrl = chrome.runtime.getURL("icons/expand_more.svg");
 
@@ -63,6 +72,8 @@ const SKIN_BACKGROUND_COLOR_DEFAULT = { name: 'dark-light', val: '#293039' };
 const SKIN_TEXT_COLOR_DEFAULT = { name: 'white', val: '#ffffff' };
 const SKIN_BACKGROUND_COLOR_LOCALSTORAGE_KEY = 'Sateraito_AI_Register_Skin_Background_Color_LS_Key';
 const SKIN_TEXT_COLOR_LOCALSTORAGE_KEY = 'Sateraito_AI_Register_Skin_Text_Color_LS_Key';
+
+const EMPTY_KEY = 'sateraito_key_empty_293039';
 
 const UserSetting = {
   language_active: 'japanese'
@@ -722,7 +733,7 @@ const MyUtils = {
         }
         if (bg_color == null) bg_color = SKIN_BACKGROUND_COLOR_DEFAULT;
         if (text_color == null) text_color = SKIN_TEXT_COLOR_DEFAULT;
-        
+
         callback(bg_color, text_color)
       });
     } catch (e) {
@@ -766,9 +777,9 @@ const StorageManager = {
   },
 
   setOriginalTextSidePanel: (original_text) => {
-    if (original_text) {
-      chrome.storage.local.set({ original_text_side_panel: original_text });
-    }
+    // if (original_text) {
+    chrome.storage.local.set({ original_text_side_panel: original_text });
+    // }
   },
   getOriginalTextSidePanel: (callback) => {
     chrome.storage.local.get('original_text_side_panel', payload => {
@@ -779,9 +790,9 @@ const StorageManager = {
     chrome.storage.local.remove('original_text_side_panel');
   },
 
-  setGeneralContentReplySidePanel: (general_content_reply, is_direct_send = false) => {
+  setGeneralContentReplySidePanel: (general_content_reply, is_direct_send = false, is_prompt_sateraito = false) => {
     if (general_content_reply) {
-      chrome.storage.local.set({ general_content_reply_side_panel: { general_content_reply, is_direct_send } });
+      chrome.storage.local.set({ general_content_reply_side_panel: { general_content_reply, is_direct_send, is_prompt_sateraito } });
     }
   },
   getGeneralContentReplySidePanel: (callback) => {
@@ -1413,13 +1424,13 @@ Output in ${lang}`
   },
 
   /**
-   * Generate content request
+   * Generate content compose request
    * 
    * @param {object} params 
    * @param {Function} callback 
    * @param {Number|null} retry 
    */
-  _generateContentRequest: async (params, callback, retry) => {
+  _generateComposeContentRequest: async (params, callback, retry) => {
     const self = OpenAIManager;
 
     if (typeof retry == 'undefined') retry = 0;
@@ -1429,9 +1440,72 @@ Output in ${lang}`
     }
 
     const {
-      gpt_ai_key, gpt_version, type_generate,
+      gpt_ai_key, gpt_version, is_use_prompt_sateraito,
 
       topic_compose, formality,
+
+      tone, email_length, your_role, your_language
+    } = params;
+
+    let prompt;
+    let role_trim = your_role.trim();
+    let role_str = ` as a ${role_trim} `;
+
+    const messages = [
+      { role: "system", content: `You are a helpful assistant designed to output JSON.` },
+    ];
+    if (role_trim != '') {
+      messages.push({ role: 'user', content: `I am the ${your_role}` })
+      messages.push({ role: 'assistant', content: 'I remembered!' })
+    }
+
+    prompt = '';
+    prompt += `Please write a ${formality}${(role_trim != '') ? role_str : ' '}with a ${tone} tone, a ${email_length} length, focusing on the topic "${topic_compose}" and in ${your_language}`;
+    prompt += `\nFormat Json: {title: <string>, body: <string>}`;
+    messages.push({ role: 'user', content: prompt })
+
+    try {
+      const response = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, false, null, { "type": "json_object" })
+      const contentRes = response.choices[0].message.content;
+      const dataJson = JSON.parse(contentRes);
+
+      //Save log summary chat
+      let question = MyUtils.getContentByRoleInMessage('user', messages);
+      self.saveLog(question, contentRes, 'email');
+
+      if (dataJson.title && dataJson.title != '' && dataJson.body && dataJson.body != '') {
+        callback(dataJson);
+
+      } else {
+        retry++;
+        self._generateContentRequest(params, callback, retry);
+      }
+
+    } catch (error) {
+      retry++;
+      self._generateContentRequest(params, callback, retry);
+    }
+  },
+
+  /**
+   * Generate reply content request
+   * 
+   * @param {object} params 
+   * @param {Function} callback 
+   * @param {Number|null} retry 
+   */
+  _generateReplyContentRequest: async (params, callback, retry) => {
+    const self = OpenAIManager;
+
+    if (typeof retry == 'undefined') retry = 0;
+    if (retry > 3) {
+      callback({ title: 'error', body: 'error' })
+      return false;
+    }
+
+    const {
+      gpt_ai_key, gpt_version, is_use_prompt_sateraito,
+
       general_content_reply, original_text_reply, formality_reply,
 
       tone, email_length, your_role, your_language
@@ -1441,20 +1515,6 @@ Output in ${lang}`
     let role_trim = your_role.trim();
     let role_str = ` as a ${role_trim} `;
 
-    if (type_generate == 'compose') {
-      prompt = `Please write a ${formality}${(role_trim != '') ? role_str : ' '}with a ${tone} tone, a ${email_length} length, focusing on the topic "${topic_compose}" and in ${your_language}`;
-    } else {
-      prompt = `
-The original text
-"""
-${original_text_reply}
-"""
-
-Please write a ${formality_reply}${(role_trim != '') ? role_str : ' '}to reply to the original text with a ${tone} tone and a ${email_length} length, focusing on the topic "${general_content_reply}" and in ${your_language}. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.
-`
-    }
-    prompt += `\nFormat Json: {title: <string>, body: <string>}`
-
     const messages = [
       { role: "system", content: `You are a helpful assistant designed to output JSON.` },
     ];
@@ -1462,6 +1522,14 @@ Please write a ${formality_reply}${(role_trim != '') ? role_str : ' '}to reply t
       messages.push({ role: 'user', content: `I am the ${your_role}` })
       messages.push({ role: 'assistant', content: 'I remembered!' })
     }
+
+    prompt = '';
+    prompt += `The original text`
+    prompt += `"""`
+    prompt += `${original_text_reply}`
+    prompt += `"""`
+    prompt += `Please write a ${formality_reply}${(role_trim != '') ? role_str : ' '}to reply to the original text with a ${tone} tone and a ${email_length} length, focusing on the topic "${general_content_reply}" and in ${your_language}. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.`
+    prompt += `\nFormat Json: {title: <string>, body: <string>}`
     messages.push({ role: 'user', content: prompt })
 
     try {
@@ -1494,9 +1562,15 @@ Please write a ${formality_reply}${(role_trim != '') ? role_str : ' '}to reply t
     self.getOpenAIKey((gptAiKey) => {
       params.gpt_ai_key = gptAiKey;
 
-      self._generateContentRequest(params, (response) => {
-        callback(response);
-      })
+      if (type_generate == 'compose') {
+        self._generateComposeContentRequest(params, (response) => {
+          callback(response);
+        });
+      } else {
+        self._generateReplyContentRequest(params, (response) => {
+          callback(response);
+        });
+      }
     })
   },
 };
