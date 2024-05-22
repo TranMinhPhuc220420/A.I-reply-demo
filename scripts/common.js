@@ -667,8 +667,8 @@ const MyUtils = {
     for (let i = 0; i < messages.length; i++) {
       const item = messages[i];
 
-      if (item.role == role) {
-        content_all += item.content + '\n\n';
+      if (item.role == role || !role) {
+        content_all += `Role(${item.role}): ${item.content} \n\n`;
       }
     }
 
@@ -1195,6 +1195,60 @@ const SateraitoRequest = {
 const OpenAIManager = {
   chat_gpt_api_key: '',
 
+  // Utils local
+  /**
+   * 
+   * @param {fetch} fetchFunc 
+   * @param {Function} responseText 
+   * @param {Function} onDone 
+   */
+  processReadBodyStream: async (fetchFunc, responseText, onDone) => {
+    // Read the response as a stream of data
+    const reader = fetchFunc.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { value } = await reader.read();
+      const chunk = decoder.decode(value);
+      const dataStrings = chunk.split('\n\n');
+
+      let jsonObjects = [];
+      for (let i = 0; i < dataStrings.length; i++) {
+        const item = dataStrings[i];
+        const cleanedDataString = item.replace('data: ', '');
+
+        if (cleanedDataString.toLowerCase().indexOf("[done]") >= 0) {
+          jsonObjects.push({ is_stop: true, choices: {} });
+        }
+        else if (cleanedDataString.trim() != "") {
+          try {
+            jsonObjects.push(JSON.parse(cleanedDataString));
+          } catch (error) {
+            console.log(cleanedDataString);
+            console.log(error);
+          }
+        }
+      }
+
+      for (const parsedLine of jsonObjects) {
+        const { choices, is_stop } = parsedLine;
+        const { finish_reason } = choices[0];
+
+        if (finish_reason == 'stop' || is_stop) {
+          onDone ? onDone() : '';
+          return;
+        }
+
+        const { delta } = choices[0];
+        const { content } = delta;
+        // Update the UI with the new content
+        if (content) {
+          responseText(content);
+        }
+      }
+    }
+  },
+
   /**
    * Save log
    * 
@@ -1259,7 +1313,7 @@ const OpenAIManager = {
    * @param {object} response_format 
    * @returns 
    */
-  callGPTRequest: async (key_api, prompt_or_messages = null, gpt_model = false, return_fetch = false, role = false, response_format = null) => {
+  callGPTRequest: async (key_api, prompt_or_messages = null, gpt_model = false, return_fetch = false, stream = false, role = false, response_format = null) => {
     const self = OpenAIManager;
 
     let model = CHAT_GPT_VERSION
@@ -1279,9 +1333,8 @@ const OpenAIManager = {
 
     const payload = {
       model: model,
-      // messages: ?,
       temperature: 1,
-      // response_format: ?
+      stream: stream,
     }
 
     if (typeof (prompt_or_messages) == 'string') {
@@ -1450,13 +1503,13 @@ Output in ${lang}`
    * @param {Function} callback 
    * @param {Number|null} retry 
    */
-  _generateComposeContentRequest: async (params, callback, retry) => {
+  _generateComposeContentRequest: async (params, responseText, onDone, callback, retry) => {
     const self = OpenAIManager;
 
     if (typeof retry == 'undefined') retry = 0;
     if (retry > 3) {
-      callback({ title: 'error', body: 'error' })
-      return false;
+      callback(false);
+      return;
     }
 
     const {
@@ -1468,44 +1521,51 @@ Output in ${lang}`
     } = params;
 
     let prompt;
+    let prompt_system;
     let role_trim = your_role.trim();
     let role_str = ` as a ${role_trim}`;
 
+    prompt_system = '';
+    prompt_system += `You are an expert in ${formality} writing. You need to pay attention to grammar, spelling, and sentence structure.\n`;
+    prompt_system += `##Request details\n`;
+    prompt_system += `Write a ${formality}${(role_trim != '') ? role_str : ''}. Ensure your response has a ${tone} tone and ${email_length} length.\n`;
+    prompt_system += topic_compose;
+
     const messages = [
-      { role: "system", content: `You are a helpful assistant.` },
+      // { role: "system", content: `You are a helpful assistant.` },
+      // { role: "system", content: `You are an expert in ${formality} writing. You need to pay attention to grammar, spelling, and sentence structure.` },
+      { role: "system", content: prompt_system },
     ];
 
-    prompt = '';
-    prompt += `Write a ${formality}${(role_trim != '') ? role_str : ''}, with ${tone} tone and ${email_length} length. The topic is:\n`
-    prompt += `"""\n`
-    prompt += `${topic_compose}\n`
-    prompt += `"""\n`
-    prompt += `Output in ${your_language}\n`;
+    prompt = ''
+    prompt += `${(role_trim != '') ? `I'm a ${role_trim}. ` : ''}Help me write a ${formality} has ${email_length} content please!\n Output in ${your_language}`;
     messages.push({ role: 'user', content: prompt })
 
     try {
-      const response = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, false, null)
-      const contentRes = response.choices[0].message.content;
+      const myFetch = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, true, true);
 
-      const dataJson = {};
-      dataJson.title = EMPTY_KEY;
-      dataJson.body = contentRes;
+      let answerStr = '';
+      self.processReadBodyStream(myFetch,
+        (charactersStr) => {
+          answerStr += charactersStr;
+          responseText(charactersStr);
+        },
+        () => {
+          //Save log summary chat
+          let question = MyUtils.getContentByRoleInMessage(false, messages);
+          self.saveLog(question, answerStr, 'email');
 
-      //Save log summary chat
-      let question = MyUtils.getContentByRoleInMessage('user', messages);
-      self.saveLog(question, contentRes, 'email');
+          onDone(answerStr);
+        })
 
-      if (dataJson.title && dataJson.title != '' && dataJson.body && dataJson.body != '') {
-        callback(dataJson);
-
-      } else {
-        retry++;
-        self._generateComposeContentRequest(params, callback, retry);
-      }
+      callback(true);
 
     } catch (error) {
       retry++;
-      self._generateComposeContentRequest(params, callback, retry);
+      console.log(error);
+      self._generateComposeContentRequest(params, responseText, onDone, callback, retry);
+
+      callback(false);
     }
   },
 
@@ -1516,12 +1576,12 @@ Output in ${lang}`
    * @param {Function} callback 
    * @param {Number|null} retry 
    */
-  _generateReplyContentRequest: async (params, callback, retry) => {
+  _generateReplyContentRequest: async (params, responseText, onDone, callback, retry) => {
     const self = OpenAIManager;
 
     if (typeof retry == 'undefined') retry = 0;
     if (retry > 3) {
-      callback({ title: 'error', body: 'error' })
+      callback(false);
       return false;
     }
 
@@ -1534,14 +1594,22 @@ Output in ${lang}`
     } = params;
 
     let prompt = '';
+    let prompt_system;
     let role_trim = your_role.trim();
     let role_str = ` as a ${role_trim} `;
 
+    prompt_system = '';
+    prompt_system += `You are an expert in ${formality_reply} writing. Not need Subject and you need to pay attention to grammar, spelling, and sentence structure. You just need to answer to the content you wrote.\n`;
+    prompt_system += `##Request details\n`;
+    prompt_system += `Write a ${formality_reply}${(role_trim != '') ? role_str : ''}. Ensure your response has a ${tone} tone and ${email_length} length.\n`;
+    prompt_system += general_content_reply;
+
     const messages = [
-      { role: "system", content: `You are a helpful assistant.` },
+      // { role: "system", content: `You are an expert in ${formality_reply} writing. Not need Subject and you need to pay attention to grammar, spelling, and sentence structure. You just need to answer to the content you wrote.` },
+      { role: "system", content: prompt_system },
     ];
 
-    prompt += `Write a ${formality_reply}${(role_trim != '') ? role_str : ' '}to reply to the original text. Ensure your response has a ${tone} tone and a ${email_length} length. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.\n`
+    prompt += `Help me write a ${formality_reply}${(role_trim != '') ? role_str : ' '}to reply to the original text. Ensure your response has a ${tone} tone and has ${email_length} content please!. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating. I just need the exact content written and no explanation needed.\n`
     prompt += `Respond in the ${your_language} language.\n`
     prompt += `\n`
     prompt += `-----\n`
@@ -1551,55 +1619,51 @@ Output in ${lang}`
     prompt += `${original_text_reply}\n`
     prompt += `"""\n`
     prompt += `\n`
-    prompt += `The key points of the reply:\n`
-    prompt += `"""\n`
-    prompt += `${general_content_reply}`
-    prompt += `"""\n`
+    // prompt += `The key points of the reply:\n`
+    // prompt += `"""\n`
+    // prompt += `${general_content_reply}`
+    // prompt += `"""\n`
     prompt += `\n`
-    
+    prompt += `Output in ${your_language}`
+
     messages.push({ role: 'user', content: prompt })
 
     try {
-      const response = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, false, null)
-      const contentRes = response.choices[0].message.content;
+      const myFetch = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, true, true);
 
-      const dataJson = {};
-      dataJson.title = EMPTY_KEY;
-      dataJson.body = contentRes;
+      let answerStr = '';
+      self.processReadBodyStream(myFetch,
+        (charactersStr) => {
+          answerStr += charactersStr;
+          responseText(charactersStr);
+        },
+        () => {
+          //Save log summary chat
+          let question = MyUtils.getContentByRoleInMessage(false, messages);
+          self.saveLog(question, answerStr, 'email');
 
-      //Save log summary chat
-      let question = MyUtils.getContentByRoleInMessage('user', messages);
-      self.saveLog(question, contentRes, 'email');
+          onDone(answerStr);
+        })
 
-      if (dataJson.title && dataJson.title != '' && dataJson.body && dataJson.body != '') {
-        callback(dataJson);
-
-      } else {
-        retry++;
-        self._generateReplyContentRequest(params, callback, retry);
-      }
+      callback(true);
 
     } catch (error) {
       retry++;
-      self._generateReplyContentRequest(params, callback, retry);
+      self._generateReplyContentRequest(params, responseText, onDone, callback, retry);
     }
   },
 
-  generateContentReply: (params, callback) => {
+  generateContentReply: (params, responseText, onDone, callback) => {
     const self = OpenAIManager;
 
     // Get open ai KEY
-    self.getOpenAIKey((gptAiKey) => {
+    self.getOpenAIKey(async (gptAiKey) => {
       params.gpt_ai_key = gptAiKey;
 
       if (params.type_generate == 'compose') {
-        self._generateComposeContentRequest(params, (response) => {
-          callback(response);
-        });
+        self._generateComposeContentRequest(params, responseText, onDone, callback);
       } else {
-        self._generateReplyContentRequest(params, (response) => {
-          callback(response);
-        });
+        self._generateReplyContentRequest(params, responseText, onDone, callback);
       }
     })
   },

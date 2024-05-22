@@ -254,9 +254,9 @@
     getIdTabActive: () => {
       let typeGenerate = '';
       if ($('#write_tab div[key_tab="compose_tab"]').hasClass('active')) {
-        typeGenerate = 'compose'
+        typeGenerate = 'compose_tab'
       } else {
-        typeGenerate = 'reply'
+        typeGenerate = 'reply_tab'
       }
 
       return typeGenerate;
@@ -743,15 +743,8 @@
         const item = result[i];
         let isActive = (i == self.result_active)
 
-        let titleEl = document.createElement('div');
-        if (item.title != EMPTY_KEY) {
-          titleEl.className = 'title'
-          titleEl.innerHTML = `<span class="bold">Subject: </span> ${item.title}`
-        }
-
         let textEl = document.createElement('div');
-        textEl.setAttribute('disabled', true);
-
+        textEl.classList = ['wrap-content'];
         textEl.innerHTML = item.body.replaceAll('\n', '<br/>');
 
         let resultDivEl = document.createElement('div');
@@ -762,17 +755,10 @@
           resultDivEl.classList.add('active');
         }
 
-        resultDivEl.append(titleEl);
         resultDivEl.append(textEl);
 
         $(`#${self.idTab} #result .result-generate`).append(resultDivEl);
       }
-
-      let height = 0;
-      if (resultActiveEl) {
-        height = resultActiveEl.offsetHeight;
-      }
-      $(`#${self.idTab} #result .result-generate`).css('height', `${height}px`)
 
       self.is_loading = false;
 
@@ -888,14 +874,44 @@
       params.original_text_reply = originalTextReply;
       params.general_content_reply = generalContentReply;
 
-      $('#write_tab #result .result-title .left .icon').attr('src', MyUtils.getPropGptByVersion('icon', self.formData.gpt_version))
-      $('#write_tab #result .result-title .left .name-gpt').text(MyUtils.getPropGptByVersion('name', self.formData.gpt_version))
+      $(`#${self.idTab} #result .result-footer`).addClass('hidden');
+      $(`#${self.idTab} #result .result-title .left .icon`).attr('src', MyUtils.getPropGptByVersion('icon', self.formData.gpt_version));
+      $(`#${self.idTab} #result .result-title .left .name-gpt`).text(MyUtils.getPropGptByVersion('name', self.formData.gpt_version));
 
-      OpenAIManager.generateContentReply(params, (data) => {
-        self.generate_result_list.push(data);
+      const result = self.generate_result_list;
+      let indexActive = (result.length);
 
-        self.handlerShowGenerateResult();
-      });
+      // Setup - Add new item tab for this generate 
+      self.generate_result_list.push({ title: '', body: '' });
+      self.handlerShowGenerateResult();
+
+      let itemActiveEl = null;
+      OpenAIManager.generateContentReply(params,
+        // Response text function callback
+        (textRes) => {
+          itemActiveEl = document.querySelector(`.result-generate .result-item[data-index="${indexActive}"] .wrap-content`);
+          let innerHTML = itemActiveEl.innerHTML;
+          innerHTML += textRes.replaceAll('\n', '<br/>');
+          $(itemActiveEl).html(innerHTML);
+        },
+        // On [DONE] function callback
+        (contentRes) => {
+          self.generate_result_list[indexActive].body = contentRes;
+          $('#write_tab #result .result-footer').removeClass('hidden');
+
+          let height = 0;
+          if (itemActiveEl) {
+            height = itemActiveEl.offsetHeight;
+            $(`#${self.idTab} #result .result-generate`).css('height', `${height}px`)
+          }
+
+          MyUtils.debugLog("Done!");
+        },
+        // Call request success function callback
+        (success) => {
+          MyUtils.debugLog('call request fetch success:' + success);
+          $(`#${self.idTab} #result`).removeClass('is-loading');
+        });
     },
 
     /**

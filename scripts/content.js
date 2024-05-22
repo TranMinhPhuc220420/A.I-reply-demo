@@ -460,7 +460,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
         let bodyMailEl = $(`.sateraito-${id_popup}`)[0];
         let titleMailEl = $(bodyMailEl).parents('.AD').find('.aoD input[name="subjectbox"]');
 
-        $(titleMailEl).val(title)
+        $(titleMailEl).val(title || '')
         $(bodyMailEl).html(body.replaceAll('\n', '</br>'));
         $(bodyMailEl).focus();
       } else {
@@ -964,7 +964,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
     // on has result send from side panel to add to reply or compose box
     if ('side_panel_send_result' in payload) {
       const newValue = payload.side_panel_send_result.newValue;
-      if (newValue.title && newValue.body) {
+      if (newValue.body) {
         MailAIGenerate.setTitleContentMail(newValue);
       }
       setTimeout(() => {
