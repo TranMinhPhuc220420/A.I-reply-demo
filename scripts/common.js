@@ -118,10 +118,6 @@ const VOICE_SETTING_DATA = [
     icon: descriptionIconUrl,
     options: [
       {
-        value: ' ',
-        display: `---`
-      },
-      {
         value: 'email',
         name: MyLang.getMsg('TXT_EMAIL'),
         display: MyLang.getMsg('TXT_EMAIL'),
@@ -189,10 +185,6 @@ const VOICE_SETTING_DATA = [
     icon: descriptionIconUrl,
     options: [
       {
-        value: ' ',
-        display: `---`
-      },
-      {
         value: 'email',
         name: MyLang.getMsg('TXT_EMAIL'),
         display: MyLang.getMsg('TXT_EMAIL'),
@@ -219,10 +211,6 @@ const VOICE_SETTING_DATA = [
     name: MyLang.getMsg('TXT_TONE'),
     icon: emojiIconUrl,
     options: [
-      {
-        value: ' ',
-        display: `---`
-      },
       {
         value: 'professional',
         display: MyLang.getMsg('TXT_PROFESSIONAL'),
@@ -270,10 +258,6 @@ const VOICE_SETTING_DATA = [
     name: MyLang.getMsg('TXT_EMAIL_LENGTH'),
     icon: formatAlignIconUrl,
     options: [
-      {
-        value: ' ',
-        display: `---`
-      },
       {
         value: 'short',
         display: MyLang.getMsg('TXT_SHORT'),
@@ -337,10 +321,6 @@ const VOICE_SETTING_DATA = [
     name: MyLang.getMsg('TXT_LANGUAGE'),
     icon: translateIconUrl,
     options: [
-      {
-        value: ' ',
-        display: `---`
-      },
       {
         value: 'japanese',
         display: '日本語',
@@ -1208,43 +1188,46 @@ const OpenAIManager = {
     const decoder = new TextDecoder();
 
     while (true) {
-      const { value } = await reader.read();
-      const chunk = decoder.decode(value);
-      const dataStrings = chunk.split('\n\n');
+      try {
+        const { value } = await reader.read();
+        const chunk = decoder.decode(value);
+        const dataStrings = chunk.split('\n\n');
 
-      let jsonObjects = [];
-      for (let i = 0; i < dataStrings.length; i++) {
-        const item = dataStrings[i];
-        const cleanedDataString = item.replace('data: ', '');
+        let jsonObjects = [];
+        for (let i = 0; i < dataStrings.length; i++) {
+          const item = dataStrings[i];
+          const cleanedDataString = item.replace('data: ', '');
 
-        if (cleanedDataString.toLowerCase().indexOf("[done]") >= 0) {
-          jsonObjects.push({ is_stop: true, choices: {} });
-        }
-        else if (cleanedDataString.trim() != "") {
-          try {
-            jsonObjects.push(JSON.parse(cleanedDataString));
-          } catch (error) {
-            console.log(cleanedDataString);
-            console.log(error);
+          if (cleanedDataString.toLowerCase().indexOf("[done]") >= 0) {
+            jsonObjects.push({ is_stop: true, choices: {} });
+          }
+          else if (cleanedDataString.trim() != "") {
+            try {
+              jsonObjects.push(JSON.parse(cleanedDataString));
+            } catch (error) {
+              console.log("Error 1:", error);
+            }
           }
         }
-      }
 
-      for (const parsedLine of jsonObjects) {
-        const { choices, is_stop } = parsedLine;
-        const { finish_reason } = choices[0];
+        for (const parsedLine of jsonObjects) {
+          const { choices, is_stop } = parsedLine;
+          const { finish_reason } = choices[0];
 
-        if (finish_reason == 'stop' || is_stop) {
-          onDone ? onDone() : '';
-          return;
+          if (finish_reason == 'stop' || is_stop) {
+            onDone ? onDone() : '';
+            return;
+          }
+
+          const { delta } = choices[0];
+          const { content } = delta;
+          // Update the UI with the new content
+          if (content) {
+            responseText(content);
+          }
         }
-
-        const { delta } = choices[0];
-        const { content } = delta;
-        // Update the UI with the new content
-        if (content) {
-          responseText(content);
-        }
+      } catch (error) {
+        console.log("Error 2:", error);
       }
     }
   },
@@ -1601,7 +1584,7 @@ Output in ${lang}`
     prompt_system = '';
     prompt_system += `You are an expert in ${formality_reply} writing. Not need Subject and you need to pay attention to grammar, spelling, and sentence structure. You just need to answer to the content you wrote.\n`;
     prompt_system += `##Request details\n`;
-    prompt_system += `Write a ${formality_reply}${(role_trim != '') ? role_str : ''}. Ensure your response has a ${tone} tone and ${email_length} length.\n`;
+    prompt_system += `Write a ${formality_reply}${(role_trim != '') ? role_str : ''}. Ensure your response has a ${tone} tone and a ${email_length} content.\n`;
     prompt_system += general_content_reply;
 
     const messages = [
@@ -1609,7 +1592,7 @@ Output in ${lang}`
       { role: "system", content: prompt_system },
     ];
 
-    prompt += `Help me write a ${formality_reply}${(role_trim != '') ? role_str : ' '}to reply to the original text. Ensure your response has a ${tone} tone and has ${email_length} content please!. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating. I just need the exact content written and no explanation needed.\n`
+    prompt += `Help me write a ${formality_reply}${(role_trim != '') ? role_str : ' '}to reply to the original text with a ${tone} tone and has a ${email_length} content please!. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating. I just need the exact content written and no explanation needed.\n`
     prompt += `Respond in the ${your_language} language.\n`
     prompt += `\n`
     prompt += `-----\n`

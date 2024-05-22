@@ -38,6 +38,9 @@
   "txt_original_language": {
     "message": "元の言語"
   },
+  "txt_paste_selection": {
+    "message": "選択範囲を貼り付け"
+  },
   "txt_reply_suggestions": {
     "message": "返信の提案"
   },

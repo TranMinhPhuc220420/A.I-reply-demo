@@ -67,7 +67,7 @@
 
                       <div class="paste-selection">
                         ${content_paste_icon}
-                        Paste selection
+                        ${MyLang.getMsg('TXT_PASTE_SELECTION')}
                       </div>
                     </div>
 
@@ -595,6 +595,8 @@
       }
 
       $(`#${self.idTab} .tab .tab-body #${tabActive} textarea`)[0].focus();
+
+      self.updateHeightTabContainer();
     },
 
     /**
@@ -648,25 +650,6 @@
 
         if (self.is_summarizing) return;
         self.setActiveTab(keyTab);
-
-        // $(`#${self.idTab} .voice-config .formality`).removeClass('hidden');
-        // $(`#${self.idTab} .voice-config .formality_reply`).removeClass('hidden');
-        // if (keyTab == 'reply_tab') {
-        //   $(`#${self.idTab} .voice-config .formality`).addClass('hidden');
-        // } else {
-        //   $(`#${self.idTab} .voice-config .formality_reply`).addClass('hidden');
-        // }
-
-        // $(`#${self.idTab} .tab .tab-title .item`).removeClass('active');
-        // $(targetEl).addClass('active');
-
-        // $(`#${self.idTab} .tab .tab-body .tab-item`).removeClass('active');
-        // $(`#${self.idTab} .tab .tab-body #${keyTab}.tab-item`).addClass('active');
-
-        // setTimeout(() => {
-        //   let inputFocusEl = document.body.querySelector(`#${self.idTab} .tab.content-config .tab-item.active textarea`);
-        //   $(inputFocusEl).focus();
-        // });
       });
 
       const handlerActive = () => {
@@ -889,28 +872,30 @@
       OpenAIManager.generateContentReply(params,
         // Response text function callback
         (textRes) => {
-          itemActiveEl = document.querySelector(`.result-generate .result-item[data-index="${indexActive}"] .wrap-content`);
           let innerHTML = itemActiveEl.innerHTML;
           innerHTML += textRes.replaceAll('\n', '<br/>');
           $(itemActiveEl).html(innerHTML);
+
+          $(`#${self.idTab} #result .result-generate`).css('height', `${itemActiveEl.offsetHeight}px`)
         },
         // On [DONE] function callback
         (contentRes) => {
           self.generate_result_list[indexActive].body = contentRes;
-          $('#write_tab #result .result-footer').removeClass('hidden');
 
-          let height = 0;
-          if (itemActiveEl) {
-            height = itemActiveEl.offsetHeight;
-            $(`#${self.idTab} #result .result-generate`).css('height', `${height}px`)
-          }
+          $(itemActiveEl).removeClass('is-loading');
+          $('#tab_container').removeClass('is-loading');
+          $('#write_tab #result .result-footer').removeClass('hidden');
 
           MyUtils.debugLog("Done!");
         },
         // Call request success function callback
         (success) => {
-          MyUtils.debugLog('call request fetch success:' + success);
+          itemActiveEl = document.querySelector(`.result-generate .result-item[data-index="${indexActive}"] .wrap-content`);
+
+          $(itemActiveEl).addClass('is-loading');
           $(`#${self.idTab} #result`).removeClass('is-loading');
+
+          MyUtils.debugLog('call request fetch success:' + success);
         });
     },
 
@@ -980,6 +965,11 @@
       self.clearTitleContentMailToWrite();
     },
 
+    /**
+     * checkAndSetOriginalText
+     * 
+     * @param {string} originalText 
+     */
     checkAndSetOriginalText: (originalText) => {
       const self = TabWriteManager;
       if (self.is_loading) return;
@@ -1002,6 +992,19 @@
           TabWriteManager.setActiveTab('reply_tab');
         }
       }
+    },
+
+    /**
+     * updateHeightTabContainer
+     * 
+     */
+    updateHeightTabContainer: () => {
+      const self = TabWriteManager;
+
+      const containerEl = document.getElementById(`tab_container`);
+      const formConfigEl = document.body.querySelector(`#${self.idTab} .form-config`);
+      const resultEl = document.body.querySelector(`#${self.idTab} #result`);
+      $(resultEl).css('marginTop', (containerEl.offsetHeight - formConfigEl.offsetHeight) + 'px');
     },
 
     // Event
@@ -1043,18 +1046,18 @@
 
       // process add generate write
       self.processAddGenerateWrite();
+      self.updateHeightTabContainer();
 
       const containerEl = document.getElementById(`tab_container`);
-      const formConfigEl = document.body.querySelector(`#${self.idTab} .form-config`);
       const resultEl = document.body.querySelector(`#${self.idTab} #result`);
-      $(resultEl).css('marginTop', (containerEl.offsetHeight - formConfigEl.offsetHeight) + 'px');
 
       $(resultEl).removeClass('hidden');
+      $(resultEl).addClass('is-loading');
       $(containerEl).animate({
         scrollTop: $(resultEl).offset().top + containerEl.scrollTop
-      }, 500);
-
-      $(resultEl).addClass('is-loading');
+      }, 250, 'swing', () => {
+        $(containerEl).addClass('is-loading');
+      });
     },
 
     /**
@@ -1218,6 +1221,16 @@
       const self = TabWriteManager;
 
       StorageManager.toggleSidePromptBuilder();
+
+      // chrome.runtime.sendMessage({method: 'get_tab_info'}, (tabEmailInfoInBrowser) => {
+      //   if (tabEmailInfoInBrowser) {
+      //     try {
+      //       chrome.tabs.update(tabEmailInfoInBrowser.id, {active: true});
+      //     } catch (error) {
+      //       console.log(error);
+      //     }
+      //   }
+      // });
     },
 
     /**

@@ -105,6 +105,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
       if ($('#stateraito_addon_suggestion').hasClass("show") || isClose) {
         $('#stateraito_addon_suggestion').addClass('hidden');
         $('#stateraito_addon_suggestion').removeClass('show');
+
+        self.showHidePopup();
       } else {
         $('#stateraito_addon_suggestion').addClass('show');
         $('#stateraito_addon_suggestion').removeClass('hidden');
@@ -999,10 +1001,10 @@ document.addEventListener('RW759_connectExtension', function (e) {
       if (FBoolMail) {
         chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
           ID_USER_ADDON_LOGIN = userInfo.id;
-          USER_ADDON_LOGIN = userInfo.email;
+          USER_ADDON_LOGIN = userInfo.email || getCurrentUser();
 
           //addon setting
-          SateraitoRequest.loadAddOnSetting(userInfo.email, function () {
+          SateraitoRequest.loadAddOnSetting(USER_ADDON_LOGIN, function () {
 
             if (MyUtils.checkUseExtension()) {
               MailAIGenerate._init();
@@ -1024,5 +1026,13 @@ document.addEventListener('RW759_connectExtension', function (e) {
   }
 
   // __main__
-  initialize();
+  const interval_important_for_init = setInterval(() => {
+    if (document.readyState == 'complete') {
+      
+      // Start initialize
+      initialize();
+
+      clearInterval(interval_important_for_init);
+    }
+  }, 500);
 }());

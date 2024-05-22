@@ -14,6 +14,7 @@ let DEBUG_MODE = true;
   'use strict';
 
   let TAB_ID_ACTIVE, USER_ADDON_LOGIN, SECOND_USER_ADDON_LOGIN, ID_USER_ADDON_LOGIN;
+  let tabEmailInfo;
 
   function updateSecondEmail() {
     chrome.storage.local.get('second_email', payload => {
@@ -35,13 +36,20 @@ let DEBUG_MODE = true;
 
     switch (method) {
       case 'open_side_panel':
+        tabEmailInfo = sender.tab;
         chrome.sidePanel.open({ windowId: sender.tab.windowId });
+        break;
 
       case 'get_user_info':
         sendResponse({
           id: ID_USER_ADDON_LOGIN,
           email: USER_ADDON_LOGIN || SECOND_USER_ADDON_LOGIN
         })
+        break;
+
+      case 'get_tab_info':
+        sendResponse(tabEmailInfo)
+        break;
     }
 
     return true;

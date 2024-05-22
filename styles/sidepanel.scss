@@ -445,7 +445,10 @@ body {
 
     #tab_container {
       overflow: auto;
-      //   padding-right: 15px;
+
+      &.is-loading {
+        overflow: hidden;
+      }
     }
 
     .tab {
@@ -825,7 +828,7 @@ body {
 
             .paste-selection {
               bottom: 10px;
-              left: -120px;
+              left: -90%;
               position: absolute;
               display: flex;
               justify-content: center;
@@ -1341,6 +1344,16 @@ body {
 
           .wrap-content {
             font-size: 0.9rem;
+
+            &.is-loading::after {
+              content: "|";
+              font-weight: bold;
+              color: #000;
+              animation: space_loading_gpt 0.4s linear infinite;
+              margin-left: 5px;
+              padding: 0 0.5px;
+              background: #000;
+            }
           }
         }
 
@@ -1459,5 +1472,18 @@ body {
 
   100% {
     background-position: -100% 0;
+  }
+}
+
+@keyframes space_loading_gpt {
+  0% {
+    opacity: 0;
+  }
+  
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }

@@ -38,6 +38,9 @@
   "txt_original_language": {
     "message": "Original Language"
   },
+  "txt_paste_selection": {
+    "message": "Paste selection"
+  },
   "txt_reply_suggestions": {
     "message": "Reply suggestions"
   },
