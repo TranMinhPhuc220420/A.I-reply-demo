@@ -24,6 +24,39 @@ let tips_and_update_icon = `<svg xmlns="http://www.w3.org/2000/svg" enable-backg
                             <rect fill="none" height="24" width="24" y="0"/>
                             <path d="M7,20h4c0,1.1-0.9,2-2,2S7,21.1,7,20z M5,19h8v-2H5V19z M16.5,9.5c0,3.82-2.66,5.86-3.77,6.5H5.27 C4.16,15.36,1.5,13.32,1.5,9.5C1.5,5.36,4.86,2,9,2S16.5,5.36,16.5,9.5z M21.37,7.37L20,8l1.37,0.63L22,10l0.63-1.37L24,8 l-1.37-0.63L22,6L21.37,7.37z M19,6l0.94-2.06L22,3l-2.06-0.94L19,0l-0.94,2.06L16,3l2.06,0.94L19,6z"/>
                           </svg>`;
+let bugs_report_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                          <path d="M0 0h24v24H0z" fill="none"/>
+                          <path d="M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5c-.49 0-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-6 8h-4v-2h4v2zm0-4h-4v-2h4v2z"/>
+                        </svg>`;
+let playlist_add_check_icon = `<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24">
+                                  <g>
+                                      <rect fill="none" height="24" width="24"/>
+                                  </g>
+                                  <g>
+                                      <g>
+                                          <rect height="2" width="11" x="3" y="10"/>
+                                          <rect height="2" width="11" x="3" y="6"/>
+                                          <rect height="2" width="7" x="3" y="14"/>
+                                          <polygon points="20.59,11.93 16.34,16.17 14.22,14.05 12.81,15.46 16.34,19 22,13.34"/>
+                                      </g>
+                                  </g>
+                                </svg>`;
+let group_3_icon = `<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24">
+                      <g>
+                          <rect fill="none" height="24" width="24"/>
+                      </g>
+                      <g>
+                          <g>
+                              <path d="M16.24,13.65c-1.17-0.52-2.61-0.9-4.24-0.9c-1.63,0-3.07,0.39-4.24,0.9C6.68,14.13,6,15.21,6,16.39V18h12v-1.61 C18,15.21,17.32,14.13,16.24,13.65z"/>
+                              <path d="M1.22,14.58C0.48,14.9,0,15.62,0,16.43V18l4.5,0v-1.61c0-0.83,0.23-1.61,0.63-2.29C4.76,14.04,4.39,14,4,14 C3.01,14,2.07,14.21,1.22,14.58z"/>
+                              <path d="M22.78,14.58C21.93,14.21,20.99,14,20,14c-0.39,0-0.76,0.04-1.13,0.1c0.4,0.68,0.63,1.46,0.63,2.29V18l4.5,0v-1.57 C24,15.62,23.52,14.9,22.78,14.58z"/>
+                              <path d="M12,12c1.66,0,3-1.34,3-3c0-1.66-1.34-3-3-3S9,7.34,9,9C9,10.66,10.34,12,12,12z"/>
+                              <rect height="3.54" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -6.6066 6.0503)" width="3.54" x="2.23" y="9.23"/>
+                              <polygon points="20,9 17.5,13 22.5,13"/>
+                          </g>
+                      </g>
+                    </svg>`;
+let read_more_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M3 18h12v-2H3v2zM3 6v2h18V6H3zm0 7h18v-2H3v2z"/></svg>`;
 
 let descriptionIconUrl = chrome.runtime.getURL("icons/description-icon.svg");
 let emojiIconUrl = chrome.runtime.getURL("icons/emoji-emotions-icon.svg");
@@ -55,7 +88,9 @@ let AddOnEmailSetting = {
 const DEBUG_MODE = true;
 
 const MAX_VOICE_CONFIG_OPTIONS_SHOW = 1;
-const MAX_LENGTH_TEXTAREA_TOKEN = 4000;
+const MAX_LENGTH_TOPIC_COMPOSE = 8000;
+const MAX_LENGTH_ORIGINAL_TEXT_REPLY = 8000;
+const MAX_LENGTH_GENERAL_CONTENT_REPLY = 4000;
 
 const GROUP_PROMPT_LABEL_BG_COLOR = "#2196F3";
 const GROUP_PROMPT_LABEL_TEXT_COLOR = "#ffffff";
@@ -92,21 +127,27 @@ const LIST_TAB = [
     onActive: null
   },
   {
-    id: 'ocr_tab',
-    name: MyLang.getMsg('TXT_OCR'),
-    icon: ocr_icon,
+    id: 'summary_tab',
+    name: MyLang.getMsg('TXT_SUMMARY'),
+    icon: read_more_icon,
     onActive: null
   },
   {
-    id: 'translate_tab',
-    name: MyLang.getMsg('TXT_TRANSLATE'),
-    icon: translate_icon,
+    id: 'find_the_problem_tab',
+    name: MyLang.getMsg('TXT_FIND_THE_PROBLEM'),
+    icon: bugs_report_icon,
     onActive: null
   },
   {
-    id: 'grammar_tab',
-    name: MyLang.getMsg('TXT_GRAMMAR'),
-    icon: grammar_icon,
+    id: 'check_content_reply_tab',
+    name: MyLang.getMsg('TXT_CHECK_CONTENT_REPLY'),
+    icon: playlist_add_check_icon,
+    onActive: null
+  },
+  {
+    id: 'suggest_meeting_tab',
+    name: MyLang.getMsg('TXT_SUGGEST_MEETING'),
+    icon: group_3_icon,
     onActive: null
   },
 ];
@@ -1228,6 +1269,7 @@ const OpenAIManager = {
         }
       } catch (error) {
         console.log("Error 2:", error);
+        break;
       }
     }
   },
@@ -1503,6 +1545,13 @@ Output in ${lang}`
       tone, email_length, your_role, your_language
     } = params;
 
+    let email_length_str = 'with maximum content 100 words'
+    if (email_length == 'medium') {
+      email_length_str = 'has a content of 250 words and a minimum of 500 words'
+    } else if (email_length == 'long') {
+      email_length_str = 'with content must be at least 1000 words'
+    }
+
     let prompt;
     let prompt_system;
     let role_trim = your_role.trim();
@@ -1511,7 +1560,7 @@ Output in ${lang}`
     prompt_system = '';
     prompt_system += `You are an expert in ${formality} writing. You need to pay attention to grammar, spelling, and sentence structure.\n`;
     prompt_system += `##Request details\n`;
-    prompt_system += `Write a ${formality}${(role_trim != '') ? role_str : ''}. Ensure your response has a ${tone} tone and ${email_length} length.\n`;
+    prompt_system += `Write a ${formality}${(role_trim != '') ? role_str : ''}. Ensure your response has a ${tone} tone and ${email_length_str}.\n`;
     prompt_system += topic_compose;
 
     const messages = [
@@ -1521,7 +1570,7 @@ Output in ${lang}`
     ];
 
     prompt = ''
-    prompt += `${(role_trim != '') ? `I'm a ${role_trim}. ` : ''}Help me write a ${formality} has ${email_length} content please!\n Output in ${your_language}`;
+    prompt += `${(role_trim != '') ? `I'm a ${role_trim}. ` : ''}Help me write a ${formality} ${email_length_str} please! I just need the exact content written and no explanation needed.\n Output in ${your_language}`;
     messages.push({ role: 'user', content: prompt })
 
     try {
@@ -1568,13 +1617,20 @@ Output in ${lang}`
       return false;
     }
 
-    let {
+    const {
       gpt_ai_key, gpt_version,
 
       original_text_reply, general_content_reply, formality_reply,
 
       tone, email_length, your_role, your_language
     } = params;
+
+    let email_length_str = 'with maximum content 100 words'
+    if (email_length == 'medium') {
+      email_length_str = 'has a content of 250 words and a minimum of 500 words'
+    } else if (email_length == 'long') {
+      email_length_str = 'with content must be at least 1000 words'
+    }
 
     let prompt = '';
     let prompt_system;
@@ -1584,7 +1640,7 @@ Output in ${lang}`
     prompt_system = '';
     prompt_system += `You are an expert in ${formality_reply} writing. Not need Subject and you need to pay attention to grammar, spelling, and sentence structure. You just need to answer to the content you wrote.\n`;
     prompt_system += `##Request details\n`;
-    prompt_system += `Write a ${formality_reply}${(role_trim != '') ? role_str : ''}. Ensure your response has a ${tone} tone and a ${email_length} content.\n`;
+    prompt_system += `Write a ${formality_reply}${(role_trim != '') ? role_str : ''}. Ensure your response has a ${tone} tone and ${email_length_str}.\n`;
     prompt_system += general_content_reply;
 
     const messages = [
@@ -1592,7 +1648,7 @@ Output in ${lang}`
       { role: "system", content: prompt_system },
     ];
 
-    prompt += `Help me write a ${formality_reply}${(role_trim != '') ? role_str : ' '}to reply to the original text with a ${tone} tone and has a ${email_length} content please!. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating. I just need the exact content written and no explanation needed.\n`
+    prompt += `Help me write a ${formality_reply}${(role_trim != '') ? role_str : ' '}to reply to the original text with a ${tone} tone and ${email_length_str} please!. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating. I just need the exact content written and no explanation needed.\n`
     prompt += `Respond in the ${your_language} language.\n`
     prompt += `\n`
     prompt += `-----\n`
@@ -1602,10 +1658,10 @@ Output in ${lang}`
     prompt += `${original_text_reply}\n`
     prompt += `"""\n`
     prompt += `\n`
-    // prompt += `The key points of the reply:\n`
-    // prompt += `"""\n`
-    // prompt += `${general_content_reply}`
-    // prompt += `"""\n`
+    prompt += `The key points of the reply:\n`
+    prompt += `"""\n`
+    prompt += `${general_content_reply}`
+    prompt += `"""\n`
     prompt += `\n`
     prompt += `Output in ${your_language}`
 

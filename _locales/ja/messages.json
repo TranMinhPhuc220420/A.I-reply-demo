@@ -26,9 +26,6 @@
   "txt_continue_improving": {
     "message": "改善を続ける"
   },
-  "txt_summary": {
-    "message": "意図"
-  },
   "txt_key_points": {
     "message": "キーポイント"
   },
@@ -152,6 +149,18 @@
   "txt_grammar": {
     "message": "文法"
   },
+  "txt_summary": {
+    "message": "ja_Summary"
+  },
+  "txt_find_the_problem": {
+    "message": "ja_Find the problem"
+  },
+  "txt_check_content_reply": {
+    "message": "ja_Check content reply"
+  },
+  "txt_suggest_meeting": {
+    "message": "ja_Suggest meeting"
+  },
   "txt_compose": {
     "message": "作曲する"
   },
@@ -234,13 +243,13 @@
     "message": "「作成したいトピックを入力してください」"
   },
   "des_error_empty_topic_compose_max_length_token": {
-    "message": "Maximum 4000 characters for the topic to compose"
+    "message": "Maximum 8000 characters for the topic to compose"
   },
   "des_error_empty_original_text_reply": {
     "message": "「返信したい元のテキストを入力してください」"
   },
   "des_error_empty_original_text_reply_max_length_token": {
-    "message": "Maximum 4000 characters for the original text to which you want to reply"
+    "message": "Maximum 8000 characters for the original text to which you want to reply"
   },
   "des_error_empty_general_content_reply": {
     "message": "「上記のテキストに対する返信の一般的な内容を入力してください」"

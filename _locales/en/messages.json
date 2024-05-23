@@ -26,9 +26,6 @@
   "txt_continue_improving": {
     "message": "Continue Improving"
   },
-  "txt_summary": {
-    "message": "Summary"
-  },
   "txt_key_points": {
     "message": "Key points"
   },
@@ -152,6 +149,18 @@
   "txt_grammar": {
     "message": "Grammar"
   },
+  "txt_summary": {
+    "message": "Summary"
+  },
+  "txt_find_the_problem": {
+    "message": "Find the problem"
+  },
+  "txt_check_content_reply": {
+    "message": "Check content reply"
+  },
+  "txt_suggest_meeting": {
+    "message": "Suggest meeting"
+  },
   "txt_compose": {
     "message": "Compose"
   },
@@ -234,13 +243,13 @@
     "message": "Please enter the topic you want to compose"
   },
   "des_error_empty_topic_compose_max_length_token": {
-    "message": "Maximum 4000 characters for the topic to compose"
+    "message": "Maximum 8000 characters for the topic to compose"
   },
   "des_error_empty_original_text_reply": {
     "message": "Please enter the original text to which you want to reply"
   },
   "des_error_empty_original_text_reply_max_length_token": {
-    "message": "Maximum 4000 characters for the original text to which you want to reply"
+    "message": "Maximum 8000 characters for the original text to which you want to reply"
   },
   "des_error_empty_general_content_reply": {
     "message": "Please enter the general content of your reply to the above text"

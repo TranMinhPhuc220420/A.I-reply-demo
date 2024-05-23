@@ -994,7 +994,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
     MyUtils.debugLog('▼▼▼ initialize started ! ');
 
     let strUrl = document.URL;
-    if ((window === window.top) && (isExtensionInstalled() === false)) {
+    if ((window === window.top)) {
       FoDoc = document;
 
       FBoolMail = (strUrl.indexOf('//mail.google.com/') >= 0);

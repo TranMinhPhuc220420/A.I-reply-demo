@@ -183,6 +183,7 @@ body ul li {
   transition: 0.15s all;
   opacity: 0;
   position: absolute;
+  z-index: 9999;
   pointer-events: none;
   background-color: #2a2a2a;
   color: #fff;
@@ -242,6 +243,7 @@ body ul li {
 }
 .gpt-layout.ui-002 .sidebar {
   position: absolute;
+  z-index: 9;
   background-color: #f7f7f7;
   display: none;
   border-radius: 10px;
@@ -252,7 +254,7 @@ body ul li {
 }
 .gpt-layout.ui-002 .sidebar.show {
   display: flex;
-  width: 35%;
+  width: 50%;
   min-width: 150px;
   padding: 5px;
   box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
@@ -268,8 +270,7 @@ body ul li {
 }
 .gpt-layout.ui-002 .sidebar .body .menu .item {
   flex-direction: column;
-  height: 40px;
-  width: 50px;
+  width: 75px;
   padding: 5px;
 }
 .gpt-layout.ui-002 .sidebar .body .menu .item:hover {
@@ -278,6 +279,7 @@ body ul li {
 .gpt-layout.ui-002 .sidebar .body .menu .item .label {
   font-size: 12px;
   margin-top: 5px;
+  text-align: center;
 }
 .gpt-layout.ui-002 .sidebar .footer {
   height: 25px;

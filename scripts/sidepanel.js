@@ -53,7 +53,7 @@
                 <div class="tab-body">
                   <span id="compose_tab" class="tab-item">
                     <div class="wrap-topic-to-compose">
-                      <textarea class="topic_to_compose" maxlength="${MAX_LENGTH_TEXTAREA_TOKEN}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_TOPIC_COMPOSE')}"></textarea><div class="tips-icon">
+                      <textarea class="topic_to_compose" maxlength="${MAX_LENGTH_TOPIC_COMPOSE}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_TOPIC_COMPOSE')}"></textarea><div class="tips-icon">
                       <div class="action">
                         ${tips_and_update_icon}
                       </div>
@@ -63,7 +63,7 @@
                   <span id="reply_tab" class="tab-item">
 
                     <div class="wrap-original-text-reply">
-                      <textarea class="original_text_reply" maxlength="${MAX_LENGTH_TEXTAREA_TOKEN}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_REPLY')}"></textarea>
+                      <textarea class="original_text_reply" maxlength="${MAX_LENGTH_ORIGINAL_TEXT_REPLY}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_REPLY')}"></textarea>
 
                       <div class="paste-selection">
                         ${content_paste_icon}
@@ -72,7 +72,7 @@
                     </div>
 
                     <div class="wrap-general-content-reply">
-                      <textarea class="general_content_reply" maxlength="${MAX_LENGTH_TEXTAREA_TOKEN}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_GENERAL_CONTENT_REPLY')}"></textarea>
+                      <textarea class="general_content_reply" maxlength="${MAX_LENGTH_GENERAL_CONTENT_REPLY}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_GENERAL_CONTENT_REPLY')}"></textarea>
                       <div class="tips-icon">
                         <div class="action">
                           ${tips_and_update_icon}
@@ -216,7 +216,7 @@
         if (!topicCompose || topicCompose == '') {
           return MyLang.getMsg('DES_ERROR_TOPIC_COMPOSE');
         }
-        if (topicCompose.length > MAX_LENGTH_TEXTAREA_TOKEN) {
+        if (topicCompose.length > MAX_LENGTH_TOPIC_COMPOSE) {
           return MyLang.getMsg('DES_ERROR_TOPIC_COMPOSE_MAX_LENGTH_TOKEN');
         }
       }
@@ -224,13 +224,13 @@
         if (!originalTextReply || originalTextReply == '') {
           return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_REPLY');
         }
-        if (originalTextReply.length > MAX_LENGTH_TEXTAREA_TOKEN) {
+        if (originalTextReply.length > MAX_LENGTH_ORIGINAL_TEXT_REPLY) {
           return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_REPLY_MAX_LENGTH_TOKEN');
         }
         if (!generalContentReply || generalContentReply == '') {
           return MyLang.getMsg('DES_ERROR_GENERAL_CONTENT_REPLY');
         }
-        if (generalContentReply.length > MAX_LENGTH_TEXTAREA_TOKEN) {
+        if (generalContentReply.length > MAX_LENGTH_GENERAL_CONTENT_REPLY) {
           return MyLang.getMsg('DES_ERROR_GENERAL_CONTENT_REPLY_MAX_LENGTH_TOKEN');
         }
       }
