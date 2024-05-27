@@ -191,6 +191,8 @@
      * 
      */
     fixHeightResult: () => {
+      const self = TabWriteManager;
+
       const tabContainerEl = document.getElementById(`write_tab`);
       const resultEl = document.body.querySelector(`#${self.idTab} #result`);
       $(resultEl).css('height', tabContainerEl.offsetHeight + 'px');
@@ -407,7 +409,7 @@
 
         // Button combobox
         let vHtml = ` <div class="title">
-                        <img class="icon" src="${configItem.icon}" alt="${configItem.name_kind}">
+                        ${configItem.icon}
                         <span class="text">${configItem.name}:</span>
                       </div>
                       <div class="options">
@@ -584,8 +586,6 @@
       $(`#${self.idTab} .tab .tab-title .item[key_tab="${tabActive}"]`).addClass('active');
       $(`#${self.idTab} .tab .tab-body .tab-item`).removeClass('active');
       $(`#${self.idTab} .tab .tab-body #${tabActive}`).addClass('active');
-
-      $('textarea').css('maxWidth', document.querySelector('textarea').clientWidth);
 
       $(`#${self.idTab} .voice-config .formality`).removeClass('hidden');
       $(`#${self.idTab} .voice-config .formality_reply`).removeClass('hidden');
@@ -1102,6 +1102,8 @@
     onActive: () => {
       const self = TabWriteManager;
 
+      self.setActiveTab(self.getIdTabActive());
+
       self.resetEvent();
     },
 
@@ -1162,7 +1164,6 @@
       const self = TabWriteManager;
       if (self.is_loading) return;
 
-      if (self.is_loading) return;
       const kind = event.target.getAttribute('kind');
       const value = event.target.getAttribute('value');
 
@@ -1402,16 +1403,89 @@
     idTab: LIST_TAB[1].id,
     indexTab: 1,
 
+    combobox_flag: false,
+
+    is_loading: false,
+    formData: {
+      gpt_version: null,
+    },
+    result_active: 0,
+    generate_result_list: [],
+    original_text_summary: '',
+
     /**
      * Get inner html for tab write
      * 
      * @returns {string}
      */
     getVHtml: () => {
-      return `<div>
-                <h1>Summary tab</h1>
+      let reloadIconUrl = chrome.runtime.getURL("icons/refresh-icon.png");
+      let copyIconUrl = chrome.runtime.getURL("icons/content-copy-icon.png");
+      let doneIconUrl = chrome.runtime.getURL("icons/done.svg");
+
+      return `
+              <div class="form-config">
+
+              <div class="wrap-original-text-summary">
+                <textarea class="original_text_summary" maxlength="8000" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_SUMMARY')}"></textarea>
               </div>
-              `
+
+              <div class="version config">
+                <div class="options">
+                </div>
+
+                <button class="submit-summary">Summary</button>
+              </div>
+
+              <div class="alert">
+              </div>
+            </div>
+
+            <div id="summary-result" class="hidden is-loading">
+
+              <div class="result-title">
+                <div class="left">
+                  <img class="icon" src="./icons/chatgpt-icon.svg" alt="gpt-version-icon">
+                  <span class="name-gpt">...</span>
+                </div>
+
+                <div class="right">
+                  <svg class="icon prev disable" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000">
+                    <path d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
+                  </svg>
+                  <span class="text"> _/_ </span>
+                  <svg class="icon next disable" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000">
+                    <path d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="result-summary">
+                <div class="cmp-loading">
+                  <div class="loading"></div>
+                  <div class="loading"></div>
+                  <div class="loading"></div>
+                </div>
+              </div>
+
+              <div class="result-footer">
+                <div class="left">
+                  <button class="btn re-generate">
+                    <img src="${reloadIconUrl}" alt="">
+                  </button>
+                  <button class="btn copy-content">
+                    <img src="${copyIconUrl}" alt="">
+                    <img class="icon-done" src="${doneIconUrl}" alt="">
+                  </button>
+                </div>
+                <div class="right">
+                </div>
+              </div>
+
+            </div>
+          `
     },
 
     /**
@@ -1422,22 +1496,505 @@
     createPanel: () => {
       const self = TabSummaryManager;
 
+      self.result_active = 0;
+      self.generate_result_list = [];
+
+      self.formData['gpt_version'] = GPT_VERSION_SETTING_DATA[0].value;
+
       const panelEl = document.createElement('div');
       panelEl.id = self.idTab
       panelEl.className = 'tab-item'
       panelEl.innerHTML = self.getVHtml();
 
       LIST_TAB[self.indexTab].onActive = self.onActive;
+      panelEl.afterRender = self.afterRender;
 
       return panelEl;
     },
 
+    /**
+     * Fix height for session result
+     * 
+     */
+    fixHeightResult: () => {
+      const self = TabSummaryManager;
+
+      const tabContainerEl = document.getElementById(`write_tab`);
+      const resultEl = document.body.querySelector(`#${self.idTab} #summary-result`);
+      $(resultEl).css('height', tabContainerEl.offsetHeight + 'px');
+    },
+
+    /**
+     * updateHeightTabContainer
+     * 
+     */
+    updateHeightTabContainer: () => {
+      const self = TabSummaryManager;
+
+      const containerEl = document.getElementById(WrapperManager.idEl);
+      const formConfigEl = document.body.querySelector(`#${self.idTab} .form-config`);
+      const resultEl = document.body.querySelector(`#${self.idTab} #summary-result`);
+      $(resultEl).css('marginTop', (containerEl.offsetHeight - formConfigEl.offsetHeight) + 'px');
+    },
+
+    /**
+     * Check form data is validate to call GPT
+     * 
+     * @returns {boolean}
+     */
+    isValidateToCallGPT: () => {
+      const self = TabSummaryManager;
+
+      let originalTextSummary = $(`#${self.idTab} .original_text_summary`).val().trim();
+
+      if (!originalTextSummary || originalTextSummary == '') {
+        return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_SUMMARY');
+      }
+      if (originalTextSummary.length > MAX_LENGTH_TOPIC_COMPOSE) {
+        return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_SUMMARY_MAX_LENGTH_TOKEN');
+      }
+      if (self.formData.gpt_version == 'gemini') {
+        return MyLang.getMsg('DES_ERROR_GEMINI_NOT_RELEASED');
+      }
+      if (self.formData.gpt_version == 'gpt-4-turbo') {
+        return MyLang.getMsg('DES_ERROR_GPT4_NOT_RELEASED');
+      }
+    },
+
+    // Setter
+    setOriginalText: (originalText) => {
+      const self = TabSummaryManager;
+      if (self.is_loading) return;
+
+      let textareaEl = document.body.querySelector(`#${self.idTab} .original_text_summary`);
+      $(textareaEl).val(originalText);
+
+      self.original_text_summary = originalText;
+
+      self.setFocusOriginalText();
+    },
+
+    setFocusOriginalText: () => {
+      const self = TabSummaryManager;
+      if (self.is_loading) return;
+
+      let textareaEl = document.body.querySelector(`#${self.idTab} .original_text_summary`);
+      $(textareaEl).focus();
+      $(textareaEl).scrollTop(0);
+    },
+
+    /**
+     * Load and show list option gpt version for user
+     * 
+     */
+    loadVersionGPTConfig: () => {
+      const self = TabSummaryManager;
+
+      let itemActive = GPT_VERSION_SETTING_DATA[0];
+      let gpt_option = '';
+      for (let i = 0; i < GPT_VERSION_SETTING_DATA.length; i++) {
+        const item = GPT_VERSION_SETTING_DATA[i];
+        gpt_option += `
+        <li class="combobox-item" value="${item.value}" kind="version_gpt">
+          <div class="icon">
+            <img src="${item.icon}" alt="" srcset="">
+          </div>
+          <div class="name">${item.name}</div>
+        </li>
+      `;
+
+        // get gpt version active
+        if (item.value == self.formData.gpt_version) {
+          itemActive = item;
+        }
+      }
+
+      let vHtml_init = `
+        <button class="item text version-gpt combobox" id="version_gpt">
+
+          <div class="content">
+            <img src="${itemActive.icon}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M0 0h24v24H0z" fill="none" />
+              <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" />
+            </svg>
+          </div>
+
+          <ul class="popover-cbx wrap-item type-icon">
+            ${gpt_option}
+          </ul>
+
+        </button>
+    `
+
+      $(`#${self.idTab} .version .options`).html(vHtml_init);
+    },
+
+    /**
+     * Show alert
+     * 
+     * @param {string} type 
+     * @param {string} message 
+     */
+    showAlert: (type, message) => {
+      const self = TabSummaryManager;
+
+      let alertEl = document.createElement('div');
+      alertEl.className = 'item ' + type;
+      alertEl.innerHTML = message;
+
+      $(`#${self.idTab} .form-config .alert`).append(alertEl);
+
+      alertEl.onclick = (event) => {
+        alertEl.remove();
+      }
+      setTimeout(() => {
+        alertEl.remove();
+      }, 3000);
+    },
+
+    /**
+     * Set event for element in panel
+     * 
+     */
+    resetEvent: () => {
+      const self = TabSummaryManager;
+
+      let listClsAndEvent = [
+        {
+          cls: `#${self.idTab} .options`,
+          click: self.onClickOptionComboBox
+        },
+        {
+          cls: `#${self.idTab} .popover-cbx.wrap-item .combobox-item`,
+          click: self.onClickItemOptionComboBox
+        },
+        {
+          cls: `#${self.idTab} #summary-result .result-title .right .prev`,
+          click: self.handlerNextOrPrevPagingResult
+        },
+        {
+          cls: `#${self.idTab} #summary-result .result-title .right .next`,
+          click: self.handlerNextOrPrevPagingResult
+        },
+        {
+          cls: `#${self.idTab} .submit-summary`,
+          click: self.onSubmitSummary
+        },
+        {
+          cls: `#${self.idTab} .result-footer .btn.re-generate`,
+          click: self.onSubmitSummary
+        },
+        {
+          cls: `#${self.idTab} .result-footer .btn.copy-content`,
+          click: self.onClickCopyContentResult
+        },
+      ];
+
+      for (let i = 0; i < listClsAndEvent.length; i++) {
+        const itemConfig = listClsAndEvent[i];
+        $(document).off('click', itemConfig.cls, itemConfig.click);
+        $(document).on('click', itemConfig.cls, itemConfig.click);
+      }
+
+      let versionGptComboBox = document.body.querySelector(`#${self.idTab} #version_gpt`);
+      if (versionGptComboBox && !versionGptComboBox.onSelect) {
+        versionGptComboBox.onSelect = self.onSelectVersionGptConfig;
+      }
+    },
+
+    /**
+     * handlerNextOrPrevPagingResult
+     * 
+     * @param {Event} event 
+     */
+    handlerNextOrPrevPagingResult: (event) => {
+      const self = TabSummaryManager;
+      if (self.is_loading) return;
+
+      if (event.target.className.baseVal.indexOf('disable') != -1) {
+        return;
+      }
+
+      if (event.target.className.baseVal.indexOf('next') != -1) {
+        self.result_active++;
+      } else {
+        self.result_active--;
+      }
+
+      $(`#${self.idTab} #summary-result .result-summary .result-item`).removeClass('active');
+      let itemActiveEl = $(`#${self.idTab} #summary-result .result-summary .result-item[data-index="${self.result_active}"]`);
+      itemActiveEl.addClass('active');
+
+      $(`#${self.idTab} #summary-result .result-summary`).css('height', `${itemActiveEl[0].offsetHeight}px`)
+
+      self.handlerUpdatePaging();
+    },
+
+    /**
+     * Handler show generate result
+     * 
+     */
+    handlerShowSummaryResult: function () {
+      const self = TabSummaryManager;
+
+      const result = self.generate_result_list;
+      self.result_active = (result.length - 1);
+
+      $(`#${self.idTab} #summary-result`).removeClass('is-loading');
+      $(`#${self.idTab} #summary-result .result-summary .result-item`).remove();
+
+      let resultActiveEl = null;
+      for (let i = 0; i < result.length; i++) {
+        const item = result[i];
+        let isActive = (i == self.result_active)
+
+        let textEl = document.createElement('div');
+        textEl.classList = ['wrap-content'];
+        textEl.innerHTML = item.summary_text_result.replaceAll('\n', '<br/>');
+
+        let resultDivEl = document.createElement('div');
+        resultDivEl.classList = ['result-item'];
+        resultDivEl.setAttribute('data-index', i);
+        if (isActive) {
+          resultActiveEl = resultDivEl
+          resultDivEl.classList.add('active');
+        }
+
+        resultDivEl.append(textEl);
+
+        $(`#${self.idTab} #summary-result .result-summary`).append(resultDivEl);
+      }
+
+      self.is_loading = false;
+
+      self.handlerUpdatePaging();
+    },
+
+    /**
+     * Handler update paging status
+     * 
+     */
+    handlerUpdatePaging: function () {
+      const self = TabSummaryManager;
+      if (self.is_loading) return;
+
+      const result_list = self.generate_result_list;
+
+      $(`#${self.idTab} #summary-result .result-title .right .text`).html(`${self.result_active + 1}/${result_list.length}`)
+
+      // paging prev
+      if (self.result_active <= 0) {
+        $(`#${self.idTab} #summary-result .result-title .right .prev`)[0].classList.add('disable');
+      } else {
+        $(`#${self.idTab} #summary-result .result-title .right .prev`)[0].classList.remove('disable');
+      }
+
+      // paging next
+      if (self.result_active >= (result_list.length - 1)) {
+        $(`#${self.idTab} #summary-result .result-title .right .next`)[0].classList.add('disable');
+      } else {
+        $(`#${self.idTab} #summary-result .result-title .right .next`)[0].classList.remove('disable');
+      }
+    },
+
+    /**
+     * Process add generate write
+     * 
+     */
+    processAddSummary: () => {
+      const self = TabSummaryManager;
+      if (self.is_loading) return;
+
+      self.is_loading = true;
+
+      let originalTextSummary = $(`#${self.idTab} textarea.original_text_summary`).val()
+
+      let params = self.formData;
+      params.original_text_summary = originalTextSummary;
+      params.language = UserSetting.language_active;
+
+      $(`#${self.idTab} #summary-result .result-footer`).addClass('hidden');
+      $(`#${self.idTab} #summary-result .result-title .left .icon`).attr('src', MyUtils.getPropGptByVersion('icon', self.formData.gpt_version));
+      $(`#${self.idTab} #summary-result .result-title .left .name-gpt`).text(MyUtils.getPropGptByVersion('name', self.formData.gpt_version));
+
+      const result = self.generate_result_list;
+      let indexActive = (result.length);
+
+      // Setup - Add new item tab for this generate 
+      self.generate_result_list.push({ original_text_summary: originalTextSummary, summary_text_result: '' });
+      self.handlerShowSummaryResult();
+
+      let itemActiveEl = null;
+      OpenAIManager.summaryOriginalText(params,
+        // Response text function callback
+        (textRes) => {
+          let innerHTML = itemActiveEl.innerHTML;
+          innerHTML += textRes.replaceAll('\n', '<br/>');
+          $(itemActiveEl).html(innerHTML);
+
+          $(`#${self.idTab} #summary-result .result-summary`).css('height', `${itemActiveEl.offsetHeight}px`)
+        },
+        // On [DONE] function callback
+        (contentRes) => {
+          self.generate_result_list[indexActive].body = contentRes;
+
+          $(itemActiveEl).removeClass('is-loading');
+          $(`#${WrapperManager.idEl}`).removeClass('is-loading');
+          $(`#${self.idTab} #summary-result .result-footer`).removeClass('hidden');
+
+          MyUtils.debugLog("Done!");
+        },
+        // Call request success function callback
+        (success) => {
+          itemActiveEl = document.querySelector(`.result-summary .result-item[data-index="${indexActive}"] .wrap-content`);
+
+          $(itemActiveEl).addClass('is-loading');
+          $(`#${self.idTab} #summary-result`).removeClass('is-loading');
+
+          MyUtils.debugLog('call request fetch success:' + success);
+        });
+    },
+
     // Event handler
+    afterRender: () => {
+      const self = TabSummaryManager;
+
+      self.loadVersionGPTConfig();
+    },
+
+    /**
+     * on Active
+     */
     onActive: () => {
       const self = TabSummaryManager;
 
+      self.resetEvent();
+      self.setFocusOriginalText();
+
       MyUtils.debugLog(`Active: ${self.idTab}`);
-    }
+    },
+
+    /**
+     * onClickOptionComboBox
+     * 
+     * @param {Event} event 
+     */
+    onClickOptionComboBox: (event) => {
+      const self = TabSummaryManager;
+      if (self.is_loading) return;
+
+      const targetEl = event.target;
+
+      const popoverEl = targetEl.querySelector(`#${self.idTab} .popover-cbx`);
+      if (!popoverEl) return;
+
+      $(`#${self.idTab} .popover-cbx`).removeClass('show');
+      self.combobox_flag = true;
+
+      popoverEl.classList.add('show');
+
+      if (MyUtils.isRightSideOutOfViewport(popoverEl)) {
+        popoverEl.style.left = 'unset'
+        popoverEl.style.right = `${targetEl.offsetWidth - 20}px`;
+      }
+      if (MyUtils.isBottomSideOutOfViewport(popoverEl)) {
+        popoverEl.style.top = 'unset'
+        popoverEl.style.bottom = `35px`;
+      }
+
+      setTimeout(() => {
+        self.combobox_flag = false;
+      }, 100)
+    },
+
+    /**
+     * onClickItemOptionComboBox
+     * 
+     * @param {Event} event 
+     */
+    onClickItemOptionComboBox: (event) => {
+      const self = TabSummaryManager;
+      if (self.is_loading) return;
+
+      const kind = event.target.getAttribute('kind');
+      const value = event.target.getAttribute('value');
+
+      const comboboxEl = $(event.target).parents('button.combobox')[0];
+      if (comboboxEl.onSelect) {
+        comboboxEl.onSelect(comboboxEl, event.target, kind, value);
+      }
+    },
+
+    /**
+     * On select version GPT config
+     * 
+     * @param {Element} comboboxEl 
+     * @param {Element} itemEl 
+     * @param {string} value 
+     */
+    onSelectVersionGptConfig: (comboboxEl, itemEl, kind, value) => {
+      const self = TabSummaryManager;
+      if (self.is_loading) return;
+
+      let record = GPT_VERSION_SETTING_DATA.find(item => {
+        return value == item.value
+      });
+
+      if (record) {
+        self.formData['gpt_version'] = value;
+
+        $(`#${self.idTab} #version_gpt .content img`).attr('src', record.icon);
+      }
+    },
+
+    /**
+     * On submit summary content
+     * 
+     * @param {event} event 
+     */
+    onSubmitSummary: (event) => {
+      const self = TabSummaryManager;
+      if (self.is_loading) return;
+
+      let messValidate = self.isValidateToCallGPT();
+      if (messValidate) {
+        self.showAlert('error', messValidate);
+        return;
+      }
+
+      // process add generate write
+      self.processAddSummary();
+      self.updateHeightTabContainer();
+
+      const containerEl = document.getElementById(WrapperManager.idEl);
+      const resultEl = document.body.querySelector(`#${self.idTab} #summary-result`);
+
+      $(resultEl).removeClass('hidden');
+      $(resultEl).addClass('is-loading');
+      $(containerEl).animate({
+        scrollTop: $(resultEl).offset().top + containerEl.scrollTop
+      }, 250, 'swing', () => {
+        $(containerEl).addClass('is-loading');
+      });
+    },
+
+    /**
+     * On click copy content result
+     * 
+     * @param {event} event 
+     */
+    onClickCopyContentResult: (event) => {
+      const self = TabSummaryManager;
+      if (self.is_loading) return;
+
+      $(event.target).addClass('done');
+      navigator.clipboard.writeText(self.generate_result_list[self.result_active].body);
+
+      setTimeout(() => {
+        $(event.target).removeClass('done');
+      }, 1000);
+    },
   };
 
   /**
@@ -1448,16 +2005,87 @@
     idTab: LIST_TAB[2].id,
     indexTab: 2,
 
+    combobox_flag: false,
+
+    is_loading: false,
+    formData: {
+      gpt_version: null,
+    },
+    original_text_check_problem: '',
+
     /**
      * Get inner html for tab write
      * 
      * @returns {string}
      */
     getVHtml: () => {
-      return `<div>
-                <h1>Find the problem tab</h1>
+      let reloadIconUrl = chrome.runtime.getURL("icons/refresh-icon.png");
+      let copyIconUrl = chrome.runtime.getURL("icons/content-copy-icon.png");
+      let doneIconUrl = chrome.runtime.getURL("icons/done.svg");
+
+      return `
+              <div class="form-config">
+
+              <div class="wrap-original-text-summary">
+                <textarea class="original_text_check_problem" maxlength="8000" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_CHECK_PROBLEM')}"></textarea>
               </div>
-              `
+
+              <div class="version config">
+                <div class="options">
+                </div>
+
+                <button class="submit-summary">Summary</button>
+              </div>
+
+              <div class="alert">
+              </div>
+            </div>
+
+            <div id="summary-result" class="hidden is-loading">
+
+              <div class="result-title">
+                <div class="left">
+                  <img class="icon" src="./icons/chatgpt-icon.svg" alt="gpt-version-icon">
+                  <span class="name-gpt">...</span>
+                </div>
+
+                <div class="right">
+                  <svg class="icon prev disable" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000">
+                    <path d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
+                  </svg>
+                  <span class="text"> _/_ </span>
+                  <svg class="icon next disable" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000">
+                    <path d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="result-summary">
+                <div class="cmp-loading">
+                  <div class="loading"></div>
+                  <div class="loading"></div>
+                  <div class="loading"></div>
+                </div>
+              </div>
+
+              <div class="result-footer">
+                <div class="left">
+                  <button class="btn re-generate">
+                    <img src="${reloadIconUrl}" alt="">
+                  </button>
+                  <button class="btn copy-content">
+                    <img src="${copyIconUrl}" alt="">
+                    <img class="icon-done" src="${doneIconUrl}" alt="">
+                  </button>
+                </div>
+                <div class="right">
+                </div>
+              </div>
+
+            </div>
+          `
     },
 
     /**
@@ -1468,22 +2096,208 @@
     createPanel: () => {
       const self = TabFindProblemManager;
 
+      self.result_active = 0;
+      self.generate_result_list = [];
+
+      self.formData['gpt_version'] = GPT_VERSION_SETTING_DATA[0].value;
+
       const panelEl = document.createElement('div');
       panelEl.id = self.idTab
       panelEl.className = 'tab-item'
       panelEl.innerHTML = self.getVHtml();
 
       LIST_TAB[self.indexTab].onActive = self.onActive;
+      panelEl.afterRender = self.afterRender;
 
       return panelEl;
     },
 
+    // Setter
+    setOriginalText: (originalText) => {
+      const self = TabFindProblemManager;
+      if (self.is_loading) return;
+
+      let originalTextReplyEl = document.body.querySelector(`#${self.idTab} .original_text_check_problem`);
+      $(originalTextReplyEl).val(originalText);
+      self.original_text_check_problem = originalText;
+
+      self.setFocusOriginalText();
+    },
+
+    setFocusOriginalText: () => {
+      const self = TabFindProblemManager;
+      if (self.is_loading) return;
+
+      let originalTextReplyEl = document.body.querySelector(`#${self.idTab} .original_text_check_problem`);
+      $(originalTextReplyEl).focus();
+      $(originalTextReplyEl).scrollTop(0);
+    },
+
+    /**
+     * Load and show list option gpt version for user
+     * 
+     */
+    loadVersionGPTConfig: () => {
+      const self = TabFindProblemManager;
+
+      let itemActive = GPT_VERSION_SETTING_DATA[0];
+      let gpt_option = '';
+      for (let i = 0; i < GPT_VERSION_SETTING_DATA.length; i++) {
+        const item = GPT_VERSION_SETTING_DATA[i];
+        gpt_option += `
+        <li class="combobox-item" value="${item.value}" kind="version_gpt">
+          <div class="icon">
+            <img src="${item.icon}" alt="" srcset="">
+          </div>
+          <div class="name">${item.name}</div>
+        </li>
+      `;
+
+        // get gpt version active
+        if (item.value == self.formData.gpt_version) {
+          itemActive = item;
+        }
+      }
+
+      let vHtml_init = `
+        <button class="item text version-gpt combobox" id="version_gpt">
+
+          <div class="content">
+            <img src="${itemActive.icon}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M0 0h24v24H0z" fill="none" />
+              <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" />
+            </svg>
+          </div>
+
+          <ul class="popover-cbx wrap-item type-icon">
+            ${gpt_option}
+          </ul>
+
+        </button>
+    `
+
+      $(`#${self.idTab} .version .options`).html(vHtml_init);
+    },
+
+    /**
+     * Set event for element in panel
+     * 
+     */
+    resetEvent: () => {
+      const self = TabFindProblemManager;
+
+      let listClsAndEvent = [
+        {
+          cls: `#${self.idTab} .options`,
+          click: self.onClickOptionComboBox
+        },
+        {
+          cls: `#${self.idTab} .popover-cbx.wrap-item .combobox-item`,
+          click: self.onClickItemOptionComboBox
+        },
+      ];
+
+      for (let i = 0; i < listClsAndEvent.length; i++) {
+        const itemConfig = listClsAndEvent[i];
+        $(document).off('click', itemConfig.cls, itemConfig.click);
+        $(document).on('click', itemConfig.cls, itemConfig.click);
+      }
+
+      let versionGptComboBox = document.body.querySelector(`#${self.idTab} #version_gpt`);
+      if (versionGptComboBox && !versionGptComboBox.onSelect) {
+        versionGptComboBox.onSelect = self.onSelectVersionGptConfig;
+      }
+    },
+
     // Event handler
+    afterRender: () => {
+      const self = TabFindProblemManager;
+
+      self.loadVersionGPTConfig();
+    },
+
     onActive: () => {
       const self = TabFindProblemManager;
 
+      self.resetEvent();
+      self.setFocusOriginalText();
+
       MyUtils.debugLog(`Active: ${self.idTab}`);
-    }
+    },
+
+    /**
+     * onClickOptionComboBox
+     * 
+     * @param {Event} event 
+     */
+    onClickOptionComboBox: (event) => {
+      const self = TabFindProblemManager;
+      if (self.is_loading) return;
+
+      const targetEl = event.target;
+
+      const popoverEl = targetEl.querySelector(`#${self.idTab} .popover-cbx`);
+      if (!popoverEl) return;
+
+      $(`#${self.idTab} .popover-cbx`).removeClass('show');
+      self.combobox_flag = true;
+
+      popoverEl.classList.add('show');
+
+      if (MyUtils.isRightSideOutOfViewport(popoverEl)) {
+        popoverEl.style.left = 'unset'
+        popoverEl.style.right = `${targetEl.offsetWidth - 20}px`;
+      }
+      if (MyUtils.isBottomSideOutOfViewport(popoverEl)) {
+        popoverEl.style.top = 'unset'
+        popoverEl.style.bottom = `35px`;
+      }
+
+      setTimeout(() => {
+        self.combobox_flag = false;
+      }, 100)
+    },
+
+    /**
+     * onClickItemOptionComboBox
+     * 
+     * @param {Event} event 
+     */
+    onClickItemOptionComboBox: (event) => {
+      const self = TabFindProblemManager;
+      if (self.is_loading) return;
+
+      const kind = event.target.getAttribute('kind');
+      const value = event.target.getAttribute('value');
+
+      const comboboxEl = $(event.target).parents('button.combobox')[0];
+      if (comboboxEl.onSelect) {
+        comboboxEl.onSelect(comboboxEl, event.target, kind, value);
+      }
+    },
+
+    /**
+     * On select version GPT config
+     * 
+     * @param {Element} comboboxEl 
+     * @param {Element} itemEl 
+     * @param {string} value 
+     */
+    onSelectVersionGptConfig: (comboboxEl, itemEl, kind, value) => {
+      const self = TabFindProblemManager;
+      if (self.is_loading) return;
+
+      let record = GPT_VERSION_SETTING_DATA.find(item => {
+        return value == item.value
+      });
+
+      if (record) {
+        self.formData['gpt_version'] = value;
+
+        $(`#${self.idTab} #version_gpt .content img`).attr('src', record.icon);
+      }
+    },
   };
 
   /**
@@ -1494,16 +2308,88 @@
     idTab: LIST_TAB[3].id,
     indexTab: 3,
 
+    combobox_flag: false,
+
+    is_loading: false,
+    formData: {
+      gpt_version: null,
+    },
+    original_text_check_content_reply: '',
+
+
     /**
      * Get inner html for tab write
      * 
      * @returns {string}
      */
     getVHtml: () => {
-      return `<div>
-                <h1>Check content reply tab</h1>
+      let reloadIconUrl = chrome.runtime.getURL("icons/refresh-icon.png");
+      let copyIconUrl = chrome.runtime.getURL("icons/content-copy-icon.png");
+      let doneIconUrl = chrome.runtime.getURL("icons/done.svg");
+
+      return `
+              <div class="form-config">
+
+              <div class="wrap-original-text-summary">
+                <textarea class="original_text_check_content_reply" maxlength="8000" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_CHECK_CONTENT_REPLY')}"></textarea>
               </div>
-              `
+
+              <div class="version config">
+                <div class="options">
+                </div>
+
+                <button class="submit-summary">Summary</button>
+              </div>
+
+              <div class="alert">
+              </div>
+            </div>
+
+            <div id="summary-result" class="hidden is-loading">
+
+              <div class="result-title">
+                <div class="left">
+                  <img class="icon" src="./icons/chatgpt-icon.svg" alt="gpt-version-icon">
+                  <span class="name-gpt">...</span>
+                </div>
+
+                <div class="right">
+                  <svg class="icon prev disable" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000">
+                    <path d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
+                  </svg>
+                  <span class="text"> _/_ </span>
+                  <svg class="icon next disable" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000">
+                    <path d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="result-summary">
+                <div class="cmp-loading">
+                  <div class="loading"></div>
+                  <div class="loading"></div>
+                  <div class="loading"></div>
+                </div>
+              </div>
+
+              <div class="result-footer">
+                <div class="left">
+                  <button class="btn re-generate">
+                    <img src="${reloadIconUrl}" alt="">
+                  </button>
+                  <button class="btn copy-content">
+                    <img src="${copyIconUrl}" alt="">
+                    <img class="icon-done" src="${doneIconUrl}" alt="">
+                  </button>
+                </div>
+                <div class="right">
+                </div>
+              </div>
+
+            </div>
+          `
     },
 
     /**
@@ -1514,22 +2400,209 @@
     createPanel: () => {
       const self = TabCheckContentReplyManager;
 
+      self.result_active = 0;
+      self.generate_result_list = [];
+
+      self.formData['gpt_version'] = GPT_VERSION_SETTING_DATA[0].value;
+
       const panelEl = document.createElement('div');
       panelEl.id = self.idTab
       panelEl.className = 'tab-item'
       panelEl.innerHTML = self.getVHtml();
 
       LIST_TAB[self.indexTab].onActive = self.onActive;
+      panelEl.afterRender = self.afterRender;
 
       return panelEl;
+    },
+
+    // Setter
+    setOriginalText: (originalText) => {
+      const self = TabCheckContentReplyManager;
+      if (self.is_loading) return;
+
+      let originalTextReplyEl = document.body.querySelector(`#${self.idTab} .original_text_check_content_reply`);
+      $(originalTextReplyEl).val(originalText);
+      self.original_text_check_content_reply = originalText;
+
+      self.setFocusOriginalText();
+    },
+
+    setFocusOriginalText: () => {
+      const self = TabCheckContentReplyManager;
+      if (self.is_loading) return;
+
+      let originalTextReplyEl = document.body.querySelector(`#${self.idTab} .original_text_check_content_reply`);
+      $(originalTextReplyEl).focus();
+      $(originalTextReplyEl).scrollTop(0);
+    },
+
+    /**
+     * Load and show list option gpt version for user
+     * 
+     */
+    loadVersionGPTConfig: () => {
+      const self = TabCheckContentReplyManager;
+
+      let itemActive = GPT_VERSION_SETTING_DATA[0];
+      let gpt_option = '';
+      for (let i = 0; i < GPT_VERSION_SETTING_DATA.length; i++) {
+        const item = GPT_VERSION_SETTING_DATA[i];
+        gpt_option += `
+        <li class="combobox-item" value="${item.value}" kind="version_gpt">
+          <div class="icon">
+            <img src="${item.icon}" alt="" srcset="">
+          </div>
+          <div class="name">${item.name}</div>
+        </li>
+      `;
+
+        // get gpt version active
+        if (item.value == self.formData.gpt_version) {
+          itemActive = item;
+        }
+      }
+
+      let vHtml_init = `
+        <button class="item text version-gpt combobox" id="version_gpt">
+
+          <div class="content">
+            <img src="${itemActive.icon}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M0 0h24v24H0z" fill="none" />
+              <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" />
+            </svg>
+          </div>
+
+          <ul class="popover-cbx wrap-item type-icon">
+            ${gpt_option}
+          </ul>
+
+        </button>
+    `
+
+      $(`#${self.idTab} .version .options`).html(vHtml_init);
+    },
+
+    /**
+     * Set event for element in panel
+     * 
+     */
+    resetEvent: () => {
+      const self = TabCheckContentReplyManager;
+
+      let listClsAndEvent = [
+        {
+          cls: `#${self.idTab} .options`,
+          click: self.onClickOptionComboBox
+        },
+        {
+          cls: `#${self.idTab} .popover-cbx.wrap-item .combobox-item`,
+          click: self.onClickItemOptionComboBox
+        },
+      ];
+
+      for (let i = 0; i < listClsAndEvent.length; i++) {
+        const itemConfig = listClsAndEvent[i];
+        $(document).off('click', itemConfig.cls, itemConfig.click);
+        $(document).on('click', itemConfig.cls, itemConfig.click);
+      }
+
+      let versionGptComboBox = document.body.querySelector(`#${self.idTab} #version_gpt`);
+      if (versionGptComboBox && !versionGptComboBox.onSelect) {
+        versionGptComboBox.onSelect = self.onSelectVersionGptConfig;
+      }
+    },
+
+    // Event handler
+    afterRender: () => {
+      const self = TabCheckContentReplyManager;
+
+      self.loadVersionGPTConfig();
     },
 
     // Event handler
     onActive: () => {
       const self = TabCheckContentReplyManager;
 
+      self.resetEvent();
+      self.setFocusOriginalText();
+
       MyUtils.debugLog(`Active: ${self.idTab}`);
-    }
+    },
+
+    /**
+     * onClickOptionComboBox
+     * 
+     * @param {Event} event 
+     */
+    onClickOptionComboBox: (event) => {
+      const self = TabCheckContentReplyManager;
+      if (self.is_loading) return;
+
+      const targetEl = event.target;
+
+      const popoverEl = targetEl.querySelector(`#${self.idTab} .popover-cbx`);
+      if (!popoverEl) return;
+
+      $(`#${self.idTab} .popover-cbx`).removeClass('show');
+      self.combobox_flag = true;
+
+      popoverEl.classList.add('show');
+
+      if (MyUtils.isRightSideOutOfViewport(popoverEl)) {
+        popoverEl.style.left = 'unset'
+        popoverEl.style.right = `${targetEl.offsetWidth - 20}px`;
+      }
+      if (MyUtils.isBottomSideOutOfViewport(popoverEl)) {
+        popoverEl.style.top = 'unset'
+        popoverEl.style.bottom = `35px`;
+      }
+
+      setTimeout(() => {
+        self.combobox_flag = false;
+      }, 100)
+    },
+
+    /**
+     * onClickItemOptionComboBox
+     * 
+     * @param {Event} event 
+     */
+    onClickItemOptionComboBox: (event) => {
+      const self = TabCheckContentReplyManager;
+      if (self.is_loading) return;
+
+      const kind = event.target.getAttribute('kind');
+      const value = event.target.getAttribute('value');
+
+      const comboboxEl = $(event.target).parents('button.combobox')[0];
+      if (comboboxEl.onSelect) {
+        comboboxEl.onSelect(comboboxEl, event.target, kind, value);
+      }
+    },
+
+    /**
+     * On select version GPT config
+     * 
+     * @param {Element} comboboxEl 
+     * @param {Element} itemEl 
+     * @param {string} value 
+     */
+    onSelectVersionGptConfig: (comboboxEl, itemEl, kind, value) => {
+      const self = TabCheckContentReplyManager;
+      if (self.is_loading) return;
+
+      let record = GPT_VERSION_SETTING_DATA.find(item => {
+        return value == item.value
+      });
+
+      if (record) {
+        self.formData['gpt_version'] = value;
+
+        $(`#${self.idTab} #version_gpt .content img`).attr('src', record.icon);
+      }
+    },
   };
 
   /**
@@ -1608,7 +2681,7 @@
     setActiveTab: (idTab) => {
       const self = WrapperManager;
 
-      if (!idTab) idTab = LIST_TAB[0].id;
+      if (!idTab) idTab = LIST_TAB[1].id;
 
       // sidebar
       $(`.sidebar .menu .item`).removeClass('active');

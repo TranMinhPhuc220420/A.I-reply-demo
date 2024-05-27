@@ -41,28 +41,21 @@ let playlist_add_check_icon = `<svg xmlns="http://www.w3.org/2000/svg" enable-ba
                                       </g>
                                   </g>
                                 </svg>`;
-let group_3_icon = `<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24">
-                      <g>
-                          <rect fill="none" height="24" width="24"/>
-                      </g>
-                      <g>
-                          <g>
-                              <path d="M16.24,13.65c-1.17-0.52-2.61-0.9-4.24-0.9c-1.63,0-3.07,0.39-4.24,0.9C6.68,14.13,6,15.21,6,16.39V18h12v-1.61 C18,15.21,17.32,14.13,16.24,13.65z"/>
-                              <path d="M1.22,14.58C0.48,14.9,0,15.62,0,16.43V18l4.5,0v-1.61c0-0.83,0.23-1.61,0.63-2.29C4.76,14.04,4.39,14,4,14 C3.01,14,2.07,14.21,1.22,14.58z"/>
-                              <path d="M22.78,14.58C21.93,14.21,20.99,14,20,14c-0.39,0-0.76,0.04-1.13,0.1c0.4,0.68,0.63,1.46,0.63,2.29V18l4.5,0v-1.57 C24,15.62,23.52,14.9,22.78,14.58z"/>
-                              <path d="M12,12c1.66,0,3-1.34,3-3c0-1.66-1.34-3-3-3S9,7.34,9,9C9,10.66,10.34,12,12,12z"/>
-                              <rect height="3.54" transform="matrix(0.7071 -0.7071 0.7071 0.7071 -6.6066 6.0503)" width="3.54" x="2.23" y="9.23"/>
-                              <polygon points="20,9 17.5,13 22.5,13"/>
-                          </g>
-                      </g>
-                    </svg>`;
-let read_more_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M3 18h12v-2H3v2zM3 6v2h18V6H3zm0 7h18v-2H3v2z"/></svg>`;
+let group_3_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg>`;
+let read_more_icon = `<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><g><path d="M0,0h24v24H0V0z" fill="none"/></g><g><g><path d="M15,3H5C3.9,3,3.01,3.9,3.01,5L3,19c0,1.1,0.89,2,1.99,2H19c1.1,0,2-0.9,2-2V9L15,3z M8,17c-0.55,0-1-0.45-1-1s0.45-1,1-1 s1,0.45,1,1S8.55,17,8,17z M8,13c-0.55,0-1-0.45-1-1s0.45-1,1-1s1,0.45,1,1S8.55,13,8,13z M8,9C7.45,9,7,8.55,7,8s0.45-1,1-1 s1,0.45,1,1S8.55,9,8,9z M14,10V4.5l5.5,5.5H14z"/></g></g></svg>`;
+let description_icon = `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#ae8cf2"><path d="M0 0h24v24H0z" fill="none"/><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>`;
+// let description_icon = `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#ae8cf2"><path d="M0 0h24v24H0z" fill="none"/><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>`;
+let emoji_icon = `<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#ae8cf2"><g><rect fill="none" height="24" width="24"/></g><g><g/><path d="M11.99,2C6.47,2,2,6.48,2,12c0,5.52,4.47,10,9.99,10C17.52,22,22,17.52,22,12C22,6.48,17.52,2,11.99,2z M8.5,8 C9.33,8,10,8.67,10,9.5S9.33,11,8.5,11S7,10.33,7,9.5S7.67,8,8.5,8z M12,18c-2.28,0-4.22-1.66-5-4h10C16.22,16.34,14.28,18,12,18z M15.5,11c-0.83,0-1.5-0.67-1.5-1.5S14.67,8,15.5,8S17,8.67,17,9.5S16.33,11,15.5,11z"/></g></svg>`;
+let format_align__icon = `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#ae8cf2"><path d="M0 0h24v24H0z" fill="none"/><path d="M15 15H3v2h12v-2zm0-8H3v2h12V7zM3 13h18v-2H3v2zm0 8h18v-2H3v2zM3 3v2h18V3H3z"/></svg>`;
+let account_circle_icon = `<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#ae8cf2"><g><rect fill="none" height="24" width="24"/></g><g><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.88C7.55 15.8 9.68 15 12 15s4.45.8 6.14 2.12C16.43 19.18 14.03 20 12 20z"/></g></svg>`;
+// let translate_icon = `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#ae8cf2"><path d="M0 0h24v24H0z" fill="none"/><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>`;
 
 let descriptionIconUrl = chrome.runtime.getURL("icons/description-icon.svg");
 let emojiIconUrl = chrome.runtime.getURL("icons/emoji-emotions-icon.svg");
 let formatAlignIconUrl = chrome.runtime.getURL("icons/format-align-icon.svg");
 let accountCircleIconUrl = chrome.runtime.getURL("icons/account-circle-icon.svg");
 let translateIconUrl = chrome.runtime.getURL("icons/translate.svg");
+
 let moreHorizIconUrl = chrome.runtime.getURL("icons/more_horiz.svg");
 let minimizeIconUrl = chrome.runtime.getURL("icons/minimize.svg");
 // let tipsIconUrl = chrome.runtime.getURL("icons/tips_and_updates.svg");
@@ -156,7 +149,7 @@ const VOICE_SETTING_DATA = [
   {
     name_kind: "formality",
     name: MyLang.getMsg('TXT_FORMAT'),
-    icon: descriptionIconUrl,
+    icon: description_icon,
     options: [
       {
         value: 'email',
@@ -223,7 +216,7 @@ const VOICE_SETTING_DATA = [
   {
     name_kind: "formality_reply",
     name: MyLang.getMsg('TXT_FORMAT'),
-    icon: descriptionIconUrl,
+    icon: description_icon,
     options: [
       {
         value: 'email',
@@ -250,7 +243,7 @@ const VOICE_SETTING_DATA = [
   {
     name_kind: "tone",
     name: MyLang.getMsg('TXT_TONE'),
-    icon: emojiIconUrl,
+    icon: emoji_icon,
     options: [
       {
         value: 'professional',
@@ -297,7 +290,7 @@ const VOICE_SETTING_DATA = [
   {
     name_kind: "email_length",
     name: MyLang.getMsg('TXT_EMAIL_LENGTH'),
-    icon: formatAlignIconUrl,
+    icon: format_align__icon,
     options: [
       {
         value: 'short',
@@ -316,7 +309,7 @@ const VOICE_SETTING_DATA = [
   {
     name_kind: "your_role",
     name: MyLang.getMsg('TXT_YOUR_ROLE'),
-    icon: accountCircleIconUrl,
+    icon: account_circle_icon,
     options: [
       {
         value: ' ',
@@ -360,7 +353,7 @@ const VOICE_SETTING_DATA = [
     xtype: 'combobox',
     name_kind: "your_language",
     name: MyLang.getMsg('TXT_LANGUAGE'),
-    icon: translateIconUrl,
+    icon: translate_icon,
     options: [
       {
         value: 'japanese',
@@ -1570,7 +1563,8 @@ Output in ${lang}`
     ];
 
     prompt = ''
-    prompt += `${(role_trim != '') ? `I'm a ${role_trim}. ` : ''}Help me write a ${formality} ${email_length_str} please! I just need the exact content written and no explanation needed.\n Output in ${your_language}`;
+    prompt += `${(role_trim != '') ? `I'm a ${role_trim}. ` : ''}Help me write a ${formality} ${email_length_str} please! I just need the exact content written and no explanation needed.\n`;
+    prompt += `Output in ${your_language}`
     messages.push({ role: 'user', content: prompt })
 
     try {
@@ -1704,6 +1698,83 @@ Output in ${lang}`
       } else {
         self._generateReplyContentRequest(params, responseText, onDone, callback);
       }
+    })
+  },
+
+  /**
+   * Generate reply content request
+   * 
+   * @param {object} params 
+   * @param {Function} callback 
+   * @param {Number|null} retry 
+   */
+  _summaryOriginalTextRequest: async (params, responseText, onDone, callback, retry) => {
+    const self = OpenAIManager;
+
+    if (typeof retry == 'undefined') retry = 0;
+    if (retry > 3) {
+      callback(false);
+      return false;
+    }
+
+    const {
+      gpt_ai_key, gpt_version,
+
+      original_text_summary, language
+    } = params;
+
+    let prompt, prompt_system;
+
+    prompt_system = '';
+    prompt_system += `You are a helpful assistant.`;
+
+    const messages = [
+      { role: "system", content: prompt_system },
+    ];
+
+    prompt = ``
+    prompt += `Original text:\n`
+    prompt += `"""\n`
+    prompt += `${original_text_summary}\n`
+    prompt += `"""\n`
+    prompt += `Please help me summarize this original text. I just need the exact content summarize and no title, no explanation needed.\n`
+    prompt += `Output in ${language}`
+    messages.push({ role: 'user', content: prompt })
+
+    try {
+      const myFetch = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, true, true);
+
+      let answerStr = '';
+      self.processReadBodyStream(myFetch,
+        (charactersStr) => {
+          answerStr += charactersStr;
+          responseText(charactersStr);
+        },
+        () => {
+          //Save log summary chat
+          let question = MyUtils.getContentByRoleInMessage(false, messages);
+          self.saveLog(question, answerStr, 'email');
+
+          onDone(answerStr);
+        })
+
+      callback(true);
+
+    } catch (error) {
+      retry++;
+      self._summaryOriginalTextRequest(params, responseText, onDone, callback, retry);
+    }
+  },
+
+  summaryOriginalText: function (params, responseText, onDone, callback) {
+    const self = OpenAIManager;
+
+    // Get open ai KEY
+    self.getOpenAIKey((gptAiKey) => {
+      params.gpt_ai_key = gptAiKey;
+
+      // Call request get data to show popup in mail
+      self._summaryOriginalTextRequest(params, responseText, onDone, callback);
     })
   },
 };

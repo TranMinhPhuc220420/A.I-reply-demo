@@ -176,6 +176,15 @@
   "txt_placeholder_general_content_reply": {
     "message": "上記の本文に対する返信の一般的な内容"
   },
+  "txt_placeholder_original_text_summary": {
+    "message": "The original text to which you want to summary"
+  },
+  "txt_placeholder_original_text_check_problem": {
+    "message": "The original text to which you want to check problem"
+  },
+  "txt_placeholder_original_text_check_content_reply": {
+    "message": "The original text to which you want to check content reply"
+  },
   "txt_format": {
     "message": "フォーマット"
   },
@@ -262,5 +271,11 @@
   },
   "des_error_gpt4_not_released": {
     "message": "「おっと！ GPT-4 Turboはまだリリースされていません」"
+  },
+  "des_error_empty_original_text_summary": {
+    "message": "Please enter the original text you want to summarize"
+  },
+  "des_error_original_text_summary_max_length_token": {
+    "message": "Maximum 4000 characters for the original text you want to summarize"
   }
 }

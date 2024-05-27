@@ -176,6 +176,15 @@
   "txt_placeholder_general_content_reply": {
     "message": "The general content of your reply to the above text"
   },
+  "txt_placeholder_original_text_summary": {
+    "message": "The original text to which you want to summary"
+  },
+  "txt_placeholder_original_text_check_problem": {
+    "message": "The original text to which you want to check problem"
+  },
+  "txt_placeholder_original_text_check_content_reply": {
+    "message": "The original text to which you want to check content reply"
+  },
   "txt_format": {
     "message": "Format"
   },
@@ -262,5 +271,11 @@
   },
   "des_error_gpt4_not_released": {
     "message": "Opps! GPT-4 Turbo has not been released yet"
+  },
+  "des_error_empty_original_text_summary": {
+    "message": "Please enter the original text you want to summarize"
+  },
+  "des_error_original_text_summary_max_length_token": {
+    "message": "Maximum 4000 characters for the original text you want to summarize"
   }
 }
