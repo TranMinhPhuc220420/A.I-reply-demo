@@ -46,9 +46,15 @@
                 <div class="tab-title">
                   <div class="item" key_tab="compose_tab">
                     <span>${MyLang.getMsg('TXT_COMPOSE')}</span>
+                    <div class="bg-active-icon">
+                      ${bg_tab_active_icon}
+                    </div>
                   </div>
                   <div class="item" key_tab="reply_tab">
                     <span>${MyLang.getMsg('TXT_REPLY')}</span>
+                    <div class="bg-active-icon">
+                      ${bg_tab_active_icon}
+                    </div>
                   </div>
                 </div>
                 <div class="tab-body">
@@ -820,7 +826,7 @@
         }
 
         // Save to storage
-        StorageManager.setVoiceConfigWrite(voiceConfig);
+        _StorageManager.setVoiceConfigWrite(voiceConfig);
       }
     },
 
@@ -924,7 +930,7 @@
 
       self.loadContentDataMailReply();
 
-      StorageManager.setTitleContentMailToWrite(null);
+      _StorageManager.setTitleContentMailToWrite(null);
     },
 
     /**
@@ -1013,7 +1019,7 @@
       if ('original_text_side_panel' in payload) {
         let originalTextNew = payload.original_text_side_panel.newValue;
         if (originalTextNew) {
-          StorageManager.removeOriginalTextSidePanel();
+          _StorageManager.removeOriginalTextSidePanel();
 
           self.checkAndSetOriginalText(originalTextNew);
         }
@@ -1029,7 +1035,7 @@
             self.setTopicToCompose(general_content_reply, is_direct_send, is_prompt_sateraito);
           }
 
-          StorageManager.removeGeneralContentReplySidePanel();
+          _StorageManager.removeGeneralContentReplySidePanel();
         }
       }
       if ('write_voice_config' in payload) {
@@ -1078,6 +1084,16 @@
           self.processTitleContentMailToWrite();
         }
       }
+    },
+
+    checkOnStorageChangedNeedToActiveTab: (payload, type) => {
+      const self = TabWriteManager;
+
+      if ('title_content_mail_to_write' in payload) {
+        return true;
+      }
+
+      return false;
     },
 
     // Event
@@ -1281,7 +1297,7 @@
         }
 
         // Save to storage
-        StorageManager.setVoiceConfigWrite(voiceConfig);
+        _StorageManager.setVoiceConfigWrite(voiceConfig);
       }
     },
 
@@ -1331,7 +1347,7 @@
         }
 
         // Save to storage
-        StorageManager.setVoiceConfigWrite(voiceConfig);
+        _StorageManager.setVoiceConfigWrite(voiceConfig);
       }
     },
 
@@ -1365,10 +1381,10 @@
     onClickOpenTips: (event) => {
       const self = TabWriteManager;
 
-      StorageManager.toggleSidePromptBuilder();
+      _StorageManager.toggleSidePromptBuilder();
 
       setTimeout(() => {
-        StorageManager.removeToggleSidePromptBuilder();
+        _StorageManager.removeToggleSidePromptBuilder();
       }, 500);
 
       // chrome.runtime.sendMessage({method: 'get_tab_info'}, (tabEmailInfoInBrowser) => {
@@ -1435,9 +1451,15 @@
                 <div class="tab-title">
                   <div class="item active" key_tab="one_thread_tab">
                     <span>${MyLang.getMsg('TXT_SUMMARY_ONE_THREAD')}</span>
+                    <div class="bg-active-icon">
+                      ${bg_tab_active_icon}
+                    </div>
                   </div>
                   <div class="item" key_tab="all_thread_tab">
                     <span>${MyLang.getMsg('TXT_SUMMARY_ALL_THREAD')}</span>
+                    <div class="bg-active-icon">
+                      ${bg_tab_active_icon}
+                    </div>
                   </div>
                 </div>
 
@@ -2146,9 +2168,15 @@
                 <div class="tab-title">
                   <div class="item active" key_tab="check_problem_one_thread_tab">
                     <span>${MyLang.getMsg('TXT_SUMMARY_ONE_THREAD')}</span>
+                    <div class="bg-active-icon">
+                      ${bg_tab_active_icon}
+                    </div>
                   </div>
                   <div class="item" key_tab="check_problem_all_thread_tab">
                     <span>${MyLang.getMsg('TXT_SUMMARY_ALL_THREAD')}</span>
+                    <div class="bg-active-icon">
+                      ${bg_tab_active_icon}
+                    </div>
                   </div>
                 </div>
 
@@ -3065,6 +3093,11 @@
    */
   const storageOnChanged = (payload, type) => {
     const self = WrapperManager;
+
+    if (TabWriteManager.checkOnStorageChangedNeedToActiveTab(payload, type)) {
+      self.setActiveTab(TabWriteManager.idTab);
+    }
+    
     const idTabActive = self.getActiveTab();
 
     if (idTabActive == TabWriteManager.idTab) {
@@ -3078,7 +3111,7 @@
       let { is_close, id_popup } = payload.trigger_close_side_panel.newValue;
 
       if (is_close == true) {
-        StorageManager.setCloseSidePanel(null, null, () => {
+        _StorageManager.setCloseSidePanel(null, null, () => {
           window.close();
         });
       }
@@ -3086,7 +3119,7 @@
     if ('trigger_clear_side_panel' in payload) {
       let { id_popup } = payload.trigger_clear_side_panel.newValue;
 
-      StorageManager.triggerClearSidePanel(null, () => {
+      _StorageManager.triggerClearSidePanel(null, () => {
         TabWriteManager.clearForm();
       });
     }
@@ -3106,7 +3139,7 @@
       }
     };
 
-    StorageManager.getVoiceConfigWrite(voiceConfig => {
+    _StorageManager.getVoiceConfigWrite(voiceConfig => {
       if (!voiceConfig) {
         voiceConfig = [];
       }
@@ -3132,7 +3165,7 @@
       proceedByPallaFinishedCount();
     })
 
-    StorageManager.getTitleContentMailToWrite(titleContent => {
+    _StorageManager.getTitleContentMailToWrite(titleContent => {
       TabWriteManager.title_content_mail_to_write = { ...titleContent };
 
       proceedByPallaFinishedCount();

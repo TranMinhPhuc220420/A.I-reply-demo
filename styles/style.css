@@ -88,7 +88,7 @@
   background-color: rgba(32, 33, 36, 0.0588235294);
 }
 .sateraito-ai-reply .trigger svg {
-  fill: var(--background-black-color);
+  fill: #444746;
   width: 10px;
   height: 10px;
   transform: scale(2.5);
@@ -136,7 +136,7 @@
   margin-right: 15px;
 }
 .sateraito-ai-reply .popover-cbx .combobox-item .icon svg {
-  fill: var(--background-black-color);
+  fill: #444746;
   height: 20px;
   width: 20px;
 }

@@ -48,6 +48,7 @@ let description_icon = `<svg xmlns="http://www.w3.org/2000/svg" height="24px" vi
 let emoji_icon = `<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#ae8cf2"><g><rect fill="none" height="24" width="24"/></g><g><g/><path d="M11.99,2C6.47,2,2,6.48,2,12c0,5.52,4.47,10,9.99,10C17.52,22,22,17.52,22,12C22,6.48,17.52,2,11.99,2z M8.5,8 C9.33,8,10,8.67,10,9.5S9.33,11,8.5,11S7,10.33,7,9.5S7.67,8,8.5,8z M12,18c-2.28,0-4.22-1.66-5-4h10C16.22,16.34,14.28,18,12,18z M15.5,11c-0.83,0-1.5-0.67-1.5-1.5S14.67,8,15.5,8S17,8.67,17,9.5S16.33,11,15.5,11z"/></g></svg>`;
 let format_align__icon = `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#ae8cf2"><path d="M0 0h24v24H0z" fill="none"/><path d="M15 15H3v2h12v-2zm0-8H3v2h12V7zM3 13h18v-2H3v2zm0 8h18v-2H3v2zM3 3v2h18V3H3z"/></svg>`;
 let account_circle_icon = `<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#ae8cf2"><g><rect fill="none" height="24" width="24"/></g><g><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm0 14c-2.03 0-4.43-.82-6.14-2.88C7.55 15.8 9.68 15 12 15s4.45.8 6.14 2.12C16.43 19.18 14.03 20 12 20z"/></g></svg>`;
+let bg_tab_active_icon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 22" fill="none" class="text-primary4 absolute -left-2 bottom-[2px] tab-zoom-in"><path d="M0 10.4078C0 4.0291 5.89146 -0.719093 12.1245 0.636086L34.4872 5.49811C37.7049 6.1977 40 9.0454 40 12.3383V13.8961C40 17.6713 37.0063 20.7665 33.2332 20.8922L7.2332 21.7589C3.278 21.8907 0 18.7202 0 14.7628V10.4078Z" fill="currentColor"></path></svg>`;
 // let translate_icon = `<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#ae8cf2"><path d="M0 0h24v24H0z" fill="none"/><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></svg>`;
 
 let descriptionIconUrl = chrome.runtime.getURL("icons/description-icon.svg");
@@ -639,7 +640,7 @@ const MyUtils = {
     self.debugLog('setCloseSidePanel');
 
     self.flagHasSetCloseSidePanel = true;
-    StorageManager.setCloseSidePanel(idTarget, true, () => {
+    _StorageManager.setCloseSidePanel(idTarget, true, () => {
       self.flagHasSetCloseSidePanel = false;
     });
   },
@@ -656,7 +657,7 @@ const MyUtils = {
     MyUtils.debugLog('setClearSidePanel');
 
     self.flagHasSetClearSidePanel = true;
-    StorageManager.triggerClearSidePanel(idTarget, () => {
+    _StorageManager.triggerClearSidePanel(idTarget, () => {
       self.flagHasSetClearSidePanel = false;
     });
   },
@@ -824,10 +825,27 @@ const MyUtils = {
  * _Storage Manager
  * 
  */
-const StorageManager = {
+const _StorageManager = {
   setSecondEmail: (email) => {
     chrome.storage.local.set({ second_email: email });
   },
+
+  setCloseSidePanel: (id_popup, is_close, callback) => {
+    chrome.storage.local.set({ trigger_close_side_panel: { is_close, id_popup } }, () => {
+      if (callback) {
+        callback();
+      }
+    });
+  },
+  triggerClearSidePanel: (id_popup, callback) => {
+    chrome.storage.local.set({ trigger_clear_side_panel: { id_popup } }, () => {
+      if (callback) {
+        callback();
+      }
+    });
+  },
+
+  // For tab Write
 
   setOriginalTextSidePanel: (original_text) => {
     // if (original_text) {
@@ -882,26 +900,37 @@ const StorageManager = {
     });
   },
 
-  setCloseSidePanel: (id_popup, is_close, callback) => {
-    chrome.storage.local.set({ trigger_close_side_panel: { is_close, id_popup } }, () => {
-      if (callback) {
-        callback();
-      }
-    });
-  },
-  triggerClearSidePanel: (id_popup, callback) => {
-    chrome.storage.local.set({ trigger_clear_side_panel: { id_popup } }, () => {
-      if (callback) {
-        callback();
-      }
-    });
-  },
-
   toggleSidePromptBuilder: () => {
     chrome.storage.local.set({ toggle_side_prompt_builder: { is_open: Math.random() } });
   },
   removeToggleSidePromptBuilder: () => {
     chrome.storage.local.remove('toggle_side_prompt_builder');
+  },
+
+  // For tab Summary
+
+  setTextSummarySidePanel: (text) => {
+    chrome.storage.local.set({ text_summary_side_panel: text });
+  },
+  getTextSummarySidePanel: (callback) => {
+    chrome.storage.local.get('text_summary_side_panel', payload => {
+      callback(payload.text_summary_side_panel)
+    });
+  },
+  removeTextSummarySidePanel: () => {
+    chrome.storage.local.remove('text_summary_side_panel');
+  },
+  
+  setTextAllThreadSummarySidePanel: (text) => {
+    chrome.storage.local.set({ text_all_thread_summary_side_panel: text });
+  },
+  getTextAllThreadSummarySidePanel: (callback) => {
+    chrome.storage.local.get('text_all_thread_summary_side_panel', payload => {
+      callback(payload.text_all_thread_summary_side_panel)
+    });
+  },
+  removeTextAllThreadSummarySidePanel: () => {
+    chrome.storage.local.remove('text_all_thread_summary_side_panel');
   },
 };
 

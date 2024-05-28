@@ -103,6 +103,107 @@ body ul li {
   background-color: var(--white-color);
   border: var(--base-color-3) 1px solid;
 }
+.gpt-layout .tab {
+  height: unset;
+}
+.gpt-layout .tab .tab-title {
+  display: flex;
+}
+.gpt-layout .tab .tab-title .item {
+  margin-right: 20px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  padding: 5px 0 5px 5px;
+}
+.gpt-layout .tab .tab-title .item.active span {
+  color: var(--base-color);
+  transform: scale(1.5);
+}
+.gpt-layout .tab .tab-title .item.active .bg-active-icon {
+  transform: scale(1);
+}
+.gpt-layout .tab .tab-title .item span {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--background-button-hover);
+  pointer-events: none;
+  position: relative;
+  z-index: 1;
+  transition: 0.15s all;
+  transform: scale(1);
+}
+.gpt-layout .tab .tab-title .item .bg-active-icon {
+  position: absolute;
+  transform: scale(0);
+  top: -8px;
+  left: 0;
+  color: var(--base-color-4);
+  transition: 0.15s all;
+  pointer-events: none;
+}
+.gpt-layout .tab .tab-title .item .bg-active-icon svg {
+  height: 40px;
+  width: 70%;
+}
+.gpt-layout .tab .tab-body .tab-item {
+  display: none;
+  box-sizing: border-box;
+  position: relative;
+  width: 100%;
+  padding: 5px 0;
+}
+.gpt-layout .tab .tab-body .tab-item:last-child {
+  padding-bottom: 0;
+}
+.gpt-layout .tab .tab-body .tab-item.active {
+  display: block;
+}
+.gpt-layout .tab .tab-body .tab-item span {
+  margin-right: 3px;
+  height: auto;
+  box-sizing: border-box;
+  position: relative;
+  display: inline-flex;
+  width: 100%;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.5714285714;
+  background-image: none;
+  border-width: 1px;
+  border-style: solid;
+}
+.gpt-layout .tab .tab-body .tab-item textarea {
+  width: 100% !important;
+  max-width: 100%;
+  min-width: 100%;
+  position: relative;
+}
+.gpt-layout .tab .tab-body .tab-item textarea.original_text_reply {
+  height: 150px;
+  padding: 10px 10px 10px 10px;
+}
+.gpt-layout .tab .tab-body .tab-item textarea.general_content_reply {
+  height: 100px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+.gpt-layout .tab .tab-body .tab-item textarea.original_text_summary {
+  height: 500px;
+  padding: 10px 10px 10px 10px;
+}
+.gpt-layout .tab .tab-body .tab-item textarea.original_text_summary_all_thread {
+  height: 600px;
+  margin-bottom: 5px;
+}
+.gpt-layout .tab .tab-body .tab-item textarea.original_text_check_problem {
+  height: 500px;
+  padding: 10px 10px 10px 10px;
+}
+.gpt-layout .tab .tab-body .tab-item textarea.original_text_check_problem_all_thread {
+  height: 600px;
+  margin-bottom: 5px;
+}
 .gpt-layout .popover-cbx {
   position: absolute;
   display: none;
@@ -563,40 +664,6 @@ body ul li {
 .gpt-layout #write_tab .tab {
   height: unset;
 }
-.gpt-layout #write_tab .tab .tab-title {
-  display: flex;
-}
-.gpt-layout #write_tab .tab .tab-title .item {
-  margin-right: 20px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-.gpt-layout #write_tab .tab .tab-title .item.active span {
-  color: var(--base-color);
-}
-.gpt-layout #write_tab .tab .tab-title .item span {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--background-button-hover);
-  pointer-events: none;
-}
-.gpt-layout #write_tab .tab .tab-body {
-  margin-top: 10px;
-}
-.gpt-layout #write_tab .tab .tab-body .tab-item {
-  display: none;
-  box-sizing: border-box;
-  position: relative;
-  width: 100%;
-  padding: 5px 0;
-}
-.gpt-layout #write_tab .tab .tab-body .tab-item:last-child {
-  padding-bottom: 0;
-}
-.gpt-layout #write_tab .tab .tab-body .tab-item.active {
-  display: block;
-}
 .gpt-layout #write_tab .tab .tab-body .tab-item#compose_tab textarea {
   height: 100px;
   min-height: 100px;
@@ -618,37 +685,6 @@ body ul li {
 }
 .gpt-layout #write_tab .tab .tab-body .tab-item#reply_tab.is-loading .loading:nth-child(3) {
   height: 20px;
-}
-.gpt-layout #write_tab .tab .tab-body .tab-item span {
-  margin-right: 3px;
-  height: auto;
-  box-sizing: border-box;
-  position: relative;
-  display: inline-flex;
-  width: 100%;
-  min-width: 0;
-  font-size: 14px;
-  line-height: 1.5714285714;
-  background-image: none;
-  border-width: 1px;
-  border-style: solid;
-}
-.gpt-layout #write_tab .tab .tab-body .tab-item textarea {
-  width: 100% !important;
-  max-width: 100%;
-  min-width: 100%;
-  min-height: 80px;
-  max-height: 244px;
-  position: relative;
-}
-.gpt-layout #write_tab .tab .tab-body .tab-item textarea.original_text_reply {
-  height: 150px;
-  padding: 10px 10px 10px 10px;
-}
-.gpt-layout #write_tab .tab .tab-body .tab-item textarea.general_content_reply {
-  height: 100px;
-  margin-top: 5px;
-  margin-bottom: 5px;
 }
 .gpt-layout #write_tab .tab .tab-body .tab-item .swap-text-original {
   position: absolute;
@@ -1155,79 +1191,8 @@ body ul li {
   width: 100%;
   padding: 0;
 }
-.gpt-layout #summary_tab .tab {
-  height: unset;
-}
-.gpt-layout #summary_tab .tab .tab-title {
-  display: flex;
-}
-.gpt-layout #summary_tab .tab .tab-title .item {
-  margin-right: 20px;
-  cursor: pointer;
-  position: relative;
-  overflow: hidden;
-}
-.gpt-layout #summary_tab .tab .tab-title .item.active span {
-  color: var(--base-color);
-}
-.gpt-layout #summary_tab .tab .tab-title .item span {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--background-button-hover);
-  pointer-events: none;
-}
-.gpt-layout #summary_tab .tab .tab-body {
-  margin-top: 10px;
-}
-.gpt-layout #summary_tab .tab .tab-body .tab-item {
-  display: none;
-  box-sizing: border-box;
-  position: relative;
-  width: 100%;
-  padding: 5px 0;
-}
-.gpt-layout #summary_tab .tab .tab-body .tab-item:last-child {
-  padding-bottom: 0;
-}
-.gpt-layout #summary_tab .tab .tab-body .tab-item.active {
-  display: block;
-}
-.gpt-layout #summary_tab .tab .tab-body .tab-item span {
-  margin-right: 3px;
-  height: auto;
-  box-sizing: border-box;
-  position: relative;
-  display: inline-flex;
-  width: 100%;
-  min-width: 0;
-  font-size: 14px;
-  line-height: 1.5714285714;
-  background-image: none;
-  border-width: 1px;
-  border-style: solid;
-}
-.gpt-layout #summary_tab .tab .tab-body .tab-item textarea {
-  width: 100% !important;
-  max-width: 100%;
-  min-width: 100%;
-  position: relative;
-}
-.gpt-layout #summary_tab .tab .tab-body .tab-item textarea.original_text_summary {
-  height: 500px;
-  padding: 10px 10px 10px 10px;
-}
-.gpt-layout #summary_tab .tab .tab-body .tab-item textarea.original_text_summary_all_thread {
-  height: 700px;
-  margin-bottom: 5px;
-}
 .gpt-layout #summary_tab .form-config {
   padding: 0 10px 0 10px;
-}
-.gpt-layout #summary_tab .form-config .wrap-original-text-summary textarea {
-  width: 100% !important;
-  height: 500px;
-  min-height: 250px;
-  max-height: 650px;
 }
 .gpt-layout #summary_tab .form-config .summary-length {
   margin-top: 5px;
@@ -1518,12 +1483,6 @@ body ul li {
 }
 .gpt-layout #find_the_problem_tab .form-config {
   padding: 0 10px 0 10px;
-}
-.gpt-layout #find_the_problem_tab .form-config .wrap-original-text-summary textarea {
-  width: 100% !important;
-  height: 500px;
-  min-height: 250px;
-  max-height: 750px;
 }
 .gpt-layout #find_the_problem_tab .form-config .version {
   margin-top: 15px;
