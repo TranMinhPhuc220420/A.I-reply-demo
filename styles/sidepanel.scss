@@ -37,11 +37,10 @@
   --sidebar-action-btn: #e8e8e8;
 }
 
-
 body {
   margin: 0;
   padding: 0;
-  font-family: 'メイリオ, arial, tahoma, helvetica, sans-serif';
+  font-family: "メイリオ, arial, tahoma, helvetica, sans-serif";
 
   h1,
   h2,
@@ -75,7 +74,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, .15);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 9999px;
 }
 
@@ -144,7 +143,8 @@ body {
       display: block;
       z-index: 999999999;
 
-      .wrap-item {}
+      .wrap-item {
+      }
     }
 
     background-color: var(--white-color);
@@ -156,12 +156,12 @@ body {
     border-radius: 10px;
     box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
 
-    transition: .15s all;
+    transition: 0.15s all;
 
     li {
       padding: 5px 0px 5px 10px;
       margin-bottom: 3px;
-      transition: .15s all;
+      transition: 0.15s all;
       border-radius: 10px;
       text-align: start;
       cursor: pointer;
@@ -240,7 +240,7 @@ body {
             align-items: center;
             padding: 2px;
             border-radius: 3px;
-            transition: .15s all;
+            transition: 0.15s all;
             cursor: pointer;
 
             &:first-child {
@@ -262,7 +262,7 @@ body {
             border-radius: 5px;
             margin-bottom: 10px;
             cursor: pointer;
-            transition: .15s all;
+            transition: 0.15s all;
             position: relative;
             border: 1px solid var(--background-gray-color);
 
@@ -290,7 +290,7 @@ body {
 
             .label {
               text-wrap: nowrap;
-              transition: .15s all;
+              transition: 0.15s all;
               opacity: 0;
               position: absolute;
               z-index: 9999;
@@ -324,7 +324,7 @@ body {
             border-radius: 5px;
             margin-bottom: 10px;
             cursor: pointer;
-            transition: .15s all;
+            transition: 0.15s all;
           }
         }
 
@@ -385,7 +385,8 @@ body {
         width: 55%;
         min-width: 150px;
         padding: 5px;
-        box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+        box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
+          rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
       }
 
       .body {
@@ -460,7 +461,6 @@ body {
             }
           }
         }
-
       }
     }
   }
@@ -502,12 +502,11 @@ body {
       }
 
       .right {
-
         svg {
           height: 20px;
           width: 20px;
           fill: var(--base-text-color);
-          transition: .15s all;
+          transition: 0.15s all;
           pointer-events: none;
         }
 
@@ -586,7 +585,7 @@ body {
       height: 20px;
       width: 20px;
       fill: var(--base-text-color);
-      transition: .15s all;
+      transition: 0.15s all;
       pointer-events: none;
     }
 
@@ -601,7 +600,7 @@ body {
           align-items: center;
           padding: 2px;
           border-radius: 3px;
-          transition: .15s all;
+          transition: 0.15s all;
           cursor: pointer;
           position: relative;
 
@@ -620,7 +619,7 @@ body {
 
           .label {
             text-wrap: nowrap;
-            transition: .15s all;
+            transition: 0.15s all;
             text-align: right;
             position: absolute;
             pointer-events: none;
@@ -646,7 +645,7 @@ body {
           border-radius: 5px;
           margin-bottom: 10px;
           cursor: pointer;
-          transition: .15s all;
+          transition: 0.15s all;
 
           // svg {
           //   height: 25px;
@@ -678,7 +677,7 @@ body {
         border-radius: 5px;
         margin-bottom: 10px;
         cursor: pointer;
-        transition: .15s all;
+        transition: 0.15s all;
         position: relative;
 
         &:hover {
@@ -692,7 +691,7 @@ body {
 
         .label {
           text-wrap: nowrap;
-          transition: .15s all;
+          transition: 0.15s all;
           opacity: 0;
           position: absolute;
           pointer-events: none;
@@ -759,7 +758,6 @@ body {
             color: var(--background-button-hover);
             pointer-events: none;
           }
-
         }
       }
 
@@ -791,7 +789,6 @@ body {
 
           &#reply_tab {
             &.is-loading {
-
               .original_text_reply,
               .general_content_reply,
               .reply-suggestions,
@@ -859,7 +856,7 @@ body {
             z-index: -1;
             cursor: pointer;
             // width: 100%;
-            transition: .15s all;
+            transition: 0.15s all;
             transform: translateX(5px);
             opacity: 0;
 
@@ -883,7 +880,7 @@ body {
               margin: 5px 0;
               background-color: var(--base-color-3);
               border-radius: 5px;
-              transition: .15s all;
+              transition: 0.15s all;
 
               &:hover {
                 background-color: var(--background-black-gray-color);
@@ -906,7 +903,7 @@ body {
               padding: 3px 5px;
               border-radius: 5px;
               cursor: pointer;
-              transition: .25s all;
+              transition: 0.25s all;
               border: 1px solid var(--white-color);
               box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 
@@ -930,7 +927,7 @@ body {
                 margin-right: 5px;
                 width: 18px;
                 height: 18px;
-                transition: .25s all;
+                transition: 0.25s all;
               }
             }
           }
@@ -960,7 +957,7 @@ body {
               border-radius: 50%;
               background-color: var(--base-color-2);
               cursor: pointer;
-              transition: .15s all;
+              transition: 0.15s all;
               box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 
               &:hover {
@@ -984,7 +981,7 @@ body {
                   width: 21px;
                   height: 21px;
                   user-select: none;
-                  transition: .15s all;
+                  transition: 0.15s all;
                   fill: var(--white-color);
 
                   * {
@@ -1013,7 +1010,7 @@ body {
               cursor: pointer;
               border: var(--base-color-3) 1px solid;
               color: var(--white-color);
-              transition: .25s all;
+              transition: 0.25s all;
               margin-bottom: 5px;
 
               &:hover {
@@ -1079,14 +1076,14 @@ body {
             background-color: var(--background-gray-2-color);
             color: var(--base-text-color);
             font-size: 15px;
-            transition: .15s all;
+            transition: 0.15s all;
             border: var(--white-color) 1px solid;
             // position: relative;
             margin-bottom: 5px;
             height: 30px;
             // margin-right: 5px;
             // font-family: "DM Sans", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Helvetica Neue, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-            font-family: 'メイリオ, arial, tahoma, helvetica, sans-serif';
+            font-family: "メイリオ, arial, tahoma, helvetica, sans-serif";
 
             &:hover {
               background-color: var(--background-button-hover);
@@ -1155,7 +1152,7 @@ body {
               height: 18px;
               width: 18px;
               opacity: 0;
-              transition: .15s all;
+              transition: 0.15s all;
 
               .icon {
                 height: 18px;
@@ -1193,17 +1190,15 @@ body {
           color: var(--white-color);
           background-color: var(--base-color);
           cursor: pointer;
-          transition: .15s all;
+          transition: 0.15s all;
 
           &:hover {
             background-color: var(--base-color-5);
           }
         }
 
-
         .options {
           .combobox {
-
             .content {
               display: flex;
               justify-content: center;
@@ -1231,7 +1226,7 @@ body {
             margin-right: 5px;
             color: var(--background-black-gray-color);
             font-size: 14px;
-            transition: .15s all;
+            transition: 0.15s all;
             border: var(--white-color) 1px solid;
             position: relative;
 
@@ -1275,7 +1270,7 @@ body {
               height: 18px;
               width: 18px;
               opacity: 0;
-              transition: .15s all;
+              transition: 0.15s all;
 
               .icon {
                 height: 18px;
@@ -1293,7 +1288,6 @@ body {
       height: 100%;
 
       &.is-loading {
-
         .result-generate {
           min-height: 300px;
 
@@ -1379,7 +1373,7 @@ body {
             position: relative;
 
             &::after {
-              content: '';
+              content: "";
               position: absolute;
               width: 150px;
               height: 1px;
@@ -1457,7 +1451,7 @@ body {
 
           img {
             width: 15px;
-            transition: .15s all;
+            transition: 0.15s all;
           }
 
           &:hover {
@@ -1506,6 +1500,87 @@ body {
     width: 100%;
     padding: 0;
 
+    .tab {
+      height: unset;
+
+      .tab-title {
+        display: flex;
+
+        .item {
+          margin-right: 20px;
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+
+          &.active {
+            span {
+              color: var(--base-color);
+            }
+          }
+
+          span {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--background-button-hover);
+            pointer-events: none;
+          }
+        }
+      }
+
+      .tab-body {
+        margin-top: 10px;
+
+        .tab-item {
+          display: none;
+          box-sizing: border-box;
+          position: relative;
+          // overflow: hidden;
+          width: 100%;
+          padding: 5px 0;
+
+          &:last-child {
+            padding-bottom: 0;
+          }
+
+          &.active {
+            display: block;
+          }
+
+          span {
+            margin-right: 3px;
+            height: auto;
+            box-sizing: border-box;
+            position: relative;
+            display: inline-flex;
+            width: 100%;
+            min-width: 0;
+            font-size: 14px;
+            line-height: 1.5714285714285714;
+            background-image: none;
+            border-width: 1px;
+            border-style: solid;
+          }
+
+          textarea {
+            width: 100% !important;
+            max-width: 100%;
+            min-width: 100%;
+            position: relative;
+
+            &.original_text_summary {
+              height: 500px;
+              padding: 10px 10px 10px 10px;
+            }
+
+            &.original_text_summary_all_thread {
+              height: 700px;
+              margin-bottom: 5px;
+            }
+          }
+        }
+      }
+    }
+
     .form-config {
       padding: 0 10px 0 10px;
 
@@ -1514,12 +1589,51 @@ body {
           width: 100% !important;
           height: 500px;
           min-height: 250px;
-          max-height: 750px;
+          max-height: 650px;
+        }
+      }
+
+      .summary-length {
+        margin-top: 5px;
+        max-width: 400px;
+
+        .title {
+          justify-content: start;
+          align-items: center;
+          padding-bottom: 0;
+
+          .icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            fill: var(--base-color-2);
+          }
+        }
+
+        .options {
+          display: flex;
+          justify-content: space-around;
+          align-items: center;
+
+          .wrap-config-item {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            input,
+            label {
+              cursor: pointer;
+            }
+
+            label {
+              margin-top: 5px;
+            }
+          }
         }
       }
 
       .version {
-        margin-top: 15px;
+        margin-top: 25px;
         display: flex;
         justify-content: start;
         align-items: center;
@@ -1536,7 +1650,7 @@ body {
           color: var(--white-color);
           background-color: var(--base-color);
           cursor: pointer;
-          transition: .15s all;
+          transition: 0.15s all;
 
           &:hover {
             background-color: var(--base-color-5);
@@ -1545,7 +1659,6 @@ body {
 
         .options {
           .combobox {
-
             .content {
               display: flex;
               justify-content: center;
@@ -1573,7 +1686,7 @@ body {
             margin-right: 5px;
             color: var(--background-black-gray-color);
             font-size: 14px;
-            transition: .15s all;
+            transition: 0.15s all;
             border: var(--white-color) 1px solid;
             position: relative;
 
@@ -1617,7 +1730,7 @@ body {
               height: 18px;
               width: 18px;
               opacity: 0;
-              transition: .15s all;
+              transition: 0.15s all;
 
               .icon {
                 height: 18px;
@@ -1635,7 +1748,6 @@ body {
       padding: 0 10px 0 10px;
 
       &.is-loading {
-
         .result-summary {
           min-height: 300px;
 
@@ -1721,7 +1833,7 @@ body {
             position: relative;
 
             &::after {
-              content: '';
+              content: "";
               position: absolute;
               width: 150px;
               height: 1px;
@@ -1799,7 +1911,7 @@ body {
 
           img {
             width: 15px;
-            transition: .15s all;
+            transition: 0.15s all;
           }
 
           &:hover {
@@ -1878,7 +1990,7 @@ body {
           color: var(--white-color);
           background-color: var(--base-color);
           cursor: pointer;
-          transition: .15s all;
+          transition: 0.15s all;
 
           &:hover {
             background-color: var(--base-color-5);
@@ -1887,7 +1999,6 @@ body {
 
         .options {
           .combobox {
-
             .content {
               display: flex;
               justify-content: center;
@@ -1915,7 +2026,7 @@ body {
             margin-right: 5px;
             color: var(--background-black-gray-color);
             font-size: 14px;
-            transition: .15s all;
+            transition: 0.15s all;
             border: var(--white-color) 1px solid;
             position: relative;
 
@@ -1959,7 +2070,7 @@ body {
               height: 18px;
               width: 18px;
               opacity: 0;
-              transition: .15s all;
+              transition: 0.15s all;
 
               .icon {
                 height: 18px;
@@ -1977,7 +2088,6 @@ body {
       padding: 0 10px 0 10px;
 
       &.is-loading {
-
         .result {
           min-height: 300px;
 
@@ -2063,7 +2173,7 @@ body {
             position: relative;
 
             &::after {
-              content: '';
+              content: "";
               position: absolute;
               width: 150px;
               height: 1px;
@@ -2141,7 +2251,7 @@ body {
 
           img {
             width: 15px;
-            transition: .15s all;
+            transition: 0.15s all;
           }
 
           &:hover {
@@ -2220,7 +2330,7 @@ body {
           color: var(--white-color);
           background-color: var(--base-color);
           cursor: pointer;
-          transition: .15s all;
+          transition: 0.15s all;
 
           &:hover {
             background-color: var(--base-color-5);
@@ -2229,7 +2339,6 @@ body {
 
         .options {
           .combobox {
-
             .content {
               display: flex;
               justify-content: center;
@@ -2257,7 +2366,7 @@ body {
             margin-right: 5px;
             color: var(--background-black-gray-color);
             font-size: 14px;
-            transition: .15s all;
+            transition: 0.15s all;
             border: var(--white-color) 1px solid;
             position: relative;
 
@@ -2301,7 +2410,7 @@ body {
               height: 18px;
               width: 18px;
               opacity: 0;
-              transition: .15s all;
+              transition: 0.15s all;
 
               .icon {
                 height: 18px;
@@ -2319,7 +2428,6 @@ body {
       padding: 0 10px 0 10px;
 
       &.is-loading {
-
         .result {
           min-height: 300px;
 
@@ -2405,7 +2513,7 @@ body {
             position: relative;
 
             &::after {
-              content: '';
+              content: "";
               position: absolute;
               width: 150px;
               height: 1px;
@@ -2483,7 +2591,7 @@ body {
 
           img {
             width: 15px;
-            transition: .15s all;
+            transition: 0.15s all;
           }
 
           &:hover {
@@ -2562,7 +2670,7 @@ body {
           color: var(--white-color);
           background-color: var(--base-color);
           cursor: pointer;
-          transition: .15s all;
+          transition: 0.15s all;
 
           &:hover {
             background-color: var(--base-color-5);
@@ -2571,7 +2679,6 @@ body {
 
         .options {
           .combobox {
-
             .content {
               display: flex;
               justify-content: center;
@@ -2599,7 +2706,7 @@ body {
             margin-right: 5px;
             color: var(--background-black-gray-color);
             font-size: 14px;
-            transition: .15s all;
+            transition: 0.15s all;
             border: var(--white-color) 1px solid;
             position: relative;
 
@@ -2643,7 +2750,7 @@ body {
               height: 18px;
               width: 18px;
               opacity: 0;
-              transition: .15s all;
+              transition: 0.15s all;
 
               .icon {
                 height: 18px;
@@ -2661,7 +2768,6 @@ body {
       padding: 0 10px 0 10px;
 
       &.is-loading {
-
         .result {
           min-height: 300px;
 
@@ -2747,7 +2853,7 @@ body {
             position: relative;
 
             &::after {
-              content: '';
+              content: "";
               position: absolute;
               width: 150px;
               height: 1px;
@@ -2825,7 +2931,7 @@ body {
 
           img {
             width: 15px;
-            transition: .15s all;
+            transition: 0.15s all;
           }
 
           &:hover {
@@ -2877,12 +2983,17 @@ body {
   border-radius: 5px !important;
 
   &::before {
-    content: '';
+    content: "";
     position: absolute;
     border-radius: 5px;
     width: 100%;
     height: 100%;
-    background: linear-gradient(to right, var(--white-color), var(--base-color-4), var(--white-color));
+    background: linear-gradient(
+      to right,
+      var(--white-color),
+      var(--base-color-4),
+      var(--white-color)
+    );
     background-size: 200% 100%;
     animation: slide 1.5s linear infinite;
   }

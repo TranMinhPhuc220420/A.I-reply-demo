@@ -5,6 +5,7 @@ const MyLang = {
 
     "TXT_AI_REPLY": chrome.i18n.getMessage('txt_ai_reply'),
     "TXT_RESULT": chrome.i18n.getMessage('txt_result'),
+    "TXT_AUTO": chrome.i18n.getMessage('txt_auto'),
     "TXT_INSERT": chrome.i18n.getMessage('txt_insert'),
     "TXT_SETTING": chrome.i18n.getMessage('txt_setting'),
     "TXT_COLLAPSE_NAVBAR": chrome.i18n.getMessage('txt_collapse_navbar'),
@@ -100,6 +101,11 @@ const MyLang = {
     "DES_ERROR_ORIGINAL_TEXT_SUMMARY_MAX_LENGTH_TOKEN": chrome.i18n.getMessage('des_error_original_text_summary_max_length_token'),
     "DES_ERROR_GEMINI_NOT_RELEASED": chrome.i18n.getMessage('des_error_gemini_not_released'),
     "DES_ERROR_GPT4_NOT_RELEASED": chrome.i18n.getMessage('des_error_gpt4_not_released'),
+
+    // 
+    "TXT_SUMMARY_ONE_THREAD": chrome.i18n.getMessage('txt_summary_one_thread'),
+    "TXT_SUMMARY_ALL_THREAD": chrome.i18n.getMessage('txt_summary_all_thread'),
+    "TXT_LENGTH_SUMMARY_SETTING": chrome.i18n.getMessage('txt_length_summary_setting'),
   },
 
   /**

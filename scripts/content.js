@@ -48,23 +48,43 @@ document.addEventListener('RW759_connectExtension', function (e) {
     return current_user;
   };
 
-  /**
-   *
-   * @return {boolean} 拡張機能がインストール済みかを返す
-   */
-  const isExtensionInstalled = () => {
-    let domNode;
-
-    if (!document.getElementById(NODE_ID_EXTENSION_INSTALLED)) {
-      domNode = document.createElement('div');
-      domNode.id = NODE_ID_EXTENSION_INSTALLED;
-      document.body.appendChild(domNode);
-    } else {
-      MyUtils.debugLog('Already, Extension is installed!');
-      return true;
-    }
-    return false;
-  };
+  const MENU_ACTION_DATA = [
+    {
+      icon: '<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><g><path d="M0,0h24v24H0V0z" fill="none"></path></g><g><g><path d="M15,3H5C3.9,3,3.01,3.9,3.01,5L3,19c0,1.1,0.89,2,1.99,2H19c1.1,0,2-0.9,2-2V9L15,3z M8,17c-0.55,0-1-0.45-1-1s0.45-1,1-1 s1,0.45,1,1S8.55,17,8,17z M8,13c-0.55,0-1-0.45-1-1s0.45-1,1-1s1,0.45,1,1S8.55,13,8,13z M8,9C7.45,9,7,8.55,7,8s0.45-1,1-1 s1,0.45,1,1S8.55,9,8,9z M14,10V4.5l5.5,5.5H14z"></path></g></g></svg>',
+      display: 'Summary mail',
+      action: () => {
+        console.log('Summary mail');
+      }
+    },
+    {
+      icon: '<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><g><path d="M0,0h24v24H0V0z" fill="none"></path></g><g><g><path d="M15,3H5C3.9,3,3.01,3.9,3.01,5L3,19c0,1.1,0.89,2,1.99,2H19c1.1,0,2-0.9,2-2V9L15,3z M8,17c-0.55,0-1-0.45-1-1s0.45-1,1-1 s1,0.45,1,1S8.55,17,8,17z M8,13c-0.55,0-1-0.45-1-1s0.45-1,1-1s1,0.45,1,1S8.55,13,8,13z M8,9C7.45,9,7,8.55,7,8s0.45-1,1-1 s1,0.45,1,1S8.55,9,8,9z M14,10V4.5l5.5,5.5H14z"></path></g></g></svg>',
+      display: 'Summary all mail',
+      action: () => {
+        console.log('Summary all mail');
+      }
+    },
+    {
+      icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5c-.49 0-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-6 8h-4v-2h4v2zm0-4h-4v-2h4v2z"></path> </svg>',
+      display: 'Problem in mail',
+      action: () => {
+        console.log('Problem in mail');
+      }
+    },
+    {
+      icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5c-.49 0-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-6 8h-4v-2h4v2zm0-4h-4v-2h4v2z"></path> </svg>',
+      display: 'Problem in all mail',
+      action: () => {
+        console.log('Problem in all mail');
+      }
+    },
+    {
+      icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"></path><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"></path></svg>',
+      display: 'Suggest meeting',
+      action: () => {
+        console.log('Suggest meeting');
+      }
+    },
+  ];
 
   const PromptBuilder = {
     shared_prompt_builders: [],
@@ -192,7 +212,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
       vhtml += '<div class="container-tab">'
 
       vhtml += '<div class="content-tab" >'
-      vhtml += '  <a class="show"><i class="item-icon ">' + buildertab_icon + '</i>ビルダーで利用</a>'
+      vhtml += '  <a class="show"></a>'
       vhtml += '  <section>'
       vhtml += '      <ul id="shared_prompt_builders_list" ></ul>'
       vhtml += '  </section>'
@@ -415,6 +435,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
    * 
    */
   const MailAIGenerate = {
+    combo_box_flag: false,
+
     actionsMailEl: null,
     AIReplyBtnEl: null,
     bodyMailEl: null,
@@ -439,7 +461,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
           let sessionEl = (document.all) ? document.selection.createRange().text : document.getSelection();
           let textSelection = sessionEl.toString().trim();
           if (textSelection == '') textSelection = EMPTY_KEY;
-          
+
           StorageManager.setOriginalTextSidePanel(textSelection);
         }, 100);
       }
@@ -456,7 +478,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
      */
     setTitleContentMail: function (params) {
       let self = MailAIGenerate;
-      const { id_popup, title, body } = params;
+      const { id_popup, title, body, is_for_reply } = params;
 
       if (id_popup && $(`.sateraito-${id_popup}`).length > 0) {
         let bodyMailEl = $(`.sateraito-${id_popup}`)[0];
@@ -465,7 +487,19 @@ document.addEventListener('RW759_connectExtension', function (e) {
         $(titleMailEl).val(title || '')
         $(bodyMailEl).html(body.replaceAll('\n', '</br>'));
         $(bodyMailEl).focus();
-      } else {
+      }
+      else if (is_for_reply) {
+        let btnMailEl = FoDoc.body.querySelector('.ams.bkH');
+        if (btnMailEl) {
+          btnMailEl.click();
+          setTimeout(() => {
+            self.setTitleContentMail(params);
+          }, 1000);
+        } else {
+          self.setTitleContentMailCompose(params);
+        }
+      }
+      else {
         self.setTitleContentMailCompose(params);
       }
     },
@@ -476,7 +510,8 @@ document.addEventListener('RW759_connectExtension', function (e) {
      * @param {string} idTarget 
      */
     setTitleContentMailCompose: function (params) {
-      const { title, body } = params;
+      let self = MailAIGenerate;
+      const { title, body, is_for_reply } = params;
 
       let bodyConvert = body.replaceAll('\n', '</br>');
 
@@ -498,9 +533,13 @@ document.addEventListener('RW759_connectExtension', function (e) {
         $('.aoP.HM .iN .cf.An .Am.Al.editable.LW-avf').html(bodyConvert);
         $('.aoP.HM .iN .cf.An .Am.Al.editable.LW-avf').focus();
       } else {
-        $('.aoD input[name="subjectbox"]').val(title);
-        $('.Am.Al.editable.LW-avf').html(bodyConvert);
-        $('.Am.Al.editable.LW-avf').focus();
+        let btnMailEl= FoDoc.body.querySelector('.T-I.T-I-KE.L3');
+        if (btnMailEl) {
+          btnMailEl.click();
+          setTimeout(() => {
+            self.setTitleContentMail(params);
+          }, 1000);
+        }
       }
     },
 
@@ -735,18 +774,50 @@ document.addEventListener('RW759_connectExtension', function (e) {
       let self = MailAIGenerate;
       let elmBtn = document.createElement('div');
       elmBtn.id = BTN_AI_REPLY_ID
-      elmBtn.addEventListener('click', self.handlerReplyBtnClick);
       elmBtn.classList = BTN_AI_REPLY_CLS
 
       let vHtml = `
-        <img src="${FAVICON_URL}">
-        <span class="text">${MyLang.getMsg('TXT_AI_REPLY')}</span>
+        <div class="content">
+          <img class="icon" src="${FAVICON_URL}">
+          <span class="text">${MyLang.getMsg('TXT_AI_REPLY')}</span>
+        </div>
+        <div class="trigger">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path d="M480-360 280-560h400L480-360Z"/></svg>
+        </div>
+
+        <ul class="popover-cbx combobox">
+        </ul>
       `;
 
       elmBtn.innerHTML = vHtml;
 
       self.AIReplyBtnEl = elmBtn;
       self.actionsMailEl.append(elmBtn);
+
+      for (let i = 0; i < MENU_ACTION_DATA.length; i++) {
+        const item = MENU_ACTION_DATA[i];
+        let comboBoxItemEl = document.createElement('li');
+        comboBoxItemEl.className = 'combobox-item';
+        comboBoxItemEl.innerHTML = `
+          <div class="icon">
+            ${item.icon}
+          </div>
+          <span class="text">${item.display}</span>
+        `
+
+        $(elmBtn).find(`.popover-cbx.combobox`).append(comboBoxItemEl)
+        $(comboBoxItemEl).on('click', item.action);
+      }
+
+      $(elmBtn).find('.content').on('click', self.handlerReplyBtnClick);
+      $(elmBtn).find('.trigger').on('click', event => {
+        self.combo_box_flag = true;
+        $(elmBtn).addClass('show-trigger');
+
+        setTimeout(() => {
+          self.combo_box_flag = false;
+        }, 100)
+      });
     },
 
     /**
@@ -970,7 +1041,7 @@ document.addEventListener('RW759_connectExtension', function (e) {
         MailAIGenerate.setTitleContentMail(newValue);
       }
       setTimeout(() => {
-        chrome.storage.local.set({ side_panel_send_result: {} });
+        chrome.storage.local.remove('side_panel_send_result');
       }, 1000);
     }
     if ('toggle_side_prompt_builder' in payload) {
@@ -979,10 +1050,6 @@ document.addEventListener('RW759_connectExtension', function (e) {
       if (newValue) {
         PromptBuilder.toggleSide();
       }
-
-      setTimeout(() => {
-        StorageManager.removeToggleSidePromptBuilder();
-      }, 1000);
     }
   };
 
@@ -1020,6 +1087,12 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
         chrome.storage.onChanged.addListener(storageOnChanged);
       }
+
+      $(document).on('click', event => {
+        if (!MailAIGenerate.combo_box_flag) {
+          $(`#${BTN_AI_REPLY_ID}`).removeClass('show-trigger');
+        }
+      });
     }
 
     MyUtils.debugLog('▲▲▲ initilize ended ! ');
@@ -1027,12 +1100,12 @@ document.addEventListener('RW759_connectExtension', function (e) {
 
   // __main__
   const interval_important_for_init = setInterval(() => {
-    if (document.readyState == 'complete') {
-      
+    if (getCurrentUser() != '') {
+
       // Start initialize
       initialize();
 
       clearInterval(interval_important_for_init);
     }
-  }, 500);
+  }, 100);
 }());

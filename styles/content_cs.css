@@ -233,6 +233,7 @@ html.dark {
 
 .detail-suggestion {
     height: calc(100% - 40px);
+    height: 100%;
 }
 
 html.light .content-suggestion {
@@ -799,7 +800,6 @@ button[data-title] {
     border-top: 1px solid var(--gray-color);
     overflow: overlay;
     height: 100%;
-    height: calc(100% - 50px);
 }
 
 .container-tab {

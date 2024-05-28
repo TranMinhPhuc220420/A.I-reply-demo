@@ -14,6 +14,9 @@
   "txt_result": {
     "message": "結果"
   },
+  "txt_auto": {
+    "message": "Auto"
+  },
   "txt_insert": {
     "message": "入れる"
   },
@@ -277,5 +280,15 @@
   },
   "des_error_original_text_summary_max_length_token": {
     "message": "Maximum 4000 characters for the original text you want to summarize"
+  },
+  
+  "txt_summary_one_thread": {
+    "message": "A thread"
+  },
+  "txt_summary_all_thread": {
+    "message": "All threads"
+  },
+  "txt_length_summary_setting": {
+    "message": "Summary length"
   }
 }

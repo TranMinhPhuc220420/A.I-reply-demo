@@ -1155,6 +1155,71 @@ body ul li {
   width: 100%;
   padding: 0;
 }
+.gpt-layout #summary_tab .tab {
+  height: unset;
+}
+.gpt-layout #summary_tab .tab .tab-title {
+  display: flex;
+}
+.gpt-layout #summary_tab .tab .tab-title .item {
+  margin-right: 20px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.gpt-layout #summary_tab .tab .tab-title .item.active span {
+  color: var(--base-color);
+}
+.gpt-layout #summary_tab .tab .tab-title .item span {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--background-button-hover);
+  pointer-events: none;
+}
+.gpt-layout #summary_tab .tab .tab-body {
+  margin-top: 10px;
+}
+.gpt-layout #summary_tab .tab .tab-body .tab-item {
+  display: none;
+  box-sizing: border-box;
+  position: relative;
+  width: 100%;
+  padding: 5px 0;
+}
+.gpt-layout #summary_tab .tab .tab-body .tab-item:last-child {
+  padding-bottom: 0;
+}
+.gpt-layout #summary_tab .tab .tab-body .tab-item.active {
+  display: block;
+}
+.gpt-layout #summary_tab .tab .tab-body .tab-item span {
+  margin-right: 3px;
+  height: auto;
+  box-sizing: border-box;
+  position: relative;
+  display: inline-flex;
+  width: 100%;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.5714285714;
+  background-image: none;
+  border-width: 1px;
+  border-style: solid;
+}
+.gpt-layout #summary_tab .tab .tab-body .tab-item textarea {
+  width: 100% !important;
+  max-width: 100%;
+  min-width: 100%;
+  position: relative;
+}
+.gpt-layout #summary_tab .tab .tab-body .tab-item textarea.original_text_summary {
+  height: 500px;
+  padding: 10px 10px 10px 10px;
+}
+.gpt-layout #summary_tab .tab .tab-body .tab-item textarea.original_text_summary_all_thread {
+  height: 700px;
+  margin-bottom: 5px;
+}
 .gpt-layout #summary_tab .form-config {
   padding: 0 10px 0 10px;
 }
@@ -1162,10 +1227,42 @@ body ul li {
   width: 100% !important;
   height: 500px;
   min-height: 250px;
-  max-height: 750px;
+  max-height: 650px;
+}
+.gpt-layout #summary_tab .form-config .summary-length {
+  margin-top: 5px;
+  max-width: 400px;
+}
+.gpt-layout #summary_tab .form-config .summary-length .title {
+  justify-content: start;
+  align-items: center;
+  padding-bottom: 0;
+}
+.gpt-layout #summary_tab .form-config .summary-length .title .icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+  fill: var(--base-color-2);
+}
+.gpt-layout #summary_tab .form-config .summary-length .options {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+.gpt-layout #summary_tab .form-config .summary-length .options .wrap-config-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.gpt-layout #summary_tab .form-config .summary-length .options .wrap-config-item input,
+.gpt-layout #summary_tab .form-config .summary-length .options .wrap-config-item label {
+  cursor: pointer;
+}
+.gpt-layout #summary_tab .form-config .summary-length .options .wrap-config-item label {
+  margin-top: 5px;
 }
 .gpt-layout #summary_tab .form-config .version {
-  margin-top: 15px;
+  margin-top: 25px;
   display: flex;
   justify-content: start;
   align-items: center;

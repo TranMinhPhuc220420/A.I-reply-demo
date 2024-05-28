@@ -389,6 +389,25 @@ const VOICE_SETTING_DATA = [
   },
 ];
 
+const SUMMARY_LENGTH_SETTING_DATA = [
+  {
+    value: 'auto',
+    display: MyLang.getMsg('TXT_AUTO'),
+  },
+  {
+    value: 100,
+    display: MyLang.getMsg('TXT_SHORT'),
+  },
+  {
+    value: 250,
+    display: MyLang.getMsg('TXT_MEDIUM'),
+  },
+  {
+    value: 500,
+    display: MyLang.getMsg('TXT_LONG'),
+  }
+];
+
 const GPT_VERSION_SETTING_DATA = [
   {
     value: 'gpt-3.5-turbo-0125',
@@ -1720,7 +1739,7 @@ Output in ${lang}`
     const {
       gpt_ai_key, gpt_version,
 
-      original_text_summary, language
+      original_text_summary, summary_length, language
     } = params;
 
     let prompt, prompt_system;
@@ -1737,7 +1756,11 @@ Output in ${lang}`
     prompt += `"""\n`
     prompt += `${original_text_summary}\n`
     prompt += `"""\n`
-    prompt += `Please help me summarize this original text. I just need the exact content summarize and no title, no explanation needed.\n`
+    if (summary_length != 'auto') {
+      prompt += `Please help me summarize this original text with ${summary_length} words. I just need the exact content summarize and no title, no explanation needed.\n`
+    } else {
+      prompt += `Please help me summarize this original text. I just need the exact content summarize and no title, no explanation needed.\n`
+    }
     prompt += `Output in ${language}`
     messages.push({ role: 'user', content: prompt })
 

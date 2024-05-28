@@ -410,7 +410,7 @@
         // Button combobox
         let vHtml = ` <div class="title">
                         ${configItem.icon}
-                        <span class="text">${configItem.name}:</span>
+                        <span class="text">${configItem.name}</span>
                       </div>
                       <div class="options">
                         ${vHtmlItemConfig}
@@ -859,7 +859,7 @@
       let indexActive = (result.length);
 
       // Setup - Add new item tab for this generate 
-      self.generate_result_list.push({ title: '', body: '' });
+      self.generate_result_list.push({ title: '', body: '', is_for_reply: (self.getIdTabActive() == 'reply_tab') });
       self.handlerShowGenerateResult();
 
       let itemActiveEl = null;
@@ -1236,6 +1236,7 @@
         id_popup: self.title_content_mail_to_write.id_popup,
         title: itemActive.title,
         body: itemActive.body,
+        is_for_reply: itemActive.is_for_reply,
       }
       chrome.storage.local.set({ side_panel_send_result: params });
     },
@@ -1366,6 +1367,10 @@
 
       StorageManager.toggleSidePromptBuilder();
 
+      setTimeout(() => {
+        StorageManager.removeToggleSidePromptBuilder();
+      }, 500);
+
       // chrome.runtime.sendMessage({method: 'get_tab_info'}, (tabEmailInfoInBrowser) => {
       //   if (tabEmailInfoInBrowser) {
       //     try {
@@ -1424,10 +1429,44 @@
       let doneIconUrl = chrome.runtime.getURL("icons/done.svg");
 
       return `
-              <div class="form-config">
+            <div class="form-config">
 
-              <div class="wrap-original-text-summary">
-                <textarea class="original_text_summary" maxlength="8000" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_SUMMARY')}"></textarea>
+              <div class="tab">
+                <div class="tab-title">
+                  <div class="item active" key_tab="one_thread_tab">
+                    <span>${MyLang.getMsg('TXT_SUMMARY_ONE_THREAD')}</span>
+                  </div>
+                  <div class="item" key_tab="all_thread_tab">
+                    <span>${MyLang.getMsg('TXT_SUMMARY_ALL_THREAD')}</span>
+                  </div>
+                </div>
+
+                <div class="tab-body">
+                  <span id="one_thread_tab" class="tab-item active">
+                    <div class="wrap-original-text-summary">
+                      <textarea class="original_text_summary" maxlength="8000" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_SUMMARY')}"></textarea>
+                    </div>
+                  </span>
+
+                  <span id="all_thread_tab" class="tab-item">
+                    <div class="wrap-original-text-summary">
+                      <textarea class="original_text_summary_all_thread" maxlength="8000" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_SUMMARY')}"></textarea>
+                    </div>
+                  </span>
+                </div>
+              </div>
+
+              <div class="summary-length config">
+                <div class="title">
+                  <div class="icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M15 15H3v2h12v-2zm0-8H3v2h12V7zM3 13h18v-2H3v2zm0 8h18v-2H3v2zM3 3v2h18V3H3z"/></svg>
+                  </div>
+                  
+                  <span>${MyLang.getMsg('TXT_LENGTH_SUMMARY_SETTING')}</span>
+                </div>
+                
+                <div class="options">
+                </div>
               </div>
 
               <div class="version config">
@@ -1561,6 +1600,16 @@
       }
     },
 
+    getIdTabActive: () => {
+      const self = TabSummaryManager;
+
+      if ($(`#${self.idTab} div[key_tab="one_thread_tab"]`).hasClass('active')) {
+        return 'one_thread_tab'
+      } else {
+        return 'all_thread_tab'
+      }
+    },
+
     // Setter
     setOriginalText: (originalText) => {
       const self = TabSummaryManager;
@@ -1574,6 +1623,10 @@
       self.setFocusOriginalText();
     },
 
+    /**
+     * setFocusOriginalText
+     * 
+     */
     setFocusOriginalText: () => {
       const self = TabSummaryManager;
       if (self.is_loading) return;
@@ -1581,6 +1634,30 @@
       let textareaEl = document.body.querySelector(`#${self.idTab} .original_text_summary`);
       $(textareaEl).focus();
       $(textareaEl).scrollTop(0);
+    },
+
+    /**
+     * loadFormConfig
+     * 
+     */
+    loadFormConfig: () => {
+      const self = TabSummaryManager;
+
+      const data = SUMMARY_LENGTH_SETTING_DATA;
+
+      for (let i = 0; i < data.length; i++) {
+        const item = data[i];
+
+        let wrapEl = document.createElement('div');
+        wrapEl.className = 'wrap-config-item';
+        
+        wrapEl.innerHTML = `
+          <input id="summary-length-${item.value}" type="radio" ${i == 0 ? 'checked' : ''} name="summary-length" value="${item.value}">
+          <label for="summary-length-${item.value}">${item.display}</label>
+        `;
+
+        $(`#${self.idTab} .summary-length .options`).append(wrapEl);
+      }
     },
 
     /**
@@ -1654,6 +1731,23 @@
     },
 
     /**
+     * Set active tab
+     * 
+     * @param {string} tabActive 
+     */
+    setActiveTab: (tabActive) => {
+      const self = TabSummaryManager;
+      if (self.is_loading) return;
+
+      $(`#${self.idTab} .tab .tab-title .item`).removeClass('active');
+      $(`#${self.idTab} .tab .tab-title .item[key_tab="${tabActive}"]`).addClass('active');
+      $(`#${self.idTab} .tab .tab-body .tab-item`).removeClass('active');
+      $(`#${self.idTab} .tab .tab-body #${tabActive}`).addClass('active');
+
+      $(`#${self.idTab} .tab .tab-body #${tabActive} textarea`)[0].focus();
+    },
+
+    /**
      * Set event for element in panel
      * 
      */
@@ -1668,6 +1762,10 @@
         {
           cls: `#${self.idTab} .popover-cbx.wrap-item .combobox-item`,
           click: self.onClickItemOptionComboBox
+        },
+        {
+          cls: `#${self.idTab} .tab .tab-title .item`,
+          click: self.onClickTitleTab
         },
         {
           cls: `#${self.idTab} #summary-result .result-title .right .prev`,
@@ -1809,9 +1907,11 @@
       self.is_loading = true;
 
       let originalTextSummary = $(`#${self.idTab} textarea.original_text_summary`).val()
+      let summaryLength = $('input[name="summary-length"]:checked').val()
 
       let params = self.formData;
       params.original_text_summary = originalTextSummary;
+      params.summary_length = summaryLength;
       params.language = UserSetting.language_active;
 
       $(`#${self.idTab} #summary-result .result-footer`).addClass('hidden');
@@ -1822,7 +1922,7 @@
       let indexActive = (result.length);
 
       // Setup - Add new item tab for this generate 
-      self.generate_result_list.push({ original_text_summary: originalTextSummary, summary_text_result: '' });
+      self.generate_result_list.push({ original_text_summary: originalTextSummary, summary_length: summaryLength, summary_text_result: '' });
       self.handlerShowSummaryResult();
 
       let itemActiveEl = null;
@@ -1837,7 +1937,7 @@
         },
         // On [DONE] function callback
         (contentRes) => {
-          self.generate_result_list[indexActive].body = contentRes;
+          self.generate_result_list[indexActive].summary_text_result = contentRes;
 
           $(itemActiveEl).removeClass('is-loading');
           $(`#${WrapperManager.idEl}`).removeClass('is-loading');
@@ -1860,6 +1960,7 @@
     afterRender: () => {
       const self = TabSummaryManager;
 
+      self.loadFormConfig();
       self.loadVersionGPTConfig();
     },
 
@@ -1873,6 +1974,21 @@
       self.setFocusOriginalText();
 
       MyUtils.debugLog(`Active: ${self.idTab}`);
+    },
+
+    /**
+     * onClickTitleTab
+     * 
+     * @param {Event} event 
+     */
+    onClickTitleTab: (event) => {
+      const self = TabSummaryManager;
+      if (self.is_loading) return;
+
+      const targetEl = event.target;
+      const keyTab = targetEl.getAttribute('key_tab');
+
+      self.setActiveTab(keyTab);
     },
 
     /**
@@ -1989,7 +2105,7 @@
       if (self.is_loading) return;
 
       $(event.target).addClass('done');
-      navigator.clipboard.writeText(self.generate_result_list[self.result_active].body);
+      navigator.clipboard.writeText(self.generate_result_list[self.result_active].summary_text_result);
 
       setTimeout(() => {
         $(event.target).removeClass('done');
@@ -2026,8 +2142,29 @@
       return `
               <div class="form-config">
 
-              <div class="wrap-original-text-summary">
-                <textarea class="original_text_check_problem" maxlength="8000" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_CHECK_PROBLEM')}"></textarea>
+              <div class="tab">
+                <div class="tab-title">
+                  <div class="item active" key_tab="check_problem_one_thread_tab">
+                    <span>${MyLang.getMsg('TXT_SUMMARY_ONE_THREAD')}</span>
+                  </div>
+                  <div class="item" key_tab="check_problem_all_thread_tab">
+                    <span>${MyLang.getMsg('TXT_SUMMARY_ALL_THREAD')}</span>
+                  </div>
+                </div>
+
+                <div class="tab-body">
+                  <span id="check_problem_one_thread_tab" class="tab-item active">
+                    <div class="wrap-original-text-check-problem">
+                      <textarea class="original_text_check_problem" maxlength="8000" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_CHECK_PROBLEM')}"></textarea>
+                    </div>
+                  </span>
+
+                  <span id="check_problem_all_thread_tab" class="tab-item">
+                    <div class="wrap-original-text-check-problem">
+                      <textarea class="original_text_check_problem_all_thread" maxlength="8000" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_CHECK_PROBLEM')}"></textarea>
+                    </div>
+                  </span>
+                </div>
               </div>
 
               <div class="version config">
@@ -2112,6 +2249,16 @@
       return panelEl;
     },
 
+    getIdTabActive: () => {
+      const self = TabFindProblemManager;
+
+      if ($(`#${self.idTab} div[key_tab="check_problem_one_thread_tab"]`).hasClass('active')) {
+        return 'check_problem_one_thread_tab'
+      } else {
+        return 'check_problem_all_thread_tab'
+      }
+    },
+
     // Setter
     setOriginalText: (originalText) => {
       const self = TabFindProblemManager;
@@ -2181,6 +2328,23 @@
     },
 
     /**
+     * Set active tab
+     * 
+     * @param {string} tabActive 
+     */
+    setActiveTab: (tabActive) => {
+      const self = TabFindProblemManager;
+      if (self.is_loading) return;
+
+      $(`#${self.idTab} .tab .tab-title .item`).removeClass('active');
+      $(`#${self.idTab} .tab .tab-title .item[key_tab="${tabActive}"]`).addClass('active');
+      $(`#${self.idTab} .tab .tab-body .tab-item`).removeClass('active');
+      $(`#${self.idTab} .tab .tab-body #${tabActive}`).addClass('active');
+
+      $(`#${self.idTab} .tab .tab-body #${tabActive} textarea`)[0].focus();
+    },
+
+    /**
      * Set event for element in panel
      * 
      */
@@ -2195,6 +2359,10 @@
         {
           cls: `#${self.idTab} .popover-cbx.wrap-item .combobox-item`,
           click: self.onClickItemOptionComboBox
+        },
+        {
+          cls: `#${self.idTab} .tab .tab-title .item`,
+          click: self.onClickTitleTab
         },
       ];
 
@@ -2224,6 +2392,21 @@
       self.setFocusOriginalText();
 
       MyUtils.debugLog(`Active: ${self.idTab}`);
+    },
+
+    /**
+     * onClickTitleTab
+     * 
+     * @param {Event} event 
+     */
+    onClickTitleTab: (event) => {
+      const self = TabFindProblemManager;
+      if (self.is_loading) return;
+
+      const targetEl = event.target;
+      const keyTab = targetEl.getAttribute('key_tab');
+
+      self.setActiveTab(keyTab);
     },
 
     /**
@@ -2681,7 +2864,7 @@
     setActiveTab: (idTab) => {
       const self = WrapperManager;
 
-      if (!idTab) idTab = LIST_TAB[1].id;
+      if (!idTab) idTab = LIST_TAB[0].id;
 
       // sidebar
       $(`.sidebar .menu .item`).removeClass('active');
