@@ -179,30 +179,82 @@ body ul li {
   min-width: 100%;
   position: relative;
 }
+.gpt-layout .tab .tab-body .tab-item textarea.topic_to_compose {
+  height: 100px;
+  min-height: 100px;
+  max-height: 250px;
+  padding: 10px 10px 10px 10px;
+}
 .gpt-layout .tab .tab-body .tab-item textarea.original_text_reply {
   height: 150px;
+  min-height: 50px;
+  max-height: 250px;
   padding: 10px 10px 10px 10px;
 }
 .gpt-layout .tab .tab-body .tab-item textarea.general_content_reply {
   height: 100px;
+  min-height: 50px;
+  max-height: 200px;
   margin-top: 5px;
   margin-bottom: 5px;
 }
 .gpt-layout .tab .tab-body .tab-item textarea.original_text_summary {
   height: 500px;
+  min-height: 300px;
+  max-height: 650px;
   padding: 10px 10px 10px 10px;
 }
 .gpt-layout .tab .tab-body .tab-item textarea.original_text_summary_all_thread {
   height: 600px;
+  min-height: 300px;
+  max-height: 650px;
   margin-bottom: 5px;
 }
 .gpt-layout .tab .tab-body .tab-item textarea.original_text_check_problem {
   height: 500px;
+  min-height: 300px;
+  max-height: 700px;
   padding: 10px 10px 10px 10px;
 }
 .gpt-layout .tab .tab-body .tab-item textarea.original_text_check_problem_all_thread {
   height: 600px;
+  min-height: 300px;
+  max-height: 700px;
   margin-bottom: 5px;
+}
+.gpt-layout .paste-selection {
+  bottom: 10px;
+  left: -90%;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--white-color);
+  padding: 3px 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.25s all;
+  border: 1px solid var(--white-color);
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+.gpt-layout .paste-selection:hover {
+  color: var(--white-color);
+  background-color: var(--base-color-3);
+  border: var(--base-color-3) 1px solid;
+}
+.gpt-layout .paste-selection:hover svg {
+  fill: var(--white-color);
+}
+.gpt-layout .paste-selection.show {
+  bottom: 10px;
+  left: 10px;
+}
+.gpt-layout .paste-selection svg {
+  fill: var(--base-color);
+  margin-right: 5px;
+  width: 18px;
+  height: 18px;
+  transition: 0.25s all;
 }
 .gpt-layout .popover-cbx {
   position: absolute;
@@ -719,40 +771,6 @@ body ul li {
   position: relative;
   overflow: hidden;
 }
-.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-original-text-reply .paste-selection {
-  bottom: 10px;
-  left: -90%;
-  position: absolute;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: var(--white-color);
-  padding: 3px 5px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: 0.25s all;
-  border: 1px solid var(--white-color);
-  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-}
-.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-original-text-reply .paste-selection:hover {
-  color: var(--white-color);
-  background-color: var(--base-color-3);
-  border: var(--base-color-3) 1px solid;
-}
-.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-original-text-reply .paste-selection:hover svg {
-  fill: var(--white-color);
-}
-.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-original-text-reply .paste-selection.show {
-  bottom: 10px;
-  left: 10px;
-}
-.gpt-layout #write_tab .tab .tab-body .tab-item .wrap-original-text-reply .paste-selection svg {
-  fill: var(--base-color);
-  margin-right: 5px;
-  width: 18px;
-  height: 18px;
-  transition: 0.25s all;
-}
 .gpt-layout #write_tab .tab .tab-body .tab-item .wrap-general-content-reply .tips-icon {
   right: 3px;
   bottom: 10px;
@@ -1194,6 +1212,10 @@ body ul li {
 .gpt-layout #summary_tab .form-config {
   padding: 0 10px 0 10px;
 }
+.gpt-layout #summary_tab .form-config .wrap-original-text-summary .wrap-original-text-summary-all-thread {
+  position: relative;
+  overflow: hidden;
+}
 .gpt-layout #summary_tab .form-config .summary-length {
   margin-top: 5px;
   max-width: 400px;
@@ -1490,7 +1512,7 @@ body ul li {
   justify-content: start;
   align-items: center;
 }
-.gpt-layout #find_the_problem_tab .form-config .version button.submit-summary {
+.gpt-layout #find_the_problem_tab .form-config .version button.submit-find-problem {
   width: 100%;
   max-width: 250px;
   padding: 8px 0;
@@ -1503,7 +1525,7 @@ body ul li {
   cursor: pointer;
   transition: 0.15s all;
 }
-.gpt-layout #find_the_problem_tab .form-config .version button.submit-summary:hover {
+.gpt-layout #find_the_problem_tab .form-config .version button.submit-find-problem:hover {
   background-color: var(--base-color-5);
 }
 .gpt-layout #find_the_problem_tab .form-config .version .options .combobox .content {
@@ -1569,73 +1591,73 @@ body ul li {
   height: 18px;
   width: 18px;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result {
+.gpt-layout #find_the_problem_tab #find-problem-result {
   height: 100%;
   margin-top: 50px;
   padding: 0 10px 0 10px;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result.is-loading .result {
+.gpt-layout #find_the_problem_tab #find-problem-result.is-loading .result {
   min-height: 300px;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result.is-loading .result .result-item {
+.gpt-layout #find_the_problem_tab #find-problem-result.is-loading .result .result-item {
   display: none !important;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result.is-loading .result .cmp-loading {
+.gpt-layout #find_the_problem_tab #find-problem-result.is-loading .result .cmp-loading {
   display: block;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result.is-loading .result-footer {
+.gpt-layout #find_the_problem_tab #find-problem-result.is-loading .result-footer {
   display: none;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-title {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-title {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-title .left {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-title .left {
   display: flex;
   justify-content: center;
   align-items: center;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-title .left .icon {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-title .left .icon {
   width: 20px;
   margin-right: 5px;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-title .left .name-gpt {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-title .left .name-gpt {
   font-size: 15px;
   font-weight: 500;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-title .right {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-title .right {
   display: flex;
   justify-content: center;
   align-items: center;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-title .right .text {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-title .right .text {
   pointer-events: none;
   -webkit-user-select: none;
      -moz-user-select: none;
           user-select: none;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-title .right .icon {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-title .right .icon {
   cursor: pointer;
   width: 15px;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-title .right .icon path {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-title .right .icon path {
   pointer-events: none !important;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-title .right .icon.disable {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-title .right .icon.disable {
   fill: var(--background-black-gray-color);
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-title .right svg {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-title .right svg {
   width: 15px;
   cursor: pointer;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result {
+.gpt-layout #find_the_problem_tab #find-problem-result .result {
   margin-top: 20px;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result .result-item {
+.gpt-layout #find_the_problem_tab #find-problem-result .result .result-item {
   display: none;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result .result-item .title {
+.gpt-layout #find_the_problem_tab #find-problem-result .result .result-item .title {
   display: inline-block;
   font-size: 15px;
   margin-bottom: 5px;
@@ -1643,7 +1665,7 @@ body ul li {
   color: var(--base-text-color);
   position: relative;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result .result-item .title::after {
+.gpt-layout #find_the_problem_tab #find-problem-result .result .result-item .title::after {
   content: "";
   position: absolute;
   width: 150px;
@@ -1652,16 +1674,16 @@ body ul li {
   bottom: 0;
   left: 0;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result .result-item .title .bold {
+.gpt-layout #find_the_problem_tab #find-problem-result .result .result-item .title .bold {
   font-weight: 500;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result .result-item.active {
+.gpt-layout #find_the_problem_tab #find-problem-result .result .result-item.active {
   display: block;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result .result-item .wrap-content {
+.gpt-layout #find_the_problem_tab #find-problem-result .result .result-item .wrap-content {
   font-size: 0.9rem;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result .result-item .wrap-content.is-loading::after {
+.gpt-layout #find_the_problem_tab #find-problem-result .result .result-item .wrap-content.is-loading::after {
   content: "|";
   font-weight: bold;
   color: var(--base-text-color);
@@ -1670,30 +1692,30 @@ body ul li {
   padding: 0 0.5px;
   background: var(--background-black-color);
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result .cmp-loading {
+.gpt-layout #find_the_problem_tab #find-problem-result .result .cmp-loading {
   display: none;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result .cmp-loading :nth-child(1) {
+.gpt-layout #find_the_problem_tab #find-problem-result .result .cmp-loading :nth-child(1) {
   height: 20px;
   width: 50%;
   margin-bottom: 2px;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result .cmp-loading :nth-child(2) {
+.gpt-layout #find_the_problem_tab #find-problem-result .result .cmp-loading :nth-child(2) {
   height: 30px;
   width: 75%;
   margin-bottom: 2px;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result .cmp-loading :nth-child(3) {
+.gpt-layout #find_the_problem_tab #find-problem-result .result .cmp-loading :nth-child(3) {
   height: 110px;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-footer {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 30px;
   padding-bottom: 10px;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-footer .btn {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-footer .btn {
   border: none;
   cursor: pointer;
   border-radius: 5px;
@@ -1702,37 +1724,37 @@ body ul li {
   align-items: center;
   justify-content: center;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-footer .btn.insert-btn {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-footer .btn.insert-btn {
   background-color: var(--base-color);
   color: var(--white-color);
   padding: 0 10px;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-footer .btn img {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-footer .btn img {
   width: 15px;
   transition: 0.15s all;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-footer .btn:hover img {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-footer .btn:hover img {
   transform: scale(1.2);
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-footer .left {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-footer .left {
   display: flex;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-footer .left .btn {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-footer .left .btn {
   margin-right: 5px;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-footer .left .btn img {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-footer .left .btn img {
   pointer-events: none;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-footer .left .btn.done * {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-footer .left .btn.done * {
   display: none;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-footer .left .btn.done .icon-done {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-footer .left .btn.done .icon-done {
   display: block !important;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-footer .left .btn .icon-done {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-footer .left .btn .icon-done {
   display: none;
 }
-.gpt-layout #find_the_problem_tab #problem-find-result .result-footer .right .add-to-site {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-footer .right .add-to-site {
   min-width: 150px;
 }
 .gpt-layout #check_content_reply_tab {
@@ -1742,7 +1764,7 @@ body ul li {
 .gpt-layout #check_content_reply_tab .form-config {
   padding: 0 10px 0 10px;
 }
-.gpt-layout #check_content_reply_tab .form-config .wrap-original-text-summary textarea {
+.gpt-layout #check_content_reply_tab .form-config .wrap-original-text-check-content-reply textarea {
   width: 100% !important;
   height: 500px;
   min-height: 250px;
@@ -1754,7 +1776,7 @@ body ul li {
   justify-content: start;
   align-items: center;
 }
-.gpt-layout #check_content_reply_tab .form-config .version button.submit-summary {
+.gpt-layout #check_content_reply_tab .form-config .version button.submit-check-content-reply {
   width: 100%;
   max-width: 250px;
   padding: 8px 0;
@@ -1767,7 +1789,7 @@ body ul li {
   cursor: pointer;
   transition: 0.15s all;
 }
-.gpt-layout #check_content_reply_tab .form-config .version button.submit-summary:hover {
+.gpt-layout #check_content_reply_tab .form-config .version button.submit-check-content-reply:hover {
   background-color: var(--base-color-5);
 }
 .gpt-layout #check_content_reply_tab .form-config .version .options .combobox .content {
@@ -2006,7 +2028,7 @@ body ul li {
 .gpt-layout #suggest_meeting_tab .form-config {
   padding: 0 10px 0 10px;
 }
-.gpt-layout #suggest_meeting_tab .form-config .wrap-original-text-summary textarea {
+.gpt-layout #suggest_meeting_tab .form-config .wrap-original-text-to-suggest-meeting textarea {
   width: 100% !important;
   height: 500px;
   min-height: 250px;
@@ -2018,7 +2040,7 @@ body ul li {
   justify-content: start;
   align-items: center;
 }
-.gpt-layout #suggest_meeting_tab .form-config .version button.submit-summary {
+.gpt-layout #suggest_meeting_tab .form-config .version button.submit-get-suggest {
   width: 100%;
   max-width: 250px;
   padding: 8px 0;
@@ -2031,7 +2053,7 @@ body ul li {
   cursor: pointer;
   transition: 0.15s all;
 }
-.gpt-layout #suggest_meeting_tab .form-config .version button.submit-summary:hover {
+.gpt-layout #suggest_meeting_tab .form-config .version button.submit-get-suggest:hover {
   background-color: var(--base-color-5);
 }
 .gpt-layout #suggest_meeting_tab .form-config .version .options .combobox .content {

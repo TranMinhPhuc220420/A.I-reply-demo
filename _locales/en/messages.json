@@ -188,6 +188,9 @@
   "txt_placeholder_original_text_check_content_reply": {
     "message": "The original text to which you want to check content reply"
   },
+  "txt_placeholder_original_text_to_suggest_meeting": {
+    "message": "The original text to which you want to suggest meeting"
+  },
   "txt_format": {
     "message": "Format"
   },
@@ -248,6 +251,18 @@
   "txt_generate_draft": {
     "message": "Generate draft"
   },
+  "txt_generate_summary": {
+    "message": "Generate a summary"
+  },
+  "txt_generate_find_problem": {
+    "message": "Find the problem"
+  },
+  "txt_generate_check_content_reply": {
+    "message": "Check content reply"
+  },
+  "txt_generate_suggest_meeting": {
+    "message": "Suggest meeting"
+  },
   "txt_add_to_site": {
     "message": "Add to site"
   },
@@ -267,7 +282,7 @@
     "message": "Please enter the general content of your reply to the above text"
   },
   "des_error_empty_general_content_reply_max_length_token": {
-    "message": "Maximum 4000 characters for the general content of your reply to the above text"
+    "message": "Maximum characters for the general content of your reply to the above text"
   },
   "des_error_gemini_not_released": {
     "message": "Opps! Gemini 1.0 Pro has not been released yet"
@@ -279,7 +294,7 @@
     "message": "Please enter the original text you want to summarize"
   },
   "des_error_original_text_summary_max_length_token": {
-    "message": "Maximum 4000 characters for the original text you want to summarize"
+    "message": "Maximum characters for the original text you want to summarize"
   },
   
   "txt_summary_one_thread": {

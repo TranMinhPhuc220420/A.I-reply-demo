@@ -1433,6 +1433,7 @@
     result_active: 0,
     generate_result_list: [],
     original_text_summary: '',
+    original_text_summary_all_thread: '',
 
     /**
      * Get inner html for tab write
@@ -1466,13 +1467,23 @@
                 <div class="tab-body">
                   <span id="one_thread_tab" class="tab-item active">
                     <div class="wrap-original-text-summary">
-                      <textarea class="original_text_summary" maxlength="8000" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_SUMMARY')}"></textarea>
+                      <textarea class="original_text_summary" maxlength="${MAX_LENGTH_ORIGINAL_TEXT_SUMMARY}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_SUMMARY')}"></textarea>
+
+                      <div class="paste-selection">
+                        ${content_paste_icon}
+                        ${MyLang.getMsg('TXT_PASTE_SELECTION')}
+                      </div>
                     </div>
                   </span>
 
                   <span id="all_thread_tab" class="tab-item">
-                    <div class="wrap-original-text-summary">
-                      <textarea class="original_text_summary_all_thread" maxlength="8000" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_SUMMARY')}"></textarea>
+                    <div class="wrap-original-text-summary-all-thread">
+                      <textarea class="original_text_summary_all_thread" maxlength="${MAX_LENGTH_ORIGINAL_TEXT_SUMMARY}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_SUMMARY')}"></textarea>
+
+                      <div class="paste-selection">
+                        ${content_paste_icon}
+                        ${MyLang.getMsg('TXT_PASTE_SELECTION')}
+                      </div>
                     </div>
                   </span>
                 </div>
@@ -1495,7 +1506,7 @@
                 <div class="options">
                 </div>
 
-                <button class="submit-summary">Summary</button>
+                <button class="submit-summary">${MyLang.getMsg('TXT_GENERATE_SUMMARY')}</button>
               </div>
 
               <div class="alert">
@@ -1606,14 +1617,26 @@
     isValidateToCallGPT: () => {
       const self = TabSummaryManager;
 
-      let originalTextSummary = $(`#${self.idTab} .original_text_summary`).val().trim();
+      if (self.getIdTabActive() == 'one_thread_tab') {
+        let originalTextSummary = $(`#${self.idTab} .original_text_summary`).val().trim();
 
-      if (!originalTextSummary || originalTextSummary == '') {
-        return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_SUMMARY');
+        if (!originalTextSummary || originalTextSummary == '') {
+          return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_SUMMARY');
+        }
+        if (originalTextSummary.length > MAX_LENGTH_ORIGINAL_TEXT_SUMMARY) {
+          return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_SUMMARY_MAX_LENGTH_TOKEN');
+        }
+      } else {
+        let originalTextSummary = $(`#${self.idTab} .original_text_summary_all_thread`).val().trim();
+
+        if (!originalTextSummary || originalTextSummary == '') {
+          return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_SUMMARY');
+        }
+        if (originalTextSummary.length > MAX_LENGTH_ORIGINAL_TEXT_SUMMARY) {
+          return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_SUMMARY_MAX_LENGTH_TOKEN');
+        }
       }
-      if (originalTextSummary.length > MAX_LENGTH_TOPIC_COMPOSE) {
-        return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_SUMMARY_MAX_LENGTH_TOKEN');
-      }
+
       if (self.formData.gpt_version == 'gemini') {
         return MyLang.getMsg('DES_ERROR_GEMINI_NOT_RELEASED');
       }
@@ -1642,7 +1665,83 @@
 
       self.original_text_summary = originalText;
 
+      self.setActiveTab('one_thread_tab');
       self.setFocusOriginalText();
+    },
+
+    setOriginalTextAllThread: (originalText) => {
+      const self = TabSummaryManager;
+      if (self.is_loading) return;
+
+      let textareaEl = document.body.querySelector(`#${self.idTab} .original_text_summary_all_thread`);
+      $(textareaEl).val(originalText);
+
+      self.original_text_summary_all_thread = originalText;
+
+      self.setActiveTab('all_thread_tab');
+      self.setFocusOriginalTextAllThread();
+    },
+
+    setOriginalTextFromStorage: () => {
+      const self = TabSummaryManager;
+
+      _StorageManager.getTextSummarySidePanel(text => {
+        self.setActiveTab('one_thread_tab');
+        self.setOriginalText(text);
+
+        _StorageManager.removeTextSummarySidePanel();
+      });
+    },
+
+    setOriginalTextAllThreadFromStorage: () => {
+      const self = TabSummaryManager;
+
+      _StorageManager.getTextAllThreadSummarySidePanel(text => {
+        self.setOriginalTextAllThread(text);
+
+        _StorageManager.removeTextAllThreadSummarySidePanel();
+      });
+    },
+
+    /**
+     * checkAndSetOriginalText
+     * 
+     * @param {string} originalText 
+     */
+    checkAndSetOriginalText: (originalText) => {
+      const self = TabSummaryManager;
+      if (self.is_loading) return;
+
+      let originalTextSummary = $(`#${self.idTab} textarea.original_text_summary`).val().trim();
+      let pasteSelectionEl = $(`#${self.idTab} .wrap-original-text-summary .paste-selection`);
+      let originalTextSummaryAllThread = $(`#${self.idTab} textarea.original_text_summary_all_thread`).val().trim();
+      let pasteSelectionAllThreadEl = $(`#${self.idTab} .wrap-original-text-summary-all-thread .paste-selection`);
+
+      if (originalText == EMPTY_KEY) {
+        pasteSelectionEl.removeClass('show');
+        pasteSelectionAllThreadEl.removeClass('show');
+        return;
+      }
+
+      if (self.getIdTabActive() == 'one_thread_tab') {
+        if (originalTextSummary == '') {
+          self.setOriginalText(originalText);
+        } else {
+          if (originalTextSummary != originalText) {
+            self.originalTextTemp = originalText;
+            pasteSelectionEl.addClass('show');
+          }
+        }
+      } else {
+        if (originalTextSummaryAllThread == '') {
+          self.setOriginalTextAllThread(originalText);
+        } else {
+          if (originalTextSummaryAllThread != originalText) {
+            self.originalTextTemp = originalText;
+            pasteSelectionAllThreadEl.addClass('show');
+          }
+        }
+      }
     },
 
     /**
@@ -1654,6 +1753,19 @@
       if (self.is_loading) return;
 
       let textareaEl = document.body.querySelector(`#${self.idTab} .original_text_summary`);
+      $(textareaEl).focus();
+      $(textareaEl).scrollTop(0);
+    },
+
+    /**
+     * setFocusOriginalText
+     * 
+     */
+    setFocusOriginalTextAllThread: () => {
+      const self = TabSummaryManager;
+      if (self.is_loading) return;
+
+      let textareaEl = document.body.querySelector(`#${self.idTab} .original_text_summary_all_thread`);
       $(textareaEl).focus();
       $(textareaEl).scrollTop(0);
     },
@@ -1672,7 +1784,7 @@
 
         let wrapEl = document.createElement('div');
         wrapEl.className = 'wrap-config-item';
-        
+
         wrapEl.innerHTML = `
           <input id="summary-length-${item.value}" type="radio" ${i == 0 ? 'checked' : ''} name="summary-length" value="${item.value}">
           <label for="summary-length-${item.value}">${item.display}</label>
@@ -1809,6 +1921,10 @@
           cls: `#${self.idTab} .result-footer .btn.copy-content`,
           click: self.onClickCopyContentResult
         },
+        {
+          cls: `#${self.idTab} .paste-selection`,
+          click: self.onClickPasteSelection
+        },
       ];
 
       for (let i = 0; i < listClsAndEvent.length; i++) {
@@ -1929,10 +2045,15 @@
       self.is_loading = true;
 
       let originalTextSummary = $(`#${self.idTab} textarea.original_text_summary`).val()
+      let originalTextSummaryAllThread = $(`#${self.idTab} textarea.original_text_summary_all_thread`).val()
       let summaryLength = $('input[name="summary-length"]:checked').val()
 
       let params = self.formData;
-      params.original_text_summary = originalTextSummary;
+      if (self.getIdTabActive() == 'one_thread_tab') {
+        params.original_text_summary = originalTextSummary;
+      } else {
+        params.original_text_summary = originalTextSummaryAllThread;
+      }
       params.summary_length = summaryLength;
       params.language = UserSetting.language_active;
 
@@ -1976,6 +2097,52 @@
 
           MyUtils.debugLog('call request fetch success:' + success);
         });
+    },
+
+    /**
+     * Handler on storage changed
+     * 
+     * @param {object} payload 
+     * @param {string} type 
+     */
+    handlerOnStorageOnChanged: (payload, type) => {
+      const self = TabSummaryManager;
+
+      if ('text_summary_side_panel' in payload) {
+        let textNew = payload.text_summary_side_panel.newValue;
+        if (textNew) {
+          _StorageManager.removeTextSummarySidePanel();
+
+          self.setOriginalText(textNew);
+        }
+      }
+      if ('text_all_thread_summary_side_panel' in payload) {
+        let textNew = payload.text_all_thread_summary_side_panel.newValue;
+        if (textNew) {
+          _StorageManager.removeTextAllThreadSummarySidePanel();
+
+          self.setOriginalTextAllThread(textNew);
+        }
+      }
+    },
+
+    handlerOnTextSelectedInPage: (textSelection) => {
+      const self = TabSummaryManager;
+
+      self.checkAndSetOriginalText(textSelection);
+    },
+
+    checkOnStorageChangedNeedToActiveTab: (payload, type) => {
+      const self = TabSummaryManager;
+
+      if ('text_summary_side_panel' in payload) {
+        return true;
+      }
+      if ('text_all_thread_summary_side_panel' in payload) {
+        return true;
+      }
+
+      return false;
     },
 
     // Event handler
@@ -2133,6 +2300,24 @@
         $(event.target).removeClass('done');
       }, 1000);
     },
+
+    /**
+     * On click paste selection to text original
+     * 
+     * @param {Event} event 
+     */
+    onClickPasteSelection: (event) => {
+      const self = TabSummaryManager;
+
+      if (self.getIdTabActive() == 'one_thread_tab') {
+        self.setOriginalText(self.originalTextTemp);
+      } else {
+        self.setOriginalTextAllThread(self.originalTextTemp);
+      }
+
+      self.originalTextTemp = null;
+      $(`#${self.idTab} .paste-selection`).removeClass('show');
+    }
   };
 
   /**
@@ -2199,14 +2384,14 @@
                 <div class="options">
                 </div>
 
-                <button class="submit-summary">Summary</button>
+                <button class="submit-find-problem">${MyLang.getMsg('TXT_GENERATE_FIND_PROBLEM')}</button>
               </div>
 
               <div class="alert">
               </div>
             </div>
 
-            <div id="summary-result" class="hidden is-loading">
+            <div id="find-problem-result" class="hidden is-loading">
 
               <div class="result-title">
                 <div class="left">
@@ -2227,7 +2412,7 @@
                 </div>
               </div>
 
-              <div class="result-summary">
+              <div class="result-find-problem">
                 <div class="cmp-loading">
                   <div class="loading"></div>
                   <div class="loading"></div>
@@ -2541,7 +2726,7 @@
       return `
               <div class="form-config">
 
-              <div class="wrap-original-text-summary">
+              <div class="wrap-original-text-check-content-reply">
                 <textarea class="original_text_check_content_reply" maxlength="8000" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_CHECK_CONTENT_REPLY')}"></textarea>
               </div>
 
@@ -2549,14 +2734,14 @@
                 <div class="options">
                 </div>
 
-                <button class="submit-summary">Summary</button>
+                <button class="submit-check-content-reply">${MyLang.getMsg('TXT_GENERATE_CHECK_CONTENT_REPLY')}</button>
               </div>
 
               <div class="alert">
               </div>
             </div>
 
-            <div id="summary-result" class="hidden is-loading">
+            <div id="check-content-reply-result" class="hidden is-loading">
 
               <div class="result-title">
                 <div class="left">
@@ -2577,7 +2762,7 @@
                 </div>
               </div>
 
-              <div class="result-summary">
+              <div class="result-check-content-reply">
                 <div class="cmp-loading">
                   <div class="loading"></div>
                   <div class="loading"></div>
@@ -2824,16 +3009,87 @@
     idTab: LIST_TAB[4].id,
     indexTab: 4,
 
+    combobox_flag: false,
+
+    is_loading: false,
+    formData: {
+      gpt_version: null,
+    },
+    original_text_to_suggest_meeting: '',
+
     /**
      * Get inner html for tab write
      * 
      * @returns {string}
      */
     getVHtml: () => {
-      return `<div>
-                <h1>Suggest meeting tab</h1>
+      let reloadIconUrl = chrome.runtime.getURL("icons/refresh-icon.png");
+      let copyIconUrl = chrome.runtime.getURL("icons/content-copy-icon.png");
+      let doneIconUrl = chrome.runtime.getURL("icons/done.svg");
+
+      return `
+              <div class="form-config">
+
+              <div class="wrap-original-text-to-suggest-meeting">
+                <textarea class="original_text_to_suggest_meeting" maxlength="8000" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_TO_SUGGEST_MEETING')}"></textarea>
               </div>
-              `
+
+              <div class="version config">
+                <div class="options">
+                </div>
+
+                <button class="submit-get-suggest">${MyLang.getMsg('TXT_GENERATE_SUGGEST_MEETING')}</button>
+              </div>
+
+              <div class="alert">
+              </div>
+            </div>
+
+            <div id="suggest-meeting-result" class="hidden is-loading">
+
+              <div class="result-title">
+                <div class="left">
+                  <img class="icon" src="./icons/chatgpt-icon.svg" alt="gpt-version-icon">
+                  <span class="name-gpt">...</span>
+                </div>
+
+                <div class="right">
+                  <svg class="icon prev disable" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000">
+                    <path d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path>
+                  </svg>
+                  <span class="text"> _/_ </span>
+                  <svg class="icon next disable" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#000000">
+                    <path d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="result-suggest">
+                <div class="cmp-loading">
+                  <div class="loading"></div>
+                  <div class="loading"></div>
+                  <div class="loading"></div>
+                </div>
+              </div>
+
+              <div class="result-footer">
+                <div class="left">
+                  <button class="btn re-generate">
+                    <img src="${reloadIconUrl}" alt="">
+                  </button>
+                  <button class="btn copy-content">
+                    <img src="${copyIconUrl}" alt="">
+                    <img class="icon-done" src="${doneIconUrl}" alt="">
+                  </button>
+                </div>
+                <div class="right">
+                </div>
+              </div>
+
+            </div>
+          `
     },
 
     /**
@@ -2844,22 +3100,209 @@
     createPanel: () => {
       const self = TabSuggestMeetingManager;
 
+      self.result_active = 0;
+      self.generate_result_list = [];
+
+      self.formData['gpt_version'] = GPT_VERSION_SETTING_DATA[0].value;
+
       const panelEl = document.createElement('div');
       panelEl.id = self.idTab
       panelEl.className = 'tab-item'
       panelEl.innerHTML = self.getVHtml();
 
       LIST_TAB[self.indexTab].onActive = self.onActive;
+      panelEl.afterRender = self.afterRender;
 
       return panelEl;
+    },
+
+    // Setter
+    setOriginalText: (originalText) => {
+      const self = TabSuggestMeetingManager;
+      if (self.is_loading) return;
+
+      let originalTextReplyEl = document.body.querySelector(`#${self.idTab} .original_text_to_suggest_meeting`);
+      $(originalTextReplyEl).val(originalText);
+      self.original_text_to_suggest_meeting = originalText;
+
+      self.setFocusOriginalText();
+    },
+
+    setFocusOriginalText: () => {
+      const self = TabSuggestMeetingManager;
+      if (self.is_loading) return;
+
+      let originalTextReplyEl = document.body.querySelector(`#${self.idTab} .original_text_to_suggest_meeting`);
+      $(originalTextReplyEl).focus();
+      $(originalTextReplyEl).scrollTop(0);
+    },
+
+    /**
+     * Load and show list option gpt version for user
+     * 
+     */
+    loadVersionGPTConfig: () => {
+      const self = TabSuggestMeetingManager;
+
+      let itemActive = GPT_VERSION_SETTING_DATA[0];
+      let gpt_option = '';
+      for (let i = 0; i < GPT_VERSION_SETTING_DATA.length; i++) {
+        const item = GPT_VERSION_SETTING_DATA[i];
+        gpt_option += `
+        <li class="combobox-item" value="${item.value}" kind="version_gpt">
+          <div class="icon">
+            <img src="${item.icon}" alt="" srcset="">
+          </div>
+          <div class="name">${item.name}</div>
+        </li>
+      `;
+
+        // get gpt version active
+        if (item.value == self.formData.gpt_version) {
+          itemActive = item;
+        }
+      }
+
+      let vHtml_init = `
+        <button class="item text version-gpt combobox" id="version_gpt">
+
+          <div class="content">
+            <img src="${itemActive.icon}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <path d="M0 0h24v24H0z" fill="none" />
+              <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" />
+            </svg>
+          </div>
+
+          <ul class="popover-cbx wrap-item type-icon">
+            ${gpt_option}
+          </ul>
+
+        </button>
+    `
+
+      $(`#${self.idTab} .version .options`).html(vHtml_init);
+    },
+
+    /**
+     * Set event for element in panel
+     * 
+     */
+    resetEvent: () => {
+      const self = TabSuggestMeetingManager;
+
+      let listClsAndEvent = [
+        {
+          cls: `#${self.idTab} .options`,
+          click: self.onClickOptionComboBox
+        },
+        {
+          cls: `#${self.idTab} .popover-cbx.wrap-item .combobox-item`,
+          click: self.onClickItemOptionComboBox
+        },
+      ];
+
+      for (let i = 0; i < listClsAndEvent.length; i++) {
+        const itemConfig = listClsAndEvent[i];
+        $(document).off('click', itemConfig.cls, itemConfig.click);
+        $(document).on('click', itemConfig.cls, itemConfig.click);
+      }
+
+      let versionGptComboBox = document.body.querySelector(`#${self.idTab} #version_gpt`);
+      if (versionGptComboBox && !versionGptComboBox.onSelect) {
+        versionGptComboBox.onSelect = self.onSelectVersionGptConfig;
+      }
+    },
+
+    // Event handler
+    afterRender: () => {
+      const self = TabSuggestMeetingManager;
+
+      self.loadVersionGPTConfig();
     },
 
     // Event handler
     onActive: () => {
       const self = TabSuggestMeetingManager;
 
+      self.resetEvent();
+      self.setFocusOriginalText();
+
       MyUtils.debugLog(`Active: ${self.idTab}`);
-    }
+    },
+
+    /**
+     * onClickOptionComboBox
+     * 
+     * @param {Event} event 
+     */
+    onClickOptionComboBox: (event) => {
+      const self = TabSuggestMeetingManager;
+      if (self.is_loading) return;
+
+      const targetEl = event.target;
+
+      const popoverEl = targetEl.querySelector(`#${self.idTab} .popover-cbx`);
+      if (!popoverEl) return;
+
+      $(`#${self.idTab} .popover-cbx`).removeClass('show');
+      self.combobox_flag = true;
+
+      popoverEl.classList.add('show');
+
+      if (MyUtils.isRightSideOutOfViewport(popoverEl)) {
+        popoverEl.style.left = 'unset'
+        popoverEl.style.right = `${targetEl.offsetWidth - 20}px`;
+      }
+      if (MyUtils.isBottomSideOutOfViewport(popoverEl)) {
+        popoverEl.style.top = 'unset'
+        popoverEl.style.bottom = `35px`;
+      }
+
+      setTimeout(() => {
+        self.combobox_flag = false;
+      }, 100)
+    },
+
+    /**
+     * onClickItemOptionComboBox
+     * 
+     * @param {Event} event 
+     */
+    onClickItemOptionComboBox: (event) => {
+      const self = TabSuggestMeetingManager;
+      if (self.is_loading) return;
+
+      const kind = event.target.getAttribute('kind');
+      const value = event.target.getAttribute('value');
+
+      const comboboxEl = $(event.target).parents('button.combobox')[0];
+      if (comboboxEl.onSelect) {
+        comboboxEl.onSelect(comboboxEl, event.target, kind, value);
+      }
+    },
+
+    /**
+     * On select version GPT config
+     * 
+     * @param {Element} comboboxEl 
+     * @param {Element} itemEl 
+     * @param {string} value 
+     */
+    onSelectVersionGptConfig: (comboboxEl, itemEl, kind, value) => {
+      const self = TabSuggestMeetingManager;
+      if (self.is_loading) return;
+
+      let record = GPT_VERSION_SETTING_DATA.find(item => {
+        return value == item.value
+      });
+
+      if (record) {
+        self.formData['gpt_version'] = value;
+
+        $(`#${self.idTab} #version_gpt .content img`).attr('src', record.icon);
+      }
+    },
   };
 
   /**
@@ -2869,6 +3312,8 @@
   const WrapperManager = {
     idEl: 'tab_container',
     sidebar_flag: false,
+
+    action_name_after_render_important: null,
 
     /**
      * Initialize wrapper manager
@@ -2923,7 +3368,7 @@
      */
     getActiveTab: () => {
       const self = WrapperManager;
-      return document.querySelector(`#${self.idEl} .tab-item.active`).id;
+      return document.querySelector(`#${self.idEl} .tab-item[item-of="${self.idEl}"].active`).id;
     },
 
     setEmailFooter: (userEmail) => {
@@ -2977,6 +3422,8 @@
       }
 
       self.initEvent();
+
+      self.callActionImportFromPageSend();
     },
 
     /**
@@ -3024,6 +3471,26 @@
 
       $('.sidebar .btn.collapse .label').html(MyLang.getMsg('TXT_COLLAPSE_NAVBAR'))
       $('.sidebar .footer .setting .label').html(MyLang.getMsg('TXT_SETTING'))
+    },
+
+    callActionImportFromPageSend: () => {
+      const self = WrapperManager;
+      if (!self.action_name_after_render_important) return;
+
+      switch (self.action_name_after_render_important) {
+        case SET_TEXT_ORIGINAL_THREAD_TO_SUMMARY:
+          TabSummaryManager.setOriginalTextFromStorage();
+          break;
+
+        case SET_TEXT_ORIGINAL_ALL_THREAD_TO_SUMMARY:
+          TabSummaryManager.setOriginalTextAllThreadFromStorage();
+          break;
+
+        default:
+          break;
+      }
+
+      _StorageManager.removeActionInSidePanel();
     },
 
     // Event
@@ -3097,16 +3564,34 @@
     if (TabWriteManager.checkOnStorageChangedNeedToActiveTab(payload, type)) {
       self.setActiveTab(TabWriteManager.idTab);
     }
-    
+    if (TabSummaryManager.checkOnStorageChangedNeedToActiveTab(payload, type)) {
+      self.setActiveTab(TabSummaryManager.idTab);
+    }
+
     const idTabActive = self.getActiveTab();
+    switch (idTabActive) {
+      case TabWriteManager.idTab:
+        TabWriteManager.handlerOnStorageOnChanged(payload, type);
+        break;
 
-    if (idTabActive == TabWriteManager.idTab) {
-      TabWriteManager.handlerOnStorageOnChanged(payload, type)
+      case TabSummaryManager.idTab:
+        TabSummaryManager.handlerOnStorageOnChanged(payload, type);
+        break;
     }
 
-    if (idTabActive == TabSummaryManager.idTab) {
-    }
+    if ('text_selected_in_page' in payload) {
+      let textSelection = payload.text_selected_in_page.newValue;
 
+      switch (idTabActive) {
+        // case TabWriteManager.idTab:
+        //   TabWriteManager.handlerOnTextSelectedInPage(payload, type);
+        //   break;
+
+        case TabSummaryManager.idTab:
+          TabSummaryManager.handlerOnTextSelectedInPage(textSelection);
+          break;
+      }
+    }
     if ('trigger_close_side_panel' in payload) {
       let { is_close, id_popup } = payload.trigger_close_side_panel.newValue;
 
@@ -3131,7 +3616,7 @@
    */
   const initialize_side = async () => {
     let pallaFinishedCount = 0;
-    let NUM_PROCEED_PALLA_FINISHED_COUNT = 3;
+    let NUM_PROCEED_PALLA_FINISHED_COUNT = 4;
     let proceedByPallaFinishedCount = function () {
       pallaFinishedCount++;
       if (pallaFinishedCount >= NUM_PROCEED_PALLA_FINISHED_COUNT) {
@@ -3163,13 +3648,19 @@
       UserSetting.language_active = TabWriteManager.getLanguageFromConfig();
 
       proceedByPallaFinishedCount();
-    })
+    });
 
     _StorageManager.getTitleContentMailToWrite(titleContent => {
       TabWriteManager.title_content_mail_to_write = { ...titleContent };
 
       proceedByPallaFinishedCount();
-    })
+    });
+
+    _StorageManager.getActionInSidePanel(actionName => {
+      WrapperManager.action_name_after_render_important = actionName;
+
+      proceedByPallaFinishedCount();
+    });
 
     chrome.runtime.sendMessage({ method: 'get_user_info' }, (userInfo) => {
       ID_USER_ADDON_LOGIN = userInfo.id;

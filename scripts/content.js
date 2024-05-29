@@ -53,11 +53,11 @@ document.addEventListener("RW759_connectExtension", function (e) {
       icon: '<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><g><path d="M0,0h24v24H0V0z" fill="none"></path></g><g><g><path d="M15,3H5C3.9,3,3.01,3.9,3.01,5L3,19c0,1.1,0.89,2,1.99,2H19c1.1,0,2-0.9,2-2V9L15,3z M8,17c-0.55,0-1-0.45-1-1s0.45-1,1-1 s1,0.45,1,1S8.55,17,8,17z M8,13c-0.55,0-1-0.45-1-1s0.45-1,1-1s1,0.45,1,1S8.55,13,8,13z M8,9C7.45,9,7,8.55,7,8s0.45-1,1-1 s1,0.45,1,1S8.55,9,8,9z M14,10V4.5l5.5,5.5H14z"></path></g></g></svg>',
       display: "Summary mail",
       action: () => {
-        let contentMail = MailAIGenerate.getContentBodyMail();
+        let contentMail = MailAIGenerate.getContentBodyMail(false);
         if (contentMail) {
-          _StorageManager.setTextSummarySidePanel(contentMail);
-          
           MyUtils.setOpenSidePanel();
+          _StorageManager.setActionInSidePanel(SET_TEXT_ORIGINAL_THREAD_TO_SUMMARY);
+          _StorageManager.setTextSummarySidePanel(contentMail);
         }
       },
     },
@@ -65,7 +65,12 @@ document.addEventListener("RW759_connectExtension", function (e) {
       icon: '<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><g><path d="M0,0h24v24H0V0z" fill="none"></path></g><g><g><path d="M15,3H5C3.9,3,3.01,3.9,3.01,5L3,19c0,1.1,0.89,2,1.99,2H19c1.1,0,2-0.9,2-2V9L15,3z M8,17c-0.55,0-1-0.45-1-1s0.45-1,1-1 s1,0.45,1,1S8.55,17,8,17z M8,13c-0.55,0-1-0.45-1-1s0.45-1,1-1s1,0.45,1,1S8.55,13,8,13z M8,9C7.45,9,7,8.55,7,8s0.45-1,1-1 s1,0.45,1,1S8.55,9,8,9z M14,10V4.5l5.5,5.5H14z"></path></g></g></svg>',
       display: "Summary all mail",
       action: () => {
-        console.log("Summary all mail");
+        let contentMail = MailAIGenerate.getContentBodyMail();
+        if (contentMail) {
+          MyUtils.setOpenSidePanel();
+          _StorageManager.setActionInSidePanel(SET_TEXT_ORIGINAL_ALL_THREAD_TO_SUMMARY);
+          _StorageManager.setTextAllThreadSummarySidePanel(contentMail);
+        }
       },
     },
     {
@@ -518,6 +523,7 @@ document.addEventListener("RW759_connectExtension", function (e) {
           if (textSelection == "") textSelection = EMPTY_KEY;
 
           _StorageManager.setOriginalTextSidePanel(textSelection);
+          _StorageManager.setTextSelectedInPage(textSelection);
         }, 100);
       }
       document.onmouseup = gText;
@@ -805,22 +811,69 @@ document.addEventListener("RW759_connectExtension", function (e) {
       return el;
     },
 
+    openAllThread: () => {
+      let listExtend = $(`.kQ.bg.adv`);
+      for (let i = 0; i < listExtend.length; i++) {
+        listExtend[i].click();
+      }
+
+      let listTitle = $(`.kv .Bk .G3.G2 div .adf.ads`);
+      for (let i = 0; i < listTitle.length; i++) {
+        let itemEl = listTitle[i];
+
+        itemEl.click();
+        $(itemEl).parents('.Bk').attr('flag_s', true);
+      }
+    },
+
+    closeAllThread: () => {
+      let listTitle = $(`.h7 .Bk .G3.G2 .adn.ads .gE.iv.gt`);
+      listTitle.each((index, itemEl) => {
+        
+        let bkParent = $(itemEl).parents('.Bk');
+        if (bkParent.attr('flag_s')) {
+          itemEl.click();
+        }
+        bkParent.attr('flag_s', null);
+      });
+    },
+
     /**
      * Get content mail
      *
      * @returns {string}
      */
-    getContentBodyMail: function () {
+    getContentBodyMail: function (is_all_threads=true) {
       let self = MailAIGenerate;
+
+      if (is_all_threads) {
+        MailAIGenerate.openAllThread();
+      }
+
       let selection = window.getSelection();
       let range = document.createRange();
-      range.setStartBefore(self.bodyMailEl.first()[0]);
-      range.setEndAfter(self.bodyMailEl.last()[0]);
+
+      let adnAdsEl = $(".adn.ads");
+      if (!is_all_threads) {
+        adnAdsEl = adnAdsEl.last();
+      }
+
+      let firstEl = adnAdsEl.first();
+      let lastEl = adnAdsEl.last();
+
+      range.setStartBefore(firstEl[0]);
+      range.setEndAfter(lastEl[0]);
+
       selection.removeAllRanges();
       selection.addRange(range);
 
       let contentMail = document.getSelection().toString();
       selection.removeAllRanges();
+
+      if (is_all_threads) {
+        MailAIGenerate.closeAllThread();
+      }
+
       return contentMail;
     },
 
@@ -1072,7 +1125,7 @@ document.addEventListener("RW759_connectExtension", function (e) {
       const self = MailAIGenerate;
 
       let titleMail = MailAIGenerate.getTitleMail();
-      let contentMail = MailAIGenerate.getContentBodyMail();
+      let contentMail = MailAIGenerate.getContentBodyMail(false);
       self.processRequestToShowPopup(titleMail, contentMail);
 
       // open side panel when action for compose
@@ -1090,7 +1143,7 @@ document.addEventListener("RW759_connectExtension", function (e) {
 
       if (btnEl.getAttribute("role_btn") == "reply") {
         let titleMail = MailAIGenerate.getTitleMail();
-        let contentMail = MailAIGenerate.getContentBodyMail();
+        let contentMail = MailAIGenerate.getContentBodyMail(false);
         self.processRequestToShowPopup(titleMail, contentMail);
       } else {
         const idPopup = MyUtils.getNewIdPopup();

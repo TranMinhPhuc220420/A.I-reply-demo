@@ -85,6 +85,7 @@ const MAX_VOICE_CONFIG_OPTIONS_SHOW = 1;
 const MAX_LENGTH_TOPIC_COMPOSE = 8000;
 const MAX_LENGTH_ORIGINAL_TEXT_REPLY = 8000;
 const MAX_LENGTH_GENERAL_CONTENT_REPLY = 4000;
+const MAX_LENGTH_ORIGINAL_TEXT_SUMMARY = 16000;
 
 const GROUP_PROMPT_LABEL_BG_COLOR = "#2196F3";
 const GROUP_PROMPT_LABEL_TEXT_COLOR = "#ffffff";
@@ -103,6 +104,9 @@ const SKIN_BACKGROUND_COLOR_LOCALSTORAGE_KEY = 'Sateraito_AI_Register_Skin_Backg
 const SKIN_TEXT_COLOR_LOCALSTORAGE_KEY = 'Sateraito_AI_Register_Skin_Text_Color_LS_Key';
 
 const EMPTY_KEY = 'sateraito_key_empty_293039';
+
+const SET_TEXT_ORIGINAL_THREAD_TO_SUMMARY = 'SET_TEXT_ORIGINAL_A_THREAD_TO_SUMMARY';
+const SET_TEXT_ORIGINAL_ALL_THREAD_TO_SUMMARY = 'SET_TEXT_ORIGINAL_ALL_THREAD_TO_SUMMARY';
 
 const UserSetting = {
   language_active: 'japanese'
@@ -843,6 +847,30 @@ const _StorageManager = {
         callback();
       }
     });
+  },
+
+  setTextSelectedInPage: (text_selected_in_page) => {
+    chrome.storage.local.set({ text_selected_in_page });
+  },
+  getTextSelectedInPage: (callback) => {
+    chrome.storage.local.get('text_selected_in_page', payload => {
+      callback(payload.text_selected_in_page)
+    });
+  },
+  removeTextSelectedInPage: () => {
+    chrome.storage.local.remove('text_selected_in_page');
+  },
+
+  setActionInSidePanel: (action_name_page_to_side_panel) => {
+    chrome.storage.local.set({ action_name_page_to_side_panel });
+  },
+  getActionInSidePanel: (callback) => {
+    chrome.storage.local.get('action_name_page_to_side_panel', payload => {
+      callback(payload.action_name_page_to_side_panel)
+    });
+  },
+  removeActionInSidePanel: () => {
+    chrome.storage.local.remove('action_name_page_to_side_panel');
   },
 
   // For tab Write
@@ -1786,9 +1814,9 @@ Output in ${lang}`
     prompt += `${original_text_summary}\n`
     prompt += `"""\n`
     if (summary_length != 'auto') {
-      prompt += `Please help me summarize this original text with ${summary_length} words. I just need the exact content summarize and no title, no explanation needed.\n`
+      prompt += `Please help me summarize this original text and what it is about with ${summary_length} words. I just need the exact content summarize and no title, no explanation needed.\n`
     } else {
-      prompt += `Please help me summarize this original text. I just need the exact content summarize and no title, no explanation needed.\n`
+      prompt += `Please help me summarize this original text and what it is about. I just need the exact content summarize and no title, no explanation needed.\n`
     }
     prompt += `Output in ${language}`
     messages.push({ role: 'user', content: prompt })
