@@ -1614,11 +1614,11 @@ Output in ${lang}`
       tone, email_length, your_role, your_language
     } = params;
 
-    let email_length_str = 'with maximum content 100 words'
+    let email_length_str = 'with maximum content 50 words'
     if (email_length == 'medium') {
-      email_length_str = 'has a content of 250 words and a minimum of 500 words'
+      email_length_str = 'has a content of 150 words and a minimum of 500 words'
     } else if (email_length == 'long') {
-      email_length_str = 'with content must be at least 1000 words'
+      email_length_str = 'with content must be at least 800 words'
     }
 
     let prompt;
@@ -1707,34 +1707,50 @@ Output in ${lang}`
     let role_trim = your_role.trim();
     let role_str = ` as a ${role_trim} `;
 
-    prompt_system = '';
-    prompt_system += `You are an expert in ${formality_reply} writing. Not need Subject and you need to pay attention to grammar, spelling, and sentence structure. You just need to answer to the content you wrote.\n`;
-    prompt_system += `##Request details\n`;
-    prompt_system += `Write a ${formality_reply}${(role_trim != '') ? role_str : ''}. Ensure your response has a ${tone} tone and ${email_length_str}.\n`;
-    prompt_system += general_content_reply;
+    // prompt_system = '';
+    // prompt_system += `You are an expert in ${formality_reply} writing. Not need Subject and you need to pay attention to grammar, spelling, and sentence structure`;
+    prompt_system = 'You are a helpful assistant.';
+    // prompt_system += `##Request details\n`;
+    // prompt_system += `Write a ${formality_reply}${(role_trim != '') ? role_str : ''}. Ensure your response has a ${tone} tone and ${email_length_str}.\n`;
+    // prompt_system += general_content_reply;
 
     const messages = [
       // { role: "system", content: `You are an expert in ${formality_reply} writing. Not need Subject and you need to pay attention to grammar, spelling, and sentence structure. You just need to answer to the content you wrote.` },
       { role: "system", content: prompt_system },
     ];
 
-    prompt += `Help me write a ${formality_reply}${(role_trim != '') ? role_str : ' '}to reply to the original text with a ${tone} tone and ${email_length_str} please!. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating. I just need the exact content written and no explanation needed.\n`
-    prompt += `Respond in the ${your_language} language.\n`
-    prompt += `\n`
-    prompt += `-----\n`
-    prompt += `\n`
-    prompt += `Original text:\n`
-    prompt += `"""\n`
-    prompt += `${original_text_reply}\n`
-    prompt += `"""\n`
-    prompt += `\n`
-    prompt += `The key points of the reply:\n`
-    prompt += `"""\n`
-    prompt += `${general_content_reply}`
-    prompt += `"""\n`
-    prompt += `\n`
-    prompt += `Output in ${your_language}`
+    // prompt += `Help me write a ${formality_reply}${(role_trim != '') ? role_str : ' '}with a ${tone} tone and ${email_length_str} to reply to the original text please!\n`
+    // prompt += `Respond in the ${your_language} language.\n`
+    // prompt += `\n`
+    // prompt += `-----\n`
+    // prompt += `\n`
+    // prompt += `Original text:\n`
+    // prompt += `"""\n`
+    // prompt += `${original_text_reply}\n`
+    // prompt += `"""\n`
+    // prompt += `\n`
+    // prompt += `The key points of the reply:\n`
+    // prompt += `"""\n`
+    // prompt += `${general_content_reply}\n`
+    // prompt += `"""\n`
+    // prompt += `\n`
+    // // prompt += `Output in ${your_language}`
 
+    prompt = `
+Write a ${formality_reply} to reply to the original text. Ensure your response has a ${tone} tone and a ${email_length} length. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.
+Respond in the ${your_language.toUpperCase()} language.
+
+-----
+Original text:
+"""
+${original_text_reply}
+"""
+
+The key points of the reply:
+"""
+${general_content_reply}
+"""
+`;
     messages.push({ role: 'user', content: prompt })
 
     try {
