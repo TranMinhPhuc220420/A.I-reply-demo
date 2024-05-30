@@ -77,14 +77,24 @@ document.addEventListener("RW759_connectExtension", function (e) {
       icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5c-.49 0-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-6 8h-4v-2h4v2zm0-4h-4v-2h4v2z"></path> </svg>',
       display: "Problem in mail",
       action: () => {
-        console.log("Problem in mail");
+        let contentMail = MailAIGenerate.getContentBodyMail(false);
+        if (contentMail) {
+          MyUtils.setOpenSidePanel();
+          _StorageManager.setActionInSidePanel(SET_TEXT_ORIGINAL_THREAD_TO_FIND_PROBLEM);
+          _StorageManager.setTextFindProblemSidePanel(contentMail);
+        }
       },
     },
     {
       icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5c-.49 0-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-6 8h-4v-2h4v2zm0-4h-4v-2h4v2z"></path> </svg>',
       display: "Problem in all mail",
       action: () => {
-        console.log("Problem in all mail");
+        let contentMail = MailAIGenerate.getContentBodyMail();
+        if (contentMail) {
+          MyUtils.setOpenSidePanel();
+          _StorageManager.setActionInSidePanel(SET_TEXT_ORIGINAL_ALL_THREAD_TO_FIND_PROBLEM);
+          _StorageManager.setTextAllThreadFindProblemSidePanel(contentMail);
+        }
       },
     },
     {
@@ -468,7 +478,7 @@ document.addEventListener("RW759_connectExtension", function (e) {
       const self = PromptBuilder;
 
       var templateBody = self.formBuilder.getPrompt();
-      MyUtils.debugLog(templateBody);
+      // MyUtils.debugLog(templateBody);
 
       let is_direct_send = $(`#${self.modal_id} :input[name="direct_send"]`).is(
         ":checked"
@@ -829,7 +839,7 @@ document.addEventListener("RW759_connectExtension", function (e) {
     closeAllThread: () => {
       let listTitle = $(`.h7 .Bk .G3.G2 .adn.ads .gE.iv.gt`);
       listTitle.each((index, itemEl) => {
-        
+
         let bkParent = $(itemEl).parents('.Bk');
         if (bkParent.attr('flag_s')) {
           itemEl.click();
@@ -843,7 +853,7 @@ document.addEventListener("RW759_connectExtension", function (e) {
      *
      * @returns {string}
      */
-    getContentBodyMail: function (is_all_threads=true) {
+    getContentBodyMail: function (is_all_threads = true) {
       let self = MailAIGenerate;
 
       if (is_all_threads) {
@@ -853,7 +863,7 @@ document.addEventListener("RW759_connectExtension", function (e) {
       let selection = window.getSelection();
       let range = document.createRange();
 
-      let adnAdsEl = $(".adn.ads");
+      let adnAdsEl = $(".adn.ads .ii.gt");
       if (!is_all_threads) {
         adnAdsEl = adnAdsEl.last();
       }
@@ -1171,12 +1181,13 @@ document.addEventListener("RW759_connectExtension", function (e) {
     // on has result send from side panel to add to reply or compose box
     if ("side_panel_send_result" in payload) {
       const newValue = payload.side_panel_send_result.newValue;
-      if (newValue.body) {
+      if (newValue && newValue.body) {
         MailAIGenerate.setTitleContentMail(newValue);
+
+        setTimeout(() => {
+          chrome.storage.local.remove("side_panel_send_result");
+        }, 1000);
       }
-      setTimeout(() => {
-        chrome.storage.local.remove("side_panel_send_result");
-      }, 1000);
     }
     if ("toggle_side_prompt_builder" in payload) {
       const newValue = payload.toggle_side_prompt_builder.newValue;
@@ -1185,6 +1196,8 @@ document.addEventListener("RW759_connectExtension", function (e) {
         PromptBuilder.toggleSide();
       }
     }
+
+    chrome.runtime.sendMessage({ method: 'set_active_this_tab' });
   };
 
   /**

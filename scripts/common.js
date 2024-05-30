@@ -86,6 +86,7 @@ const MAX_LENGTH_TOPIC_COMPOSE = 8000;
 const MAX_LENGTH_ORIGINAL_TEXT_REPLY = 8000;
 const MAX_LENGTH_GENERAL_CONTENT_REPLY = 4000;
 const MAX_LENGTH_ORIGINAL_TEXT_SUMMARY = 16000;
+const MAX_LENGTH_ORIGINAL_TEXT_CHECK_PROBLEM = 16000;
 
 const GROUP_PROMPT_LABEL_BG_COLOR = "#2196F3";
 const GROUP_PROMPT_LABEL_TEXT_COLOR = "#ffffff";
@@ -107,6 +108,8 @@ const EMPTY_KEY = 'sateraito_key_empty_293039';
 
 const SET_TEXT_ORIGINAL_THREAD_TO_SUMMARY = 'SET_TEXT_ORIGINAL_A_THREAD_TO_SUMMARY';
 const SET_TEXT_ORIGINAL_ALL_THREAD_TO_SUMMARY = 'SET_TEXT_ORIGINAL_ALL_THREAD_TO_SUMMARY';
+const SET_TEXT_ORIGINAL_THREAD_TO_FIND_PROBLEM = 'SET_TEXT_ORIGINAL_THREAD_TO_FIND_PROBLEM';
+const SET_TEXT_ORIGINAL_ALL_THREAD_TO_FIND_PROBLEM = 'SET_TEXT_ORIGINAL_ALL_THREAD_TO_FIND_PROBLEM';
 
 const UserSetting = {
   language_active: 'japanese'
@@ -960,6 +963,30 @@ const _StorageManager = {
   removeTextAllThreadSummarySidePanel: () => {
     chrome.storage.local.remove('text_all_thread_summary_side_panel');
   },
+
+  setTextFindProblemSidePanel: (text) => {
+    chrome.storage.local.set({ text_find_problem_side_panel: text });
+  },
+  getTextFindProblemSidePanel: (callback) => {
+    chrome.storage.local.get('text_find_problem_side_panel', payload => {
+      callback(payload.text_find_problem_side_panel)
+    });
+  },
+  removeTextFindProblemSidePanel: () => {
+    chrome.storage.local.remove('text_find_problem_side_panel');
+  },
+  
+  setTextAllThreadFindProblemSidePanel: (text) => {
+    chrome.storage.local.set({ text_all_thread_find_problem_side_panel: text });
+  },
+  getTextAllThreadFindProblemSidePanel: (callback) => {
+    chrome.storage.local.get('text_all_thread_find_problem_side_panel', payload => {
+      callback(payload.text_all_thread_find_problem_side_panel)
+    });
+  },
+  removeTextAllThreadFindProblemSidePanel: () => {
+    chrome.storage.local.remove('text_all_thread_find_problem_side_panel');
+  },
 };
 
 /**
@@ -1296,6 +1323,7 @@ const OpenAIManager = {
     // Read the response as a stream of data
     const reader = fetchFunc.body.getReader();
     const decoder = new TextDecoder();
+    let textBeforeError;
 
     while (true) {
       try {
@@ -1306,16 +1334,21 @@ const OpenAIManager = {
         let jsonObjects = [];
         for (let i = 0; i < dataStrings.length; i++) {
           const item = dataStrings[i];
-          const cleanedDataString = item.replace('data: ', '');
+          let cleanedDataString = item.replace('data: ', '');
 
           if (cleanedDataString.toLowerCase().indexOf("[done]") >= 0) {
             jsonObjects.push({ is_stop: true, choices: {} });
           }
           else if (cleanedDataString.trim() != "") {
             try {
+              if (textBeforeError) {
+                cleanedDataString = textBeforeError + cleanedDataString;
+                textBeforeError = false;
+              }
               jsonObjects.push(JSON.parse(cleanedDataString));
             } catch (error) {
-              console.log("Error 1:", error);
+              textBeforeError = cleanedDataString;
+              MyUtils.debugLog("Try 1");
             }
           }
         }
@@ -1337,7 +1370,7 @@ const OpenAIManager = {
           }
         }
       } catch (error) {
-        console.log("Error 2:", error);
+        MyUtils.debugLog("Error 2: " + error);
         break;
       }
     }
@@ -1507,6 +1540,7 @@ const OpenAIManager = {
     }
   },
 
+
   /**
    * Get suggest reply content mail request
    * 
@@ -1590,6 +1624,7 @@ Output in ${lang}`
     })
   },
 
+
   /**
    * Generate content compose request
    * 
@@ -1664,7 +1699,7 @@ Output in ${lang}`
 
     } catch (error) {
       retry++;
-      console.log(error);
+      MyUtils.debugLog(error);
       self._generateComposeContentRequest(params, responseText, onDone, callback, retry);
 
       callback(false);
@@ -1737,7 +1772,7 @@ Output in ${lang}`
     // // prompt += `Output in ${your_language}`
 
     prompt = `
-Write a ${formality_reply} to reply to the original text. Ensure your response has a ${tone} tone and a ${email_length} length. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.
+Write a ${formality_reply} to reply to the original text. Ensure your response has a ${tone} tone and a ${email_length} length${(role_trim != '') ? role_str : ' '}. Draw inspiration from the key points provided, but adapt them thoughtfully without merely repeating.
 Respond in the ${your_language.toUpperCase()} language.
 
 -----
@@ -1793,13 +1828,7 @@ ${general_content_reply}
     })
   },
 
-  /**
-   * Generate reply content request
-   * 
-   * @param {object} params 
-   * @param {Function} callback 
-   * @param {Number|null} retry 
-   */
+
   _summaryOriginalTextRequest: async (params, responseText, onDone, callback, retry) => {
     const self = OpenAIManager;
 
@@ -1871,6 +1900,77 @@ ${general_content_reply}
 
       // Call request get data to show popup in mail
       self._summaryOriginalTextRequest(params, responseText, onDone, callback);
+    })
+  },
+
+
+  _findProblemOriginalTextRequest: async (params, responseText, onDone, callback, retry) => {
+    const self = OpenAIManager;
+
+    if (typeof retry == 'undefined') retry = 0;
+    if (retry > 3) {
+      callback(false);
+      return false;
+    }
+
+    const {
+      gpt_ai_key, gpt_version,
+
+      original_text_find_problem, language
+    } = params;
+
+    let prompt, prompt_system;
+
+    prompt_system = '';
+    prompt_system += `You are a helpful assistant.`;
+
+    const messages = [
+      { role: "system", content: prompt_system },
+    ];
+
+    prompt = ``
+    prompt += `Content:\n`
+    prompt += `"""\n`
+    prompt += `${original_text_find_problem}\n`
+    prompt += `"""\n`
+    prompt += `Find problem with the above content. Is there anything dangerous?\n`
+    prompt += `Output in ${language}.`
+    messages.push({ role: 'user', content: prompt })
+
+    try {
+      const myFetch = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, true, true);
+
+      let answerStr = '';
+      self.processReadBodyStream(myFetch,
+        (charactersStr) => {
+          answerStr += charactersStr;
+          responseText(charactersStr);
+        },
+        () => {
+          //Save log summary chat
+          let question = MyUtils.getContentByRoleInMessage(false, messages);
+          self.saveLog(question, answerStr, 'email');
+
+          onDone(answerStr);
+        })
+
+      callback(true);
+
+    } catch (error) {
+      retry++;
+      self._findProblemOriginalTextRequest(params, responseText, onDone, callback, retry);
+    }
+  },
+
+  findProblemOriginalText: function (params, responseText, onDone, callback) {
+    const self = OpenAIManager;
+
+    // Get open ai KEY
+    self.getOpenAIKey((gptAiKey) => {
+      params.gpt_ai_key = gptAiKey;
+
+      // Call request get data to show popup in mail
+      self._findProblemOriginalTextRequest(params, responseText, onDone, callback);
     })
   },
 };

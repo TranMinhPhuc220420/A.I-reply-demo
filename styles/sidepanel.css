@@ -1596,13 +1596,13 @@ body ul li {
   margin-top: 50px;
   padding: 0 10px 0 10px;
 }
-.gpt-layout #find_the_problem_tab #find-problem-result.is-loading .result {
+.gpt-layout #find_the_problem_tab #find-problem-result.is-loading .result-find-problem {
   min-height: 300px;
 }
-.gpt-layout #find_the_problem_tab #find-problem-result.is-loading .result .result-item {
+.gpt-layout #find_the_problem_tab #find-problem-result.is-loading .result-find-problem .result-item {
   display: none !important;
 }
-.gpt-layout #find_the_problem_tab #find-problem-result.is-loading .result .cmp-loading {
+.gpt-layout #find_the_problem_tab #find-problem-result.is-loading .result-find-problem .cmp-loading {
   display: block;
 }
 .gpt-layout #find_the_problem_tab #find-problem-result.is-loading .result-footer {
@@ -1651,13 +1651,13 @@ body ul li {
   width: 15px;
   cursor: pointer;
 }
-.gpt-layout #find_the_problem_tab #find-problem-result .result {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-find-problem {
   margin-top: 20px;
 }
-.gpt-layout #find_the_problem_tab #find-problem-result .result .result-item {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-find-problem .result-item {
   display: none;
 }
-.gpt-layout #find_the_problem_tab #find-problem-result .result .result-item .title {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-find-problem .result-item .title {
   display: inline-block;
   font-size: 15px;
   margin-bottom: 5px;
@@ -1665,7 +1665,7 @@ body ul li {
   color: var(--base-text-color);
   position: relative;
 }
-.gpt-layout #find_the_problem_tab #find-problem-result .result .result-item .title::after {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-find-problem .result-item .title::after {
   content: "";
   position: absolute;
   width: 150px;
@@ -1674,16 +1674,16 @@ body ul li {
   bottom: 0;
   left: 0;
 }
-.gpt-layout #find_the_problem_tab #find-problem-result .result .result-item .title .bold {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-find-problem .result-item .title .bold {
   font-weight: 500;
 }
-.gpt-layout #find_the_problem_tab #find-problem-result .result .result-item.active {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-find-problem .result-item.active {
   display: block;
 }
-.gpt-layout #find_the_problem_tab #find-problem-result .result .result-item .wrap-content {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-find-problem .result-item .wrap-content {
   font-size: 0.9rem;
 }
-.gpt-layout #find_the_problem_tab #find-problem-result .result .result-item .wrap-content.is-loading::after {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-find-problem .result-item .wrap-content.is-loading::after {
   content: "|";
   font-weight: bold;
   color: var(--base-text-color);
@@ -1692,20 +1692,20 @@ body ul li {
   padding: 0 0.5px;
   background: var(--background-black-color);
 }
-.gpt-layout #find_the_problem_tab #find-problem-result .result .cmp-loading {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-find-problem .cmp-loading {
   display: none;
 }
-.gpt-layout #find_the_problem_tab #find-problem-result .result .cmp-loading :nth-child(1) {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-find-problem .cmp-loading :nth-child(1) {
   height: 20px;
   width: 50%;
   margin-bottom: 2px;
 }
-.gpt-layout #find_the_problem_tab #find-problem-result .result .cmp-loading :nth-child(2) {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-find-problem .cmp-loading :nth-child(2) {
   height: 30px;
   width: 75%;
   margin-bottom: 2px;
 }
-.gpt-layout #find_the_problem_tab #find-problem-result .result .cmp-loading :nth-child(3) {
+.gpt-layout #find_the_problem_tab #find-problem-result .result-find-problem .cmp-loading :nth-child(3) {
   height: 110px;
 }
 .gpt-layout #find_the_problem_tab #find-problem-result .result-footer {
@@ -1860,13 +1860,13 @@ body ul li {
   margin-top: 50px;
   padding: 0 10px 0 10px;
 }
-.gpt-layout #check_content_reply_tab #check-content-reply-result.is-loading .result {
+.gpt-layout #check_content_reply_tab #check-content-reply-result.is-loading .result-check-content-reply {
   min-height: 300px;
 }
-.gpt-layout #check_content_reply_tab #check-content-reply-result.is-loading .result .result-item {
+.gpt-layout #check_content_reply_tab #check-content-reply-result.is-loading .result-check-content-reply .result-item {
   display: none !important;
 }
-.gpt-layout #check_content_reply_tab #check-content-reply-result.is-loading .result .cmp-loading {
+.gpt-layout #check_content_reply_tab #check-content-reply-result.is-loading .result-check-content-reply .cmp-loading {
   display: block;
 }
 .gpt-layout #check_content_reply_tab #check-content-reply-result.is-loading .result-footer {
@@ -1915,13 +1915,13 @@ body ul li {
   width: 15px;
   cursor: pointer;
 }
-.gpt-layout #check_content_reply_tab #check-content-reply-result .result {
+.gpt-layout #check_content_reply_tab #check-content-reply-result .result-check-content-reply {
   margin-top: 20px;
 }
-.gpt-layout #check_content_reply_tab #check-content-reply-result .result .result-item {
+.gpt-layout #check_content_reply_tab #check-content-reply-result .result-check-content-reply .result-item {
   display: none;
 }
-.gpt-layout #check_content_reply_tab #check-content-reply-result .result .result-item .title {
+.gpt-layout #check_content_reply_tab #check-content-reply-result .result-check-content-reply .result-item .title {
   display: inline-block;
   font-size: 15px;
   margin-bottom: 5px;
@@ -1929,7 +1929,7 @@ body ul li {
   color: var(--base-text-color);
   position: relative;
 }
-.gpt-layout #check_content_reply_tab #check-content-reply-result .result .result-item .title::after {
+.gpt-layout #check_content_reply_tab #check-content-reply-result .result-check-content-reply .result-item .title::after {
   content: "";
   position: absolute;
   width: 150px;
@@ -1938,16 +1938,16 @@ body ul li {
   bottom: 0;
   left: 0;
 }
-.gpt-layout #check_content_reply_tab #check-content-reply-result .result .result-item .title .bold {
+.gpt-layout #check_content_reply_tab #check-content-reply-result .result-check-content-reply .result-item .title .bold {
   font-weight: 500;
 }
-.gpt-layout #check_content_reply_tab #check-content-reply-result .result .result-item.active {
+.gpt-layout #check_content_reply_tab #check-content-reply-result .result-check-content-reply .result-item.active {
   display: block;
 }
-.gpt-layout #check_content_reply_tab #check-content-reply-result .result .result-item .wrap-content {
+.gpt-layout #check_content_reply_tab #check-content-reply-result .result-check-content-reply .result-item .wrap-content {
   font-size: 0.9rem;
 }
-.gpt-layout #check_content_reply_tab #check-content-reply-result .result .result-item .wrap-content.is-loading::after {
+.gpt-layout #check_content_reply_tab #check-content-reply-result .result-check-content-reply .result-item .wrap-content.is-loading::after {
   content: "|";
   font-weight: bold;
   color: var(--base-text-color);
@@ -1956,20 +1956,20 @@ body ul li {
   padding: 0 0.5px;
   background: var(--background-black-color);
 }
-.gpt-layout #check_content_reply_tab #check-content-reply-result .result .cmp-loading {
+.gpt-layout #check_content_reply_tab #check-content-reply-result .result-check-content-reply .cmp-loading {
   display: none;
 }
-.gpt-layout #check_content_reply_tab #check-content-reply-result .result .cmp-loading :nth-child(1) {
+.gpt-layout #check_content_reply_tab #check-content-reply-result .result-check-content-reply .cmp-loading :nth-child(1) {
   height: 20px;
   width: 50%;
   margin-bottom: 2px;
 }
-.gpt-layout #check_content_reply_tab #check-content-reply-result .result .cmp-loading :nth-child(2) {
+.gpt-layout #check_content_reply_tab #check-content-reply-result .result-check-content-reply .cmp-loading :nth-child(2) {
   height: 30px;
   width: 75%;
   margin-bottom: 2px;
 }
-.gpt-layout #check_content_reply_tab #check-content-reply-result .result .cmp-loading :nth-child(3) {
+.gpt-layout #check_content_reply_tab #check-content-reply-result .result-check-content-reply .cmp-loading :nth-child(3) {
   height: 110px;
 }
 .gpt-layout #check_content_reply_tab #check-content-reply-result .result-footer {
@@ -2124,13 +2124,13 @@ body ul li {
   margin-top: 50px;
   padding: 0 10px 0 10px;
 }
-.gpt-layout #suggest_meeting_tab #suggest-meeting-result.is-loading .result {
+.gpt-layout #suggest_meeting_tab #suggest-meeting-result.is-loading .result-suggest-meeting {
   min-height: 300px;
 }
-.gpt-layout #suggest_meeting_tab #suggest-meeting-result.is-loading .result .result-item {
+.gpt-layout #suggest_meeting_tab #suggest-meeting-result.is-loading .result-suggest-meeting .result-item {
   display: none !important;
 }
-.gpt-layout #suggest_meeting_tab #suggest-meeting-result.is-loading .result .cmp-loading {
+.gpt-layout #suggest_meeting_tab #suggest-meeting-result.is-loading .result-suggest-meeting .cmp-loading {
   display: block;
 }
 .gpt-layout #suggest_meeting_tab #suggest-meeting-result.is-loading .result-footer {
@@ -2179,13 +2179,13 @@ body ul li {
   width: 15px;
   cursor: pointer;
 }
-.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result {
+.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result-suggest-meeting {
   margin-top: 20px;
 }
-.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result .result-item {
+.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result-suggest-meeting .result-item {
   display: none;
 }
-.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result .result-item .title {
+.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result-suggest-meeting .result-item .title {
   display: inline-block;
   font-size: 15px;
   margin-bottom: 5px;
@@ -2193,7 +2193,7 @@ body ul li {
   color: var(--base-text-color);
   position: relative;
 }
-.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result .result-item .title::after {
+.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result-suggest-meeting .result-item .title::after {
   content: "";
   position: absolute;
   width: 150px;
@@ -2202,16 +2202,16 @@ body ul li {
   bottom: 0;
   left: 0;
 }
-.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result .result-item .title .bold {
+.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result-suggest-meeting .result-item .title .bold {
   font-weight: 500;
 }
-.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result .result-item.active {
+.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result-suggest-meeting .result-item.active {
   display: block;
 }
-.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result .result-item .wrap-content {
+.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result-suggest-meeting .result-item .wrap-content {
   font-size: 0.9rem;
 }
-.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result .result-item .wrap-content.is-loading::after {
+.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result-suggest-meeting .result-item .wrap-content.is-loading::after {
   content: "|";
   font-weight: bold;
   color: var(--base-text-color);
@@ -2220,20 +2220,20 @@ body ul li {
   padding: 0 0.5px;
   background: var(--background-black-color);
 }
-.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result .cmp-loading {
+.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result-suggest-meeting .cmp-loading {
   display: none;
 }
-.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result .cmp-loading :nth-child(1) {
+.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result-suggest-meeting .cmp-loading :nth-child(1) {
   height: 20px;
   width: 50%;
   margin-bottom: 2px;
 }
-.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result .cmp-loading :nth-child(2) {
+.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result-suggest-meeting .cmp-loading :nth-child(2) {
   height: 30px;
   width: 75%;
   margin-bottom: 2px;
 }
-.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result .cmp-loading :nth-child(3) {
+.gpt-layout #suggest_meeting_tab #suggest-meeting-result .result-suggest-meeting .cmp-loading :nth-child(3) {
   height: 110px;
 }
 .gpt-layout #suggest_meeting_tab #suggest-meeting-result .result-footer {

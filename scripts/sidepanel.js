@@ -1386,16 +1386,6 @@
       setTimeout(() => {
         _StorageManager.removeToggleSidePromptBuilder();
       }, 500);
-
-      // chrome.runtime.sendMessage({method: 'get_tab_info'}, (tabEmailInfoInBrowser) => {
-      //   if (tabEmailInfoInBrowser) {
-      //     try {
-      //       chrome.tabs.update(tabEmailInfoInBrowser.id, {active: true});
-      //     } catch (error) {
-      //       console.log(error);
-      //     }
-      //   }
-      // });
     },
 
     /**
@@ -1591,7 +1581,7 @@
     fixHeightResult: () => {
       const self = TabSummaryManager;
 
-      const tabContainerEl = document.getElementById(`write_tab`);
+      const tabContainerEl = document.getElementById(self.idTab);
       const resultEl = document.body.querySelector(`#${self.idTab} #summary-result`);
       $(resultEl).css('height', tabContainerEl.offsetHeight + 'px');
     },
@@ -2335,6 +2325,7 @@
       gpt_version: null,
     },
     original_text_check_problem: '',
+    original_text_check_problem_all_thread: '',
 
     /**
      * Get inner html for tab write
@@ -2369,12 +2360,22 @@
                   <span id="check_problem_one_thread_tab" class="tab-item active">
                     <div class="wrap-original-text-check-problem">
                       <textarea class="original_text_check_problem" maxlength="8000" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_CHECK_PROBLEM')}"></textarea>
+                      
+                      <div class="paste-selection">
+                        ${content_paste_icon}
+                        ${MyLang.getMsg('TXT_PASTE_SELECTION')}
+                      </div>
                     </div>
                   </span>
 
                   <span id="check_problem_all_thread_tab" class="tab-item">
-                    <div class="wrap-original-text-check-problem">
+                    <div class="wrap-original-text-check-problem-all-thread">
                       <textarea class="original_text_check_problem_all_thread" maxlength="8000" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_CHECK_PROBLEM')}"></textarea>
+                      
+                      <div class="paste-selection">
+                        ${content_paste_icon}
+                        ${MyLang.getMsg('TXT_PASTE_SELECTION')}
+                      </div>
                     </div>
                   </span>
                 </div>
@@ -2462,6 +2463,67 @@
       return panelEl;
     },
 
+    /**
+     * Fix height for session result
+     * 
+     */
+    fixHeightResult: () => {
+      const self = TabFindProblemManager;
+
+      const tabContainerEl = document.getElementById(self.idTab);
+      const resultEl = document.body.querySelector(`#${self.idTab} #find-problem-result`);
+      $(resultEl).css('height', tabContainerEl.offsetHeight + 'px');
+    },
+
+    /**
+     * updateHeightTabContainer
+     * 
+     */
+    updateHeightTabContainer: () => {
+      const self = TabFindProblemManager;
+
+      const containerEl = document.getElementById(WrapperManager.idEl);
+      const formConfigEl = document.body.querySelector(`#${self.idTab} .form-config`);
+      const resultEl = document.body.querySelector(`#${self.idTab} #summary-result`);
+      $(resultEl).css('marginTop', (containerEl.offsetHeight - formConfigEl.offsetHeight) + 'px');
+    },
+
+    /**
+     * Check form data is validate to call GPT
+     * 
+     * @returns {boolean}
+     */
+    isValidateToCallGPT: () => {
+      const self = TabFindProblemManager;
+
+      if (self.getIdTabActive() == 'check_problem_one_thread_tab') {
+        let originalText = $(`#${self.idTab} .original_text_check_problem`).val().trim();
+
+        if (!originalText || originalText == '') {
+          return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_CHECK_PROBLEM');
+        }
+        if (originalText.length > MAX_LENGTH_ORIGINAL_TEXT_CHECK_PROBLEM) {
+          return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_CHECK_PROBLEM_MAX_LENGTH_TOKEN');
+        }
+      } else {
+        let originalText = $(`#${self.idTab} .original_text_check_problem_all_thread`).val().trim();
+
+        if (!originalText || originalText == '') {
+          return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_CHECK_PROBLEM');
+        }
+        if (originalText.length > MAX_LENGTH_ORIGINAL_TEXT_CHECK_PROBLEM) {
+          return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_CHECK_PROBLEM_MAX_LENGTH_TOKEN');
+        }
+      }
+
+      if (self.formData.gpt_version == 'gemini') {
+        return MyLang.getMsg('DES_ERROR_GEMINI_NOT_RELEASED');
+      }
+      if (self.formData.gpt_version == 'gpt-4-turbo') {
+        return MyLang.getMsg('DES_ERROR_GPT4_NOT_RELEASED');
+      }
+    },
+
     getIdTabActive: () => {
       const self = TabFindProblemManager;
 
@@ -2477,11 +2539,123 @@
       const self = TabFindProblemManager;
       if (self.is_loading) return;
 
-      let originalTextReplyEl = document.body.querySelector(`#${self.idTab} .original_text_check_problem`);
-      $(originalTextReplyEl).val(originalText);
+      let textareaEl = document.body.querySelector(`#${self.idTab} .original_text_check_problem`);
+      $(textareaEl).val(originalText);
+
       self.original_text_check_problem = originalText;
 
+      self.setActiveTab('check_problem_one_thread_tab');
       self.setFocusOriginalText();
+    },
+
+    setOriginalTextAllThread: (originalText) => {
+      const self = TabFindProblemManager;
+      if (self.is_loading) return;
+
+      let textareaEl = document.body.querySelector(`#${self.idTab} .original_text_check_problem_all_thread`);
+      $(textareaEl).val(originalText);
+
+      self.original_text_check_problem_all_thread = originalText;
+
+      self.setActiveTab('check_problem_all_thread_tab');
+      self.setFocusOriginalTextAllThread();
+    },
+
+    setOriginalTextFromStorage: () => {
+      const self = TabFindProblemManager;
+
+      _StorageManager.getTextFindProblemSidePanel(text => {
+        self.setActiveTab('check_problem_one_thread_tab');
+        self.setOriginalText(text);
+
+        _StorageManager.removeTextFindProblemSidePanel();
+      });
+    },
+
+    setOriginalTextAllThreadFromStorage: () => {
+      const self = TabFindProblemManager;
+
+      _StorageManager.getTextAllThreadFindProblemSidePanel(text => {
+        self.setOriginalTextAllThread(text);
+
+        _StorageManager.removeTextAllThreadFindProblemSidePanel();
+      });
+    },
+
+    /**
+     * checkAndSetOriginalText
+     * 
+     * @param {string} originalText 
+     */
+    checkAndSetOriginalText: (originalText) => {
+      const self = TabFindProblemManager;
+      if (self.is_loading) return;
+
+      let originalTextCheckProblem = $(`#${self.idTab} textarea.original_text_check_problem`).val().trim();
+      let pasteSelectionEl = $(`#${self.idTab} .wrap-original-text-check-problem .paste-selection`);
+      let originalTextCheckProblemAllThread = $(`#${self.idTab} textarea.original_text_check_problem_all_thread`).val().trim();
+      let pasteSelectionAllThreadEl = $(`#${self.idTab} .wrap-original-text-check-problem-all-thread .paste-selection`);
+
+      if (originalText == EMPTY_KEY) {
+        pasteSelectionEl.removeClass('show');
+        pasteSelectionAllThreadEl.removeClass('show');
+        return;
+      }
+
+      if (self.getIdTabActive() == 'check_problem_one_thread_tab') {
+        if (originalTextCheckProblem == '') {
+          self.setOriginalText(originalText);
+        } else {
+          if (originalTextCheckProblem != originalText) {
+            self.originalTextTemp = originalText;
+            pasteSelectionEl.addClass('show');
+          }
+        }
+      } else {
+        if (originalTextCheckProblemAllThread == '') {
+          self.setOriginalTextAllThread(originalText);
+        } else {
+          if (originalTextCheckProblemAllThread != originalText) {
+            self.originalTextTemp = originalText;
+            pasteSelectionAllThreadEl.addClass('show');
+          }
+        }
+      }
+    },
+
+    /**
+     * setFocusOriginalText
+     * 
+     */
+    setFocusOriginalText: () => {
+      const self = TabFindProblemManager;
+      if (self.is_loading) return;
+
+      let textareaEl = document.body.querySelector(`#${self.idTab} .original_text_check_problem`);
+      $(textareaEl).focus();
+      $(textareaEl).scrollTop(0);
+    },
+
+    /**
+     * setFocusOriginalText
+     * 
+     */
+    setFocusOriginalTextAllThread: () => {
+      const self = TabFindProblemManager;
+      if (self.is_loading) return;
+
+      let textareaEl = document.body.querySelector(`#${self.idTab} .original_text_check_problem_all_thread`);
+      $(textareaEl).focus();
+      $(textareaEl).scrollTop(0);
+    },
+
+    /**
+     * loadFormConfig
+     * 
+     */
+    loadFormConfig: () => {
+      const self = TabFindProblemManager;
+
     },
 
     setFocusOriginalText: () => {
@@ -2541,6 +2715,29 @@
     },
 
     /**
+     * Show alert
+     * 
+     * @param {string} type 
+     * @param {string} message 
+     */
+    showAlert: (type, message) => {
+      const self = TabFindProblemManager;
+
+      let alertEl = document.createElement('div');
+      alertEl.className = 'item ' + type;
+      alertEl.innerHTML = message;
+
+      $(`#${self.idTab} .form-config .alert`).append(alertEl);
+
+      alertEl.onclick = (event) => {
+        alertEl.remove();
+      }
+      setTimeout(() => {
+        alertEl.remove();
+      }, 3000);
+    },
+
+    /**
      * Set active tab
      * 
      * @param {string} tabActive 
@@ -2577,6 +2774,30 @@
           cls: `#${self.idTab} .tab .tab-title .item`,
           click: self.onClickTitleTab
         },
+        {
+          cls: `#${self.idTab} #find-problem-result .result-title .right .prev`,
+          click: self.handlerNextOrPrevPagingResult
+        },
+        {
+          cls: `#${self.idTab} #find-problem-result .result-title .right .next`,
+          click: self.handlerNextOrPrevPagingResult
+        },
+        {
+          cls: `#${self.idTab} .submit-find-problem`,
+          click: self.onSubmitFindProblem
+        },
+        {
+          cls: `#${self.idTab} .result-footer .btn.re-generate`,
+          click: self.onSubmitFindProblem
+        },
+        {
+          cls: `#${self.idTab} .result-footer .btn.copy-content`,
+          click: self.onClickCopyContentResult
+        },
+        {
+          cls: `#${self.idTab} .paste-selection`,
+          click: self.onClickPasteSelection
+        },
       ];
 
       for (let i = 0; i < listClsAndEvent.length; i++) {
@@ -2591,10 +2812,215 @@
       }
     },
 
+    /**
+     * handlerNextOrPrevPagingResult
+     * 
+     * @param {Event} event 
+     */
+    handlerNextOrPrevPagingResult: (event) => {
+      const self = TabFindProblemManager;
+      if (self.is_loading) return;
+
+      if (event.target.className.baseVal.indexOf('disable') != -1) {
+        return;
+      }
+
+      if (event.target.className.baseVal.indexOf('next') != -1) {
+        self.result_active++;
+      } else {
+        self.result_active--;
+      }
+
+      $(`#${self.idTab} #find-problem-result .result-find-problem .result-item`).removeClass('active');
+      let itemActiveEl = $(`#${self.idTab} #find-problem-result .result-find-problem .result-item[data-index="${self.result_active}"]`);
+      itemActiveEl.addClass('active');
+
+      $(`#${self.idTab} #find-problem-result .result-find-problem`).css('height', `${itemActiveEl[0].offsetHeight}px`)
+
+      self.handlerUpdatePaging();
+    },
+
+    /**
+     * Handler show generate result
+     * 
+     */
+    handlerShowFindProblemResult: function () {
+      const self = TabFindProblemManager;
+
+      const result = self.generate_result_list;
+      self.result_active = (result.length - 1);
+
+      $(`#${self.idTab} #find-problem-result`).removeClass('is-loading');
+      $(`#${self.idTab} #find-problem-result .result-find-problem .result-item`).remove();
+
+      let resultActiveEl = null;
+      for (let i = 0; i < result.length; i++) {
+        const item = result[i];
+        let isActive = (i == self.result_active)
+
+        let textEl = document.createElement('div');
+        textEl.classList = ['wrap-content'];
+        textEl.innerHTML = item.find_problem_text_result.replaceAll('\n', '<br/>');
+
+        let resultDivEl = document.createElement('div');
+        resultDivEl.classList = ['result-item'];
+        resultDivEl.setAttribute('data-index', i);
+        if (isActive) {
+          resultActiveEl = resultDivEl
+          resultDivEl.classList.add('active');
+        }
+
+        resultDivEl.append(textEl);
+
+        $(`#${self.idTab} #find-problem-result .result-find-problem`).append(resultDivEl);
+      }
+
+      self.is_loading = false;
+
+      self.handlerUpdatePaging();
+    },
+
+    /**
+     * Handler update paging status
+     * 
+     */
+    handlerUpdatePaging: function () {
+      const self = TabFindProblemManager;
+      if (self.is_loading) return;
+
+      const result_list = self.generate_result_list;
+
+      $(`#${self.idTab} #find-problem-result .result-title .right .text`).html(`${self.result_active + 1}/${result_list.length}`)
+
+      // paging prev
+      if (self.result_active <= 0) {
+        $(`#${self.idTab} #find-problem-result .result-title .right .prev`)[0].classList.add('disable');
+      } else {
+        $(`#${self.idTab} #find-problem-result .result-title .right .prev`)[0].classList.remove('disable');
+      }
+
+      // paging next
+      if (self.result_active >= (result_list.length - 1)) {
+        $(`#${self.idTab} #find-problem-result .result-title .right .next`)[0].classList.add('disable');
+      } else {
+        $(`#${self.idTab} #find-problem-result .result-title .right .next`)[0].classList.remove('disable');
+      }
+    },
+
+    /**
+     * Process add generate write
+     * 
+     */
+    processAddFindProblem: () => {
+      const self = TabFindProblemManager;
+      if (self.is_loading) return;
+
+      self.is_loading = true;
+
+      let originalTextFindProblem = $(`#${self.idTab} textarea.original_text_check_problem`).val()
+      let originalTextFindProblemAllThread = $(`#${self.idTab} textarea.original_text_check_problem_all_thread`).val()
+
+      let params = self.formData;
+      if (self.getIdTabActive() == 'check_problem_one_thread_tab') {
+        params.original_text_find_problem = originalTextFindProblem;
+      } else {
+        params.original_text_find_problem = originalTextFindProblemAllThread;
+      }
+      params.language = UserSetting.language_active;
+
+      $(`#${self.idTab} #find-problem-result .result-footer`).addClass('hidden');
+      $(`#${self.idTab} #find-problem-result .result-title .left .icon`).attr('src', MyUtils.getPropGptByVersion('icon', self.formData.gpt_version));
+      $(`#${self.idTab} #find-problem-result .result-title .left .name-gpt`).text(MyUtils.getPropGptByVersion('name', self.formData.gpt_version));
+
+      const result = self.generate_result_list;
+      let indexActive = (result.length);
+
+      // Setup - Add new item tab for this generate 
+      self.generate_result_list.push({ original_text_find_problem: originalTextFindProblem, find_problem_text_result: '' });
+      self.handlerShowFindProblemResult();
+
+      let itemActiveEl = null;
+      OpenAIManager.findProblemOriginalText(params,
+        // Response text function callback
+        (textRes) => {
+          let innerHTML = itemActiveEl.innerHTML;
+          innerHTML += textRes.replaceAll('\n', '<br/>');
+          $(itemActiveEl).html(innerHTML);
+
+          $(`#${self.idTab} #find-problem-result .result-find-problem`).css('height', `${itemActiveEl.offsetHeight}px`)
+        },
+        // On [DONE] function callback
+        (contentRes) => {
+          self.generate_result_list[indexActive].find_problem_text_result = contentRes;
+
+          $(itemActiveEl).removeClass('is-loading');
+          $(`#${WrapperManager.idEl}`).removeClass('is-loading');
+          $(`#${self.idTab} #find-problem-result .result-footer`).removeClass('hidden');
+
+          MyUtils.debugLog("Done!");
+        },
+        // Call request success function callback
+        (success) => {
+          itemActiveEl = document.querySelector(`.result-find-problem .result-item[data-index="${indexActive}"] .wrap-content`);
+
+          $(itemActiveEl).addClass('is-loading');
+          $(`#${self.idTab} #find-problem-result`).removeClass('is-loading');
+
+          MyUtils.debugLog('call request fetch success:' + success);
+        });
+    },
+
+    /**
+     * Handler on storage changed
+     * 
+     * @param {object} payload 
+     * @param {string} type 
+     */
+    handlerOnStorageOnChanged: (payload, type) => {
+      const self = TabFindProblemManager;
+
+      if ('text_find_problem_side_panel' in payload) {
+        let textNew = payload.text_find_problem_side_panel.newValue;
+        if (textNew) {
+          _StorageManager.removeTextFindProblemSidePanel();
+
+          self.setOriginalText(textNew);
+        }
+      }
+      if ('text_all_thread_find_problem_side_panel' in payload) {
+        let textNew = payload.text_all_thread_find_problem_side_panel.newValue;
+        if (textNew) {
+          _StorageManager.removeTextAllThreadFindProblemSidePanel();
+
+          self.setOriginalTextAllThread(textNew);
+        }
+      }
+    },
+
+    handlerOnTextSelectedInPage: (textSelection) => {
+      const self = TabFindProblemManager;
+
+      self.checkAndSetOriginalText(textSelection);
+    },
+
+    checkOnStorageChangedNeedToActiveTab: (payload, type) => {
+      const self = TabSummaryManager;
+
+      if ('text_find_problem_side_panel' in payload) {
+        return true;
+      }
+      if ('text_all_thread_find_problem_side_panel' in payload) {
+        return true;
+      }
+
+      return false;
+    },
+
     // Event handler
     afterRender: () => {
       const self = TabFindProblemManager;
 
+      self.loadFormConfig();
       self.loadVersionGPTConfig();
     },
 
@@ -2694,6 +3120,72 @@
         $(`#${self.idTab} #version_gpt .content img`).attr('src', record.icon);
       }
     },
+
+    /**
+     * On submit find problem content
+     * 
+     * @param {event} event 
+     */
+    onSubmitFindProblem: (event) => {
+      const self = TabFindProblemManager;
+      if (self.is_loading) return;
+
+      let messValidate = self.isValidateToCallGPT();
+      if (messValidate) {
+        self.showAlert('error', messValidate);
+        return;
+      }
+
+      // process add generate write
+      self.processAddFindProblem();
+      self.updateHeightTabContainer();
+
+      const containerEl = document.getElementById(WrapperManager.idEl);
+      const resultEl = document.body.querySelector(`#${self.idTab} #find-problem-result`);
+
+      $(resultEl).removeClass('hidden');
+      $(resultEl).addClass('is-loading');
+      $(containerEl).animate({
+        scrollTop: $(resultEl).offset().top + containerEl.scrollTop
+      }, 250, 'swing', () => {
+        $(containerEl).addClass('is-loading');
+      });
+    },
+
+    /**
+     * On click copy content result
+     * 
+     * @param {event} event 
+     */
+    onClickCopyContentResult: (event) => {
+      const self = TabFindProblemManager;
+      if (self.is_loading) return;
+
+      $(event.target).addClass('done');
+      navigator.clipboard.writeText(self.generate_result_list[self.result_active].find_problem_text_result);
+
+      setTimeout(() => {
+        $(event.target).removeClass('done');
+      }, 1000);
+    },
+
+    /**
+     * On click paste selection to text original
+     * 
+     * @param {Event} event 
+     */
+    onClickPasteSelection: (event) => {
+      const self = TabFindProblemManager;
+
+      if (self.getIdTabActive() == 'check_problem_one_thread_tab') {
+        self.setOriginalText(self.originalTextTemp);
+      } else {
+        self.setOriginalTextAllThread(self.originalTextTemp);
+      }
+
+      self.originalTextTemp = null;
+      $(`#${self.idTab} .paste-selection`).removeClass('show');
+    }
   };
 
   /**
@@ -3486,6 +3978,14 @@
           TabSummaryManager.setOriginalTextAllThreadFromStorage();
           break;
 
+        case SET_TEXT_ORIGINAL_THREAD_TO_FIND_PROBLEM:
+          TabFindProblemManager.setOriginalTextFromStorage();
+          break;
+
+        case SET_TEXT_ORIGINAL_ALL_THREAD_TO_FIND_PROBLEM:
+          TabFindProblemManager.setOriginalTextAllThreadFromStorage();
+          break;
+
         default:
           break;
       }
@@ -3567,6 +4067,9 @@
     if (TabSummaryManager.checkOnStorageChangedNeedToActiveTab(payload, type)) {
       self.setActiveTab(TabSummaryManager.idTab);
     }
+    if (TabFindProblemManager.checkOnStorageChangedNeedToActiveTab(payload, type)) {
+      self.setActiveTab(TabFindProblemManager.idTab);
+    }
 
     const idTabActive = self.getActiveTab();
     switch (idTabActive) {
@@ -3576,6 +4079,10 @@
 
       case TabSummaryManager.idTab:
         TabSummaryManager.handlerOnStorageOnChanged(payload, type);
+        break;
+
+      case TabFindProblemManager.idTab:
+        TabFindProblemManager.handlerOnStorageOnChanged(payload, type);
         break;
     }
 
@@ -3589,6 +4096,10 @@
 
         case TabSummaryManager.idTab:
           TabSummaryManager.handlerOnTextSelectedInPage(textSelection);
+          break;
+
+        case TabFindProblemManager.idTab:
+          TabFindProblemManager.handlerOnTextSelectedInPage(textSelection);
           break;
       }
     }
