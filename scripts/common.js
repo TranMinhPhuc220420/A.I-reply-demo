@@ -110,6 +110,7 @@ const SET_TEXT_ORIGINAL_THREAD_TO_SUMMARY = 'SET_TEXT_ORIGINAL_A_THREAD_TO_SUMMA
 const SET_TEXT_ORIGINAL_ALL_THREAD_TO_SUMMARY = 'SET_TEXT_ORIGINAL_ALL_THREAD_TO_SUMMARY';
 const SET_TEXT_ORIGINAL_THREAD_TO_FIND_PROBLEM = 'SET_TEXT_ORIGINAL_THREAD_TO_FIND_PROBLEM';
 const SET_TEXT_ORIGINAL_ALL_THREAD_TO_FIND_PROBLEM = 'SET_TEXT_ORIGINAL_ALL_THREAD_TO_FIND_PROBLEM';
+const SET_TEXT_ORIGINAL_TO_SUGGEST_MEETING = 'SET_TEXT_ORIGINAL_TO_SUGGEST_MEETING';
 
 const UserSetting = {
   language_active: 'japanese'
@@ -987,6 +988,18 @@ const _StorageManager = {
   removeTextAllThreadFindProblemSidePanel: () => {
     chrome.storage.local.remove('text_all_thread_find_problem_side_panel');
   },
+
+  setTextSuggestMeetingSidePanel: (text) => {
+    chrome.storage.local.set({ text_suggest_meeting_side_panel: text });
+  },
+  getTextSuggestMeetingSidePanel: (callback) => {
+    chrome.storage.local.get('text_suggest_meeting_side_panel', payload => {
+      callback(payload.text_suggest_meeting_side_panel)
+    });
+  },
+  removeTextSuggestMeetingSidePanel: () => {
+    chrome.storage.local.remove('text_suggest_meeting_side_panel');
+  },
 };
 
 /**
@@ -1355,6 +1368,8 @@ const OpenAIManager = {
 
         for (const parsedLine of jsonObjects) {
           const { choices, is_stop } = parsedLine;
+          if (!choices) continue;
+
           const { finish_reason } = choices[0];
 
           if (finish_reason == 'stop' || is_stop) {
@@ -1973,4 +1988,174 @@ ${general_content_reply}
       self._findProblemOriginalTextRequest(params, responseText, onDone, callback);
     })
   },
+
+
+  _suggestMeetingByOriginalTextRequest: async (params, responseText, onDone, callback, retry) => {
+    const self = OpenAIManager;
+
+    if (typeof retry == 'undefined') retry = 0;
+    if (retry > 3) {
+      callback(false);
+      return false;
+    }
+
+    const {
+      gpt_ai_key, gpt_version,
+
+      original_text_suggest_meeting, suggest_in, my_busy, language
+    } = params;
+
+    let prompt, prompt_system;
+
+    prompt_system = '';
+    prompt_system += `You are a helpful assistant.`;
+    // prompt_system = `You are a helpful assistant designed to output JSON.`;
+
+    const messages = [
+      { role: "system", content: prompt_system },
+    ];
+
+    prompt = ``
+    prompt += `Content:\n`
+    prompt += `"""\n`
+    prompt += `${original_text_suggest_meeting}\n`
+    prompt += `"""\n`
+
+    for (let i = 0; i < my_busy.length; i++) {
+      const busyItem = my_busy[i];
+
+      if (i == 0) {
+        prompt += `\nI'm busy:\n`
+      }
+        prompt += ` ${busyItem.start} - ${busyItem.end}\n`
+      
+    }
+    
+    prompt += `\nTemplate answer:\n`
+    prompt += `
+  1.<Name of day of the week> (MM-dd-YYYY)
+  - Morning start - end or start - end
+  - Afternoon start - end or start - end
+  ...
+
+  The most:
+    1.<Name of day of the week> (MM-dd-YYYY)
+    - start - end
+    Because
+    ...
+\n`
+
+    
+    prompt += `Now is ${Date()}\n`
+    prompt += `Based on the above content, find all the appropriate time of the ${suggest_in} to create a meeting and list the most suitable suggestions.\n`
+    prompt += `Output in ${language}.`
+    messages.push({ role: 'user', content: prompt })
+
+    try {
+      const myFetch = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, true, true);
+
+      let answerStr = '';
+      self.processReadBodyStream(myFetch,
+        (charactersStr) => {
+          answerStr += charactersStr;
+          responseText(charactersStr);
+        },
+        () => {
+          //Save log summary chat
+          let question = MyUtils.getContentByRoleInMessage(false, messages);
+          self.saveLog(question, answerStr, 'email');
+
+          onDone(answerStr);
+        })
+
+      callback(true);
+
+    } catch (error) {
+      retry++;
+      self._suggestMeetingByOriginalTextRequest(params, responseText, onDone, callback, retry);
+    }
+  },
+
+  suggestMeetingByOriginalText: function (params, responseText, onDone, callback) {
+    const self = OpenAIManager;
+
+    // Get open ai KEY
+    self.getOpenAIKey((gptAiKey) => {
+      params.gpt_ai_key = gptAiKey;
+
+      // Call request get data to show popup in mail
+      self._suggestMeetingByOriginalTextRequest(params, responseText, onDone, callback);
+    })
+  },
+
+
+  // _suggestMeetingByOriginalTextRequest: async (params, callback, retry) => {
+  //   const self = OpenAIManager;
+
+  //   if (typeof retry == 'undefined') retry = 0;
+  //   if (retry > 3) {
+  //     callback(false);
+  //     return false;
+  //   }
+
+  //   const {
+  //     gpt_ai_key, gpt_version,
+
+  //     original_text_suggest_meeting, suggest_in, language
+  //   } = params;
+
+  //   let prompt, prompt_system;
+
+  //   prompt_system = '';
+  //   prompt_system += `You are a helpful assistant.`;
+  //   // prompt_system = `You are a helpful assistant designed to output JSON.`;
+
+  //   const messages = [
+  //     { role: "system", content: prompt_system },
+  //   ];
+
+  //   prompt = ``
+  //   prompt += `Content:\n`
+  //   prompt += `"""\n`
+  //   prompt += `${original_text_suggest_meeting}\n`
+  //   prompt += `"""\n`
+
+    
+  //   prompt += `Now is ${Date()}\n`
+  //   // prompt += `I'm busy today but tomorrow I'm free\n`
+  //   // prompt += `Based on the above content, find all suitable times of the week to create a meeting and list the most suitable suggestions.\n`
+  //   prompt += `Based on the above content, find all ${suggest_in} to create a meeting and list the most suitable suggestions.\n`
+  //   // prompt += `JSON Format: {most_suggest: [{time:<HH:MM>, date_name: <string> date:<mm/dd/yyyy>}], all_suggest: [{time:<HH:MM>, date_name: <string> date:<mm/dd/yyyy>}] }.\n`
+  //   // prompt += `Output in ${language} but key of json always follows the format.`
+  //   prompt += `Output in ${language}.`
+  //   messages.push({ role: 'user', content: prompt })
+
+  //   try {
+
+  //     const response = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, false, null)
+  //     const contentRes = response.choices[0].message.content;
+
+  //     //Save log summary chat
+  //     let question = MyUtils.getContentByRoleInMessage('user', messages);
+  //     self.saveLog(question, contentRes, 'email');
+
+  //     callback(contentRes);
+
+  //   } catch (error) {
+  //     retry++;
+  //     self._suggestMeetingByOriginalTextRequest(params, callback, retry);
+  //   }
+  // },
+
+  // suggestMeetingByOriginalText: function (params, callback, retry) {
+  //   const self = OpenAIManager;
+
+  //   // Get open ai KEY
+  //   self.getOpenAIKey((gptAiKey) => {
+  //     params.gpt_ai_key = gptAiKey;
+
+  //     // Call request get data to show popup in mail
+  //     self._suggestMeetingByOriginalTextRequest(params, callback, retry);
+  //   })
+  // },
 };

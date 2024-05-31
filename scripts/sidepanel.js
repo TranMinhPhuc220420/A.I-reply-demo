@@ -2324,6 +2324,9 @@
     formData: {
       gpt_version: null,
     },
+    result_active: 0,
+    generate_result_list: [],
+
     original_text_check_problem: '',
     original_text_check_problem_all_thread: '',
 
@@ -2484,7 +2487,7 @@
 
       const containerEl = document.getElementById(WrapperManager.idEl);
       const formConfigEl = document.body.querySelector(`#${self.idTab} .form-config`);
-      const resultEl = document.body.querySelector(`#${self.idTab} #summary-result`);
+      const resultEl = document.body.querySelector(`#${self.idTab} #find-problem-result`);
       $(resultEl).css('marginTop', (containerEl.offsetHeight - formConfigEl.offsetHeight) + 'px');
     },
 
@@ -2656,15 +2659,6 @@
     loadFormConfig: () => {
       const self = TabFindProblemManager;
 
-    },
-
-    setFocusOriginalText: () => {
-      const self = TabFindProblemManager;
-      if (self.is_loading) return;
-
-      let originalTextReplyEl = document.body.querySelector(`#${self.idTab} .original_text_check_problem`);
-      $(originalTextReplyEl).focus();
-      $(originalTextReplyEl).scrollTop(0);
     },
 
     /**
@@ -3507,6 +3501,9 @@
     formData: {
       gpt_version: null,
     },
+    result_active: 0,
+    generate_result_list: [],
+
     original_text_to_suggest_meeting: '',
 
     /**
@@ -3520,10 +3517,37 @@
       let doneIconUrl = chrome.runtime.getURL("icons/done.svg");
 
       return `
-              <div class="form-config">
+            <div class="form-config">
 
               <div class="wrap-original-text-to-suggest-meeting">
                 <textarea class="original_text_to_suggest_meeting" maxlength="8000" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_TO_SUGGEST_MEETING')}"></textarea>
+
+                <div class="paste-selection">
+                  ${content_paste_icon}
+                  ${MyLang.getMsg('TXT_PASTE_SELECTION')}
+                </div>
+              </div>
+
+              <div class="d-flex" style="margin-top: 15px">
+                <div class="wrap-time-in" style="margin-right: 15px">
+                  <div>
+                    Suggest in
+                  </div>
+                  <select name="suggest-in">
+                    <option value="today">Today</option>
+                    <option value="week">Week</option>
+                    <option value="month">Month</option>
+                  </select>
+                </div>
+
+                <div class="wrap-time-busy">
+                  <div>
+                    Time you busy
+                  </div>
+
+                  <button class="add-time-busy-btn">+</button>
+
+                </div>
               </div>
 
               <div class="version config">
@@ -3608,6 +3632,56 @@
       return panelEl;
     },
 
+    /**
+     * Fix height for session result
+     * 
+     */
+    fixHeightResult: () => {
+      const self = TabSuggestMeetingManager;
+
+      const tabContainerEl = document.getElementById(self.idTab);
+      const resultEl = document.body.querySelector(`#${self.idTab} #suggest-meeting-result`);
+      $(resultEl).css('height', tabContainerEl.offsetHeight + 'px');
+    },
+
+    /**
+     * updateHeightTabContainer
+     * 
+     */
+    updateHeightTabContainer: () => {
+      const self = TabSuggestMeetingManager;
+
+      const containerEl = document.getElementById(WrapperManager.idEl);
+      const formConfigEl = document.body.querySelector(`#${self.idTab} .form-config`);
+      const resultEl = document.body.querySelector(`#${self.idTab} #suggest-meeting-result`);
+      $(resultEl).css('marginTop', (containerEl.offsetHeight - formConfigEl.offsetHeight) + 'px');
+    },
+
+    /**
+     * Check form data is validate to call GPT
+     * 
+     * @returns {boolean}
+     */
+    isValidateToCallGPT: () => {
+      const self = TabSuggestMeetingManager;
+
+      let originalText = $(`#${self.idTab} .original_text_to_suggest_meeting`).val().trim();
+
+      if (!originalText || originalText == '') {
+        return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_TO_SUGGEST_MEETING');
+      }
+      if (originalText.length > MAX_LENGTH_ORIGINAL_TEXT_CHECK_PROBLEM) {
+        return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_SUGGEST_MEETING_MAX_LENGTH_TOKEN');
+      }
+
+      if (self.formData.gpt_version == 'gemini') {
+        return MyLang.getMsg('DES_ERROR_GEMINI_NOT_RELEASED');
+      }
+      if (self.formData.gpt_version == 'gpt-4-turbo') {
+        return MyLang.getMsg('DES_ERROR_GPT4_NOT_RELEASED');
+      }
+    },
+
     // Setter
     setOriginalText: (originalText) => {
       const self = TabSuggestMeetingManager;
@@ -3620,6 +3694,43 @@
       self.setFocusOriginalText();
     },
 
+    setOriginalTextFromStorage: () => {
+      const self = TabSuggestMeetingManager;
+
+      _StorageManager.getTextSuggestMeetingSidePanel(text => {
+        self.setOriginalText(text);
+
+        _StorageManager.removeTextSuggestMeetingSidePanel();
+      });
+    },
+
+    /**
+     * checkAndSetOriginalText
+     * 
+     * @param {string} originalText 
+     */
+    checkAndSetOriginalText: (originalText) => {
+      const self = TabSuggestMeetingManager;
+      if (self.is_loading) return;
+
+      let originalTextSuggestMeeting = $(`#${self.idTab} textarea.original_text_to_suggest_meeting`).val().trim();
+      let pasteSelectionEl = $(`#${self.idTab} .wrap-original-text-to-suggest-meeting .paste-selection`);
+
+      if (originalText == EMPTY_KEY) {
+        pasteSelectionEl.removeClass('show');
+        return;
+      }
+
+      if (originalTextSuggestMeeting == '') {
+        self.setOriginalText(originalText);
+      } else {
+        if (originalTextSuggestMeeting != originalText) {
+          self.originalTextTemp = originalText;
+          pasteSelectionEl.addClass('show');
+        }
+      }
+    },
+
     setFocusOriginalText: () => {
       const self = TabSuggestMeetingManager;
       if (self.is_loading) return;
@@ -3627,6 +3738,15 @@
       let originalTextReplyEl = document.body.querySelector(`#${self.idTab} .original_text_to_suggest_meeting`);
       $(originalTextReplyEl).focus();
       $(originalTextReplyEl).scrollTop(0);
+    },
+
+    /**
+     * loadFormConfig
+     * 
+     */
+    loadFormConfig: () => {
+      const self = TabSuggestMeetingManager;
+
     },
 
     /**
@@ -3677,6 +3797,29 @@
     },
 
     /**
+     * Show alert
+     * 
+     * @param {string} type 
+     * @param {string} message 
+     */
+    showAlert: (type, message) => {
+      const self = TabSuggestMeetingManager;
+
+      let alertEl = document.createElement('div');
+      alertEl.className = 'item ' + type;
+      alertEl.innerHTML = message;
+
+      $(`#${self.idTab} .form-config .alert`).append(alertEl);
+
+      alertEl.onclick = (event) => {
+        alertEl.remove();
+      }
+      setTimeout(() => {
+        alertEl.remove();
+      }, 3000);
+    },
+
+    /**
      * Set event for element in panel
      * 
      */
@@ -3692,6 +3835,38 @@
           cls: `#${self.idTab} .popover-cbx.wrap-item .combobox-item`,
           click: self.onClickItemOptionComboBox
         },
+        {
+          cls: `#${self.idTab} #suggest-meeting-result .result-title .right .prev`,
+          click: self.handlerNextOrPrevPagingResult
+        },
+        {
+          cls: `#${self.idTab} #suggest-meeting-result .result-title .right .next`,
+          click: self.handlerNextOrPrevPagingResult
+        },
+        {
+          cls: `#${self.idTab} .submit-get-suggest`,
+          click: self.onSubmitSuggestMeeting
+        },
+        {
+          cls: `#${self.idTab} .result-footer .btn.re-generate`,
+          click: self.onSubmitSuggestMeeting
+        },
+        {
+          cls: `#${self.idTab} .result-footer .btn.copy-content`,
+          click: self.onClickCopyContentResult
+        },
+        {
+          cls: `#${self.idTab} .paste-selection`,
+          click: self.onClickPasteSelection
+        },
+        {
+          cls: `#${self.idTab} .form-config .add-time-busy-btn`,
+          click: self.onClickAddTimeBusy
+        },
+        {
+          cls: `#${self.idTab} .form-config .remove-time-busy-btn`,
+          click: self.onClickRemoveTimeBusy
+        },
       ];
 
       for (let i = 0; i < listClsAndEvent.length; i++) {
@@ -3706,10 +3881,216 @@
       }
     },
 
+    /**
+     * handlerNextOrPrevPagingResult
+     * 
+     * @param {Event} event 
+     */
+    handlerNextOrPrevPagingResult: (event) => {
+      const self = TabSuggestMeetingManager;
+      if (self.is_loading) return;
+
+      if (event.target.className.baseVal.indexOf('disable') != -1) {
+        return;
+      }
+
+      if (event.target.className.baseVal.indexOf('next') != -1) {
+        self.result_active++;
+      } else {
+        self.result_active--;
+      }
+
+      $(`#${self.idTab} #suggest-meeting-result .result-suggest .result-item`).removeClass('active');
+      let itemActiveEl = $(`#${self.idTab} #suggest-meeting-result .result-suggest .result-item[data-index="${self.result_active}"]`);
+      itemActiveEl.addClass('active');
+
+      $(`#${self.idTab} #suggest-meeting-result .result-suggest`).css('height', `${itemActiveEl[0].offsetHeight}px`)
+
+      self.handlerUpdatePaging();
+    },
+
+    /**
+     * Handler show generate result
+     * 
+     */
+    handlerShowSuggestMeetingResult: function () {
+      const self = TabSuggestMeetingManager;
+
+      const result = self.generate_result_list;
+      self.result_active = (result.length - 1);
+
+      $(`#${self.idTab} #suggest-meeting-result`).removeClass('is-loading');
+      $(`#${self.idTab} #suggest-meeting-result .result-suggest .result-item`).remove();
+
+      let resultActiveEl = null;
+      for (let i = 0; i < result.length; i++) {
+        const item = result[i];
+        let isActive = (i == self.result_active)
+
+        let textEl = document.createElement('div');
+        textEl.classList = ['wrap-content'];
+        textEl.innerHTML = item.suggest_meeting_text_result.replaceAll('\n', '<br/>');
+        // textEl.innerHTML = JSON.stringify(item.suggest_meeting_text_result);
+
+        let resultDivEl = document.createElement('div');
+        resultDivEl.classList = ['result-item'];
+        resultDivEl.setAttribute('data-index', i);
+        if (isActive) {
+          resultActiveEl = resultDivEl
+          resultDivEl.classList.add('active');
+        }
+
+        resultDivEl.append(textEl);
+
+        $(`#${self.idTab} #suggest-meeting-result .result-suggest`).append(resultDivEl);
+      }
+
+      self.is_loading = false;
+
+      self.handlerUpdatePaging();
+    },
+
+    /**
+     * Handler update paging status
+     * 
+     */
+    handlerUpdatePaging: function () {
+      const self = TabSuggestMeetingManager;
+      if (self.is_loading) return;
+
+      const result_list = self.generate_result_list;
+
+      $(`#${self.idTab} #suggest-meeting-result .result-title .right .text`).html(`${self.result_active + 1}/${result_list.length}`)
+
+      // paging prev
+      if (self.result_active <= 0) {
+        $(`#${self.idTab} #suggest-meeting-result .result-title .right .prev`)[0].classList.add('disable');
+      } else {
+        $(`#${self.idTab} #suggest-meeting-result .result-title .right .prev`)[0].classList.remove('disable');
+      }
+
+      // paging next
+      if (self.result_active >= (result_list.length - 1)) {
+        $(`#${self.idTab} #suggest-meeting-result .result-title .right .next`)[0].classList.add('disable');
+      } else {
+        $(`#${self.idTab} #suggest-meeting-result .result-title .right .next`)[0].classList.remove('disable');
+      }
+    },
+
+    /**
+     * Process add generate write
+     * 
+     */
+    processAddSuggestMeeting: () => {
+      const self = TabSuggestMeetingManager;
+      if (self.is_loading) return;
+
+      self.is_loading = true;
+
+      let suggestIn = $(`#${self.idTab} select[name="suggest-in"]`).val();
+      let originalTextSuggestMeeting = $(`#${self.idTab} textarea.original_text_to_suggest_meeting`).val();
+
+      let listBusy = [];
+      let listBusyEl = $('.wrap-time-busy .wrap-item');
+      for (let i = 0; i < listBusyEl.length; i++) {
+        const itemEl = listBusyEl[i];
+        
+        listBusy.push({
+          start: $(itemEl).find('.busy-start').val(),
+          end: $(itemEl).find('.busy-end').val(),
+        })
+      }
+      console.log(listBusy);
+
+      let params = self.formData;
+      params.suggest_in = suggestIn;
+      params.original_text_suggest_meeting = originalTextSuggestMeeting;
+      params.my_busy = listBusy;
+      params.language = UserSetting.language_active;
+
+      $(`#${self.idTab} #suggest-meeting-result .result-footer`).addClass('hidden');
+      $(`#${self.idTab} #suggest-meeting-result .result-title .left .icon`).attr('src', MyUtils.getPropGptByVersion('icon', self.formData.gpt_version));
+      $(`#${self.idTab} #suggest-meeting-result .result-title .left .name-gpt`).text(MyUtils.getPropGptByVersion('name', self.formData.gpt_version));
+
+      const result = self.generate_result_list;
+      let indexActive = (result.length);
+
+      // Setup - Add new item tab for this generate 
+      self.generate_result_list.push({ suggest_meeting_text_result: '' });
+      self.handlerShowSuggestMeetingResult();
+
+      let itemActiveEl = null;
+      OpenAIManager.suggestMeetingByOriginalText(params,
+        // Response text function callback
+        (textRes) => {
+          let innerHTML = itemActiveEl.innerHTML;
+          innerHTML += textRes.replaceAll('\n', '<br/>');
+          $(itemActiveEl).html(innerHTML);
+
+          $(`#${self.idTab} #suggest-meeting-result .result-suggest`).css('height', `${itemActiveEl.offsetHeight}px`)
+        },
+        // On [DONE] function callback
+        (contentRes) => {
+          self.generate_result_list[indexActive].suggest_meeting_text_result = contentRes;
+
+          $(itemActiveEl).removeClass('is-loading');
+          $(`#${WrapperManager.idEl}`).removeClass('is-loading');
+          $(`#${self.idTab} #suggest-meeting-result .result-footer`).removeClass('hidden');
+
+          MyUtils.debugLog("Done!");
+        },
+        // Call request success function callback
+        (success) => {
+          itemActiveEl = document.querySelector(`.result-suggest .result-item[data-index="${indexActive}"] .wrap-content`);
+
+          $(itemActiveEl).addClass('is-loading');
+          $(`#${self.idTab} #suggest-meeting-result`).removeClass('is-loading');
+
+          MyUtils.debugLog('call request fetch success:' + success);
+        });
+    },
+
+    /**
+     * Handler on storage changed
+     * 
+     * @param {object} payload 
+     * @param {string} type 
+     */
+    handlerOnStorageOnChanged: (payload, type) => {
+      const self = TabSuggestMeetingManager;
+
+      if ('text_suggest_meeting_side_panel' in payload) {
+        let textNew = payload.text_suggest_meeting_side_panel.newValue;
+        if (textNew) {
+          _StorageManager.removeTextSuggestMeetingSidePanel();
+
+          self.setOriginalText(textNew);
+        }
+      }
+    },
+
+    handlerOnTextSelectedInPage: (textSelection) => {
+      const self = TabSuggestMeetingManager;
+
+      self.checkAndSetOriginalText(textSelection);
+    },
+
+    checkOnStorageChangedNeedToActiveTab: (payload, type) => {
+      const self = TabSuggestMeetingManager;
+
+      if ('text_suggest_meeting_side_panel' in payload) {
+        return true;
+      }
+
+      return false;
+    },
+
+
     // Event handler
     afterRender: () => {
       const self = TabSuggestMeetingManager;
 
+      self.loadFormConfig();
       self.loadVersionGPTConfig();
     },
 
@@ -3794,6 +4175,110 @@
 
         $(`#${self.idTab} #version_gpt .content img`).attr('src', record.icon);
       }
+    },
+
+    /**
+     * On submit find problem content
+     * 
+     * @param {event} event 
+     */
+    onSubmitSuggestMeeting: (event) => {
+      const self = TabSuggestMeetingManager;
+      if (self.is_loading) return;
+
+      let messValidate = self.isValidateToCallGPT();
+      if (messValidate) {
+        self.showAlert('error', messValidate);
+        return;
+      }
+
+      // process add generate write
+      self.processAddSuggestMeeting();
+      self.updateHeightTabContainer();
+
+      const containerEl = document.getElementById(WrapperManager.idEl);
+      const resultEl = document.body.querySelector(`#${self.idTab} #suggest-meeting-result`);
+
+      $(resultEl).removeClass('hidden');
+      $(resultEl).addClass('is-loading');
+      $(containerEl).animate({
+        scrollTop: $(resultEl).offset().top + containerEl.scrollTop
+      }, 250, 'swing', () => {
+        $(containerEl).addClass('is-loading');
+      });
+    },
+
+    /**
+     * On click copy content result
+     * 
+     * @param {event} event 
+     */
+    onClickCopyContentResult: (event) => {
+      const self = TabSuggestMeetingManager;
+      if (self.is_loading) return;
+
+      $(event.target).addClass('done');
+      navigator.clipboard.writeText(self.generate_result_list[self.result_active].suggest_meeting_text_result);
+
+      setTimeout(() => {
+        $(event.target).removeClass('done');
+      }, 1000);
+    },
+
+    /**
+     * On click paste selection to text original
+     * 
+     * @param {Event} event 
+     */
+    onClickPasteSelection: (event) => {
+      const self = TabSuggestMeetingManager;
+
+      self.setOriginalText(self.originalTextTemp);
+
+      self.originalTextTemp = null;
+      $(`#${self.idTab} .paste-selection`).removeClass('show');
+    },
+
+    /**
+     * onClickAddTimeBusy
+     * 
+     * @param {Event} event 
+     */
+    onClickAddTimeBusy: (event) => {
+      const self = TabSuggestMeetingManager;
+
+      // Get today's date and time
+      const today = new Date();
+      // Format the date and time to 'YYYY-MM-DDTHH:MM'
+      const formattedDateTime = today.toISOString().slice(0, 16);
+
+      let idItem = MyUtils.randomId();
+
+      let wrapEl = document.createElement('div');
+      wrapEl.className = 'wrap-item';
+      $(wrapEl).attr('id-item', idItem);
+      wrapEl.style.marginBottom = 5;
+      wrapEl.innerHTML = `
+        <input min=${formattedDateTime} class="busy-start" type="datetime-local" title="start"/>
+        <input min=${formattedDateTime} class="busy-end" type="datetime-local" title="end" style="margin-top: 2px"/>
+        <button class="remove-time-busy-btn" key-item="${idItem}">-</button>
+      `
+
+      $(wrapEl).insertBefore(event.target);
+    },
+
+    /**
+     * onClickAddTimeBusy
+     * 
+     * @param {Event} event 
+     */
+    onClickRemoveTimeBusy: (event) => {
+      const self = TabSuggestMeetingManager;
+      let idItem = $(event.target).attr('key-item');
+      if (!idItem) return;
+
+      console.log(idItem);
+      $(`#${self.idTab} .form-config .wrap-time-busy .wrap-item[id-item="${idItem}"]`).remove();
     },
   };
 
@@ -3986,6 +4471,10 @@
           TabFindProblemManager.setOriginalTextAllThreadFromStorage();
           break;
 
+        case SET_TEXT_ORIGINAL_TO_SUGGEST_MEETING:
+          TabSuggestMeetingManager.setOriginalTextFromStorage();
+          break;
+
         default:
           break;
       }
@@ -4070,6 +4559,9 @@
     if (TabFindProblemManager.checkOnStorageChangedNeedToActiveTab(payload, type)) {
       self.setActiveTab(TabFindProblemManager.idTab);
     }
+    if (TabSuggestMeetingManager.checkOnStorageChangedNeedToActiveTab(payload, type)) {
+      self.setActiveTab(TabSuggestMeetingManager.idTab);
+    }
 
     const idTabActive = self.getActiveTab();
     switch (idTabActive) {
@@ -4083,6 +4575,10 @@
 
       case TabFindProblemManager.idTab:
         TabFindProblemManager.handlerOnStorageOnChanged(payload, type);
+        break;
+
+      case TabSuggestMeetingManager.idTab:
+        TabSuggestMeetingManager.handlerOnStorageOnChanged(payload, type);
         break;
     }
 
@@ -4100,6 +4596,10 @@
 
         case TabFindProblemManager.idTab:
           TabFindProblemManager.handlerOnTextSelectedInPage(textSelection);
+          break;
+
+        case TabSuggestMeetingManager.idTab:
+          TabSuggestMeetingManager.handlerOnTextSelectedInPage(textSelection);
           break;
       }
     }

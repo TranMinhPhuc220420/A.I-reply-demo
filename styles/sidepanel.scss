@@ -2620,6 +2620,8 @@ body {
       padding: 0 10px 0 10px;
 
       .wrap-original-text-to-suggest-meeting {
+        position: relative;
+        
         textarea {
           width: 100% !important;
           height: 500px;
@@ -2744,7 +2746,7 @@ body {
       padding: 0 10px 0 10px;
 
       &.is-loading {
-        .result-suggest-meeting {
+        .result-suggest {
           min-height: 300px;
 
           .result-item {
@@ -2812,7 +2814,7 @@ body {
         }
       }
 
-      .result-suggest-meeting {
+      .result-suggest {
         margin-top: 20px;
         // border-top: 1px solid var(--base-text-gray-color);
         // min-height: calc(100% + 70px);
