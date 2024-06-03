@@ -3536,6 +3536,101 @@
     },
 
     /**
+     * handlerNextOrPrevPagingResult
+     * 
+     * @param {Event} event 
+     */
+    handlerNextOrPrevPagingResult: (event) => {
+      const self = TabCheckContentReplyManager;
+      if (self.is_loading) return;
+
+      if (event.target.className.baseVal.indexOf('disable') != -1) {
+        return;
+      }
+
+      if (event.target.className.baseVal.indexOf('next') != -1) {
+        self.result_active++;
+      } else {
+        self.result_active--;
+      }
+
+      $(`#${self.idTab} #check-content-reply-result .result-check-content-reply .result-item`).removeClass('active');
+      let itemActiveEl = $(`#${self.idTab} #check-content-reply-result .result-check-content-reply .result-item[data-index="${self.result_active}"]`);
+      itemActiveEl.addClass('active');
+
+      $(`#${self.idTab} #check-content-reply-result .result-check-content-reply`).css('height', `${itemActiveEl[0].offsetHeight}px`)
+
+      self.handlerUpdatePaging();
+    },
+
+    /**
+     * Handler show generate result
+     * 
+     */
+    handlerShowCheckContentReplyResult: function () {
+      const self = TabCheckContentReplyManager;
+
+      const result = self.generate_result_list;
+      self.result_active = (result.length - 1);
+
+      $(`#${self.idTab} #check-content-reply-result`).removeClass('is-loading');
+      $(`#${self.idTab} #check-content-reply-result .result-check-content-reply .result-item`).remove();
+
+      let resultActiveEl = null;
+      for (let i = 0; i < result.length; i++) {
+        const item = result[i];
+        let isActive = (i == self.result_active)
+
+        let textEl = document.createElement('div');
+        textEl.classList = ['wrap-content'];
+        textEl.innerHTML = item.check_content_reply_result.replaceAll('\n', '<br/>');
+
+        let resultDivEl = document.createElement('div');
+        resultDivEl.classList = ['result-item'];
+        resultDivEl.setAttribute('data-index', i);
+        if (isActive) {
+          resultActiveEl = resultDivEl
+          resultDivEl.classList.add('active');
+        }
+
+        resultDivEl.append(textEl);
+
+        $(`#${self.idTab} #check-content-reply-result .result-check-content-reply`).append(resultDivEl);
+      }
+
+      self.is_loading = false;
+
+      self.handlerUpdatePaging();
+    },
+
+    /**
+     * Handler update paging status
+     * 
+     */
+    handlerUpdatePaging: function () {
+      const self = TabCheckContentReplyManager;
+      if (self.is_loading) return;
+
+      const result_list = self.generate_result_list;
+
+      $(`#${self.idTab} #check-content-reply-result .result-title .right .text`).html(`${self.result_active + 1}/${result_list.length}`)
+
+      // paging prev
+      if (self.result_active <= 0) {
+        $(`#${self.idTab} #check-content-reply-result .result-title .right .prev`)[0].classList.add('disable');
+      } else {
+        $(`#${self.idTab} #check-content-reply-result .result-title .right .prev`)[0].classList.remove('disable');
+      }
+
+      // paging next
+      if (self.result_active >= (result_list.length - 1)) {
+        $(`#${self.idTab} #check-content-reply-result .result-title .right .next`)[0].classList.add('disable');
+      } else {
+        $(`#${self.idTab} #check-content-reply-result .result-title .right .next`)[0].classList.remove('disable');
+      }
+    },
+
+    /**
      * Process add generate write
      * 
      */
@@ -3555,42 +3650,11 @@
       $(`#${self.idTab} #check-content-reply-result .result-title .left .icon`).attr('src', MyUtils.getPropGptByVersion('icon', self.formData.gpt_version));
       $(`#${self.idTab} #check-content-reply-result .result-title .left .name-gpt`).text(MyUtils.getPropGptByVersion('name', self.formData.gpt_version));
 
-      const result = self.generate_result_list;
-      let indexActive = (result.length);
-
-      // Setup - Add new item tab for this generate 
-      self.generate_result_list.push({ check_content_reply_result: '' });
-      self.handlerShowSuggestMeetingResult();
-
-      let itemActiveEl = null;
-      OpenAIManager.suggestMeetingByOriginalText(params,
-        // Response text function callback
-        (textRes) => {
-          let innerHTML = itemActiveEl.innerHTML;
-          innerHTML += textRes.replaceAll('\n', '<br/>');
-          $(itemActiveEl).html(innerHTML);
-
-          $(`#${self.idTab} #check-content-reply-result .result-check-content-reply`).css('height', `${itemActiveEl.offsetHeight}px`)
-        },
-        // On [DONE] function callback
-        (contentRes) => {
-          self.generate_result_list[indexActive].check_content_reply_result = contentRes;
-
-          $(itemActiveEl).removeClass('is-loading');
-          $(`#${WrapperManager.idEl}`).removeClass('is-loading');
-          $(`#${self.idTab} #check-content-reply-result .result-footer`).removeClass('hidden');
-
-          MyUtils.debugLog("Done!");
-        },
-        // Call request success function callback
-        (success) => {
-          itemActiveEl = document.querySelector(`.result-check-content-reply .result-item[data-index="${indexActive}"] .wrap-content`);
-
-          $(itemActiveEl).addClass('is-loading');
-          $(`#${self.idTab} #check-content-reply-result`).removeClass('is-loading');
-
-          MyUtils.debugLog('call request fetch success:' + success);
-        });
+      OpenAIManager.checkContentReplyByOriginalText(params,
+        (res) => {
+          console.log(res);
+        }
+      )
     },
 
     /**

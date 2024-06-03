@@ -2223,16 +2223,20 @@ ${general_content_reply}
 
     prompt_system = '';
     prompt_system = `You are a helpful assistant designed to output JSON.`;
+    prompt_system = `You are a helpful assistant.`;
 
     const messages = [
       { role: "system", content: prompt_system },
     ];
 
     prompt = ``
-    prompt += `\nContent:\n"""\n${original_text_check_content_reply}\n"""\n\n`
+    prompt += `Content:\n"""\n${original_text_check_content_reply}\n"""\n\n`
 
-    prompt += `JSON format: result=[{word_wrong:<string: does not automatically lower or upper case>, better:<array>, description:<string>, type:<string: type error grammar|spelling|other. Out in English>},...].\n`
-    prompt += `Help me check grammar and get all word wrong in content.\n`
+    prompt += `Please help me check the grammar and improve this content to perfection\n`
+    prompt += `Format json: {"result": {"improved": <string>, "reason": <string>}}.\n`
+    prompt += `Remember for json:\n`
+    prompt += ` Not remove metacharacters and automatic change language content\n`
+    prompt += ` Detail reason for the changes is list and output in ${language}\n`
     // prompt += `Output in ${language}.`
     messages.push({ role: 'user', content: prompt })
 
@@ -2241,13 +2245,13 @@ ${general_content_reply}
       const response = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, false, null, false, { "type": "json_object" })
       const contentRes = response.choices[0].message.content;
       const dataJson = JSON.parse(contentRes);
-      // console.log(dataJson);
+      console.log(dataJson);
 
       //Save log summary chat
       let question = MyUtils.getContentByRoleInMessage('user', messages);
       self.saveLog(question, contentRes, 'email');
 
-      if (dataJson.result) {
+      if (dataJson) {
         callback(dataJson);
 
       } else {
