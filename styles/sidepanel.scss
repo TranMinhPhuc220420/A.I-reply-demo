@@ -110,7 +110,8 @@ body {
     display: none !important;
   }
 
-  textarea {
+  textarea,
+  .original_text_check_content_reply {
     overflow-y: auto;
     border: none;
     outline: none;
@@ -2280,11 +2281,40 @@ body {
       padding: 0 10px 0 10px;
 
       .wrap-original-text-check-content-reply {
-        textarea {
+        position: relative;
+
+        .original_text_check_content_reply {
           width: 100% !important;
           height: 500px;
           min-height: 250px;
           max-height: 750px;
+          line-height: 21px;
+          font-size: 14px;
+          font-style: normal;
+          font-weight: 400;
+          white-space: pre-wrap;
+          
+          position: relative;
+          z-index: 10;
+        }
+
+        .wrap-error-panel {
+          position: absolute;
+          width: 100%;
+          top: 0;
+          left: 0;
+
+          .wrap-highlight {
+            box-sizing: border-box;
+            
+            .highlight-item {
+              border-bottom: 2px solid #e65a5a;
+              cursor: text;
+              position: absolute;
+              pointer-events: auto;
+              z-index: 11;
+            }
+          }
         }
       }
 
@@ -2621,7 +2651,7 @@ body {
 
       .wrap-original-text-to-suggest-meeting {
         position: relative;
-        
+
         textarea {
           width: 100% !important;
           height: 500px;

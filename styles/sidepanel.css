@@ -86,7 +86,8 @@ body ul li {
 .gpt-layout .hidden {
   display: none !important;
 }
-.gpt-layout textarea {
+.gpt-layout textarea,
+.gpt-layout .original_text_check_content_reply {
   overflow-y: auto;
   border: none;
   outline: none;
@@ -96,10 +97,12 @@ body ul li {
   border-radius: 12px;
   box-sizing: border-box;
 }
-.gpt-layout textarea::-webkit-scrollbar {
+.gpt-layout textarea::-webkit-scrollbar,
+.gpt-layout .original_text_check_content_reply::-webkit-scrollbar {
   width: 10px;
 }
-.gpt-layout textarea:focus {
+.gpt-layout textarea:focus,
+.gpt-layout .original_text_check_content_reply:focus {
   background-color: var(--white-color);
   border: var(--base-color-3) 1px solid;
 }
@@ -1764,11 +1767,37 @@ body ul li {
 .gpt-layout #check_content_reply_tab .form-config {
   padding: 0 10px 0 10px;
 }
-.gpt-layout #check_content_reply_tab .form-config .wrap-original-text-check-content-reply textarea {
+.gpt-layout #check_content_reply_tab .form-config .wrap-original-text-check-content-reply {
+  position: relative;
+}
+.gpt-layout #check_content_reply_tab .form-config .wrap-original-text-check-content-reply .original_text_check_content_reply {
   width: 100% !important;
   height: 500px;
   min-height: 250px;
   max-height: 750px;
+  line-height: 21px;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  white-space: pre-wrap;
+  position: relative;
+  z-index: 10;
+}
+.gpt-layout #check_content_reply_tab .form-config .wrap-original-text-check-content-reply .wrap-error-panel {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  left: 0;
+}
+.gpt-layout #check_content_reply_tab .form-config .wrap-original-text-check-content-reply .wrap-error-panel .wrap-highlight {
+  box-sizing: border-box;
+}
+.gpt-layout #check_content_reply_tab .form-config .wrap-original-text-check-content-reply .wrap-error-panel .wrap-highlight .highlight-item {
+  border-bottom: 2px solid #e65a5a;
+  cursor: text;
+  position: absolute;
+  pointer-events: auto;
+  z-index: 11;
 }
 .gpt-layout #check_content_reply_tab .form-config .version {
   margin-top: 15px;

@@ -3196,6 +3196,9 @@
     formData: {
       gpt_version: null,
     },
+    result_active: 0,
+    generate_result_list: [],
+
     original_text_check_content_reply: '',
 
 
@@ -3213,7 +3216,8 @@
               <div class="form-config">
 
               <div class="wrap-original-text-check-content-reply">
-                <textarea class="original_text_check_content_reply" maxlength="8000" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_CHECK_CONTENT_REPLY')}"></textarea>
+                <textarea class="original_text_check_content_reply" maxlength="${MAX_LENGTH_ORIGINAL_TEXT_CHECK_CONTENT_REPLY}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_CHECK_CONTENT_REPLY')}"></textarea>
+                <!-- <div class="original_text_check_content_reply input-div" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_CHECK_CONTENT_REPLY')}" contenteditable="plaintext-only" spellcheck="false" dir="ltr"></div> -->
               </div>
 
               <div class="version config">
@@ -3298,16 +3302,103 @@
       return panelEl;
     },
 
+    /**
+     * Fix height for session result
+     * 
+     */
+    fixHeightResult: () => {
+      const self = TabCheckContentReplyManager;
+
+      const tabContainerEl = document.getElementById(self.idTab);
+      const resultEl = document.body.querySelector(`#${self.idTab} #check-content-reply-result`);
+      $(resultEl).css('height', tabContainerEl.offsetHeight + 'px');
+    },
+
+    /**
+     * updateHeightTabContainer
+     * 
+     */
+    updateHeightTabContainer: () => {
+      const self = TabCheckContentReplyManager;
+
+      const containerEl = document.getElementById(WrapperManager.idEl);
+      const formConfigEl = document.body.querySelector(`#${self.idTab} .form-config`);
+      const resultEl = document.body.querySelector(`#${self.idTab} #check-content-reply-result`);
+      $(resultEl).css('marginTop', (containerEl.offsetHeight - formConfigEl.offsetHeight) + 'px');
+    },
+
+    /**
+     * Check form data is validate to call GPT
+     * 
+     * @returns {boolean}
+     */
+    isValidateToCallGPT: () => {
+      const self = TabCheckContentReplyManager;
+
+      let originalText = $(`#${self.idTab} .original_text_check_content_reply`).val().trim();
+
+      if (!originalText || originalText == '') {
+        return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_TO_CHECK_CONTENT_REPLY');
+      }
+      if (originalText.length > MAX_LENGTH_ORIGINAL_TEXT_CHECK_CONTENT_REPLY) {
+        return MyLang.getMsg('DES_ERROR_ORIGINAL_TEXT_CHECK_CONTENT_REPLY_MAX_LENGTH_TOKEN');
+      }
+
+      if (self.formData.gpt_version == 'gemini') {
+        return MyLang.getMsg('DES_ERROR_GEMINI_NOT_RELEASED');
+      }
+      if (self.formData.gpt_version == 'gpt-4-turbo') {
+        return MyLang.getMsg('DES_ERROR_GPT4_NOT_RELEASED');
+      }
+    },
+
     // Setter
     setOriginalText: (originalText) => {
       const self = TabCheckContentReplyManager;
       if (self.is_loading) return;
 
       let originalTextReplyEl = document.body.querySelector(`#${self.idTab} .original_text_check_content_reply`);
-      $(originalTextReplyEl).val(originalText);
+      $(originalTextReplyEl).html(originalText);
       self.original_text_check_content_reply = originalText;
 
       self.setFocusOriginalText();
+    },
+
+    setOriginalTextFromStorage: () => {
+      const self = TabCheckContentReplyManager;
+
+      _StorageManager.getTextCheckContentReplySidePanel(text => {
+        self.setOriginalText(text);
+
+        _StorageManager.removeTextCheckContentReplySidePanel();
+      });
+    },
+
+    /**
+     * checkAndSetOriginalText
+     * 
+     * @param {string} originalText 
+     */
+    checkAndSetOriginalText: (originalText) => {
+      const self = TabCheckContentReplyManager;
+      if (self.is_loading) return;
+
+      let originalTextContentCheckReply = $(`#${self.idTab} textarea.original_text_check_content_reply`).val().trim();
+      let pasteSelectionEl = $(`#${self.idTab} .wrap-original-text-check-content-reply .paste-selection`);
+
+      if (originalText == EMPTY_KEY) {
+        pasteSelectionEl.removeClass('show');
+        return;
+      }
+
+      if (originalTextContentCheckReply == '') {
+        self.setOriginalText(originalText);
+      } else {
+        if (originalTextContentCheckReply != originalText) {
+          self.originalTextTemp = originalText;
+          pasteSelectionEl.addClass('show');
+        }
+      }
     },
 
     setFocusOriginalText: () => {
@@ -3317,6 +3408,15 @@
       let originalTextReplyEl = document.body.querySelector(`#${self.idTab} .original_text_check_content_reply`);
       $(originalTextReplyEl).focus();
       $(originalTextReplyEl).scrollTop(0);
+    },
+
+    /**
+     * loadFormConfig
+     * 
+     */
+    loadFormConfig: () => {
+      const self = TabCheckContentReplyManager;
+
     },
 
     /**
@@ -3367,6 +3467,29 @@
     },
 
     /**
+     * Show alert
+     * 
+     * @param {string} type 
+     * @param {string} message 
+     */
+    showAlert: (type, message) => {
+      const self = TabCheckContentReplyManager;
+
+      let alertEl = document.createElement('div');
+      alertEl.className = 'item ' + type;
+      alertEl.innerHTML = message;
+
+      $(`#${self.idTab} .form-config .alert`).append(alertEl);
+
+      alertEl.onclick = (event) => {
+        alertEl.remove();
+      }
+      setTimeout(() => {
+        alertEl.remove();
+      }, 3000);
+    },
+
+    /**
      * Set event for element in panel
      * 
      */
@@ -3382,6 +3505,22 @@
           cls: `#${self.idTab} .popover-cbx.wrap-item .combobox-item`,
           click: self.onClickItemOptionComboBox
         },
+        {
+          cls: `#${self.idTab} .submit-check-content-reply`,
+          click: self.onSubmitCheckContentReply
+        },
+        {
+          cls: `#${self.idTab} .result-footer .btn.re-generate`,
+          click: self.onSubmitCheckContentReply
+        },
+        {
+          cls: `#${self.idTab} .result-footer .btn.copy-content`,
+          click: self.onClickCopyContentResult
+        },
+        {
+          cls: `#${self.idTab} .paste-selection`,
+          click: self.onClickPasteSelection
+        },
       ];
 
       for (let i = 0; i < listClsAndEvent.length; i++) {
@@ -3396,10 +3535,131 @@
       }
     },
 
+    /**
+     * Process add generate write
+     * 
+     */
+    processAddCheckContentReply: () => {
+      const self = TabCheckContentReplyManager;
+      if (self.is_loading) return;
+
+      self.is_loading = true;
+
+      let originalTextCheckContentReply = $(`#${self.idTab} textarea.original_text_check_content_reply`).val();
+
+      let params = self.formData;
+      params.original_text_check_content_reply = originalTextCheckContentReply;
+      params.language = UserSetting.language_active;
+
+      $(`#${self.idTab} #check-content-reply-result .result-footer`).addClass('hidden');
+      $(`#${self.idTab} #check-content-reply-result .result-title .left .icon`).attr('src', MyUtils.getPropGptByVersion('icon', self.formData.gpt_version));
+      $(`#${self.idTab} #check-content-reply-result .result-title .left .name-gpt`).text(MyUtils.getPropGptByVersion('name', self.formData.gpt_version));
+
+      const result = self.generate_result_list;
+      let indexActive = (result.length);
+
+      // Setup - Add new item tab for this generate 
+      self.generate_result_list.push({ check_content_reply_result: '' });
+      self.handlerShowSuggestMeetingResult();
+
+      let itemActiveEl = null;
+      OpenAIManager.suggestMeetingByOriginalText(params,
+        // Response text function callback
+        (textRes) => {
+          let innerHTML = itemActiveEl.innerHTML;
+          innerHTML += textRes.replaceAll('\n', '<br/>');
+          $(itemActiveEl).html(innerHTML);
+
+          $(`#${self.idTab} #check-content-reply-result .result-check-content-reply`).css('height', `${itemActiveEl.offsetHeight}px`)
+        },
+        // On [DONE] function callback
+        (contentRes) => {
+          self.generate_result_list[indexActive].check_content_reply_result = contentRes;
+
+          $(itemActiveEl).removeClass('is-loading');
+          $(`#${WrapperManager.idEl}`).removeClass('is-loading');
+          $(`#${self.idTab} #check-content-reply-result .result-footer`).removeClass('hidden');
+
+          MyUtils.debugLog("Done!");
+        },
+        // Call request success function callback
+        (success) => {
+          itemActiveEl = document.querySelector(`.result-check-content-reply .result-item[data-index="${indexActive}"] .wrap-content`);
+
+          $(itemActiveEl).addClass('is-loading');
+          $(`#${self.idTab} #check-content-reply-result`).removeClass('is-loading');
+
+          MyUtils.debugLog('call request fetch success:' + success);
+        });
+    },
+
+    /**
+     * Process add generate write
+     * 
+     */
+    processAddCheckGrammarContentReply: () => {
+      const self = TabCheckContentReplyManager;
+      if (self.is_loading) return;
+
+      self.is_loading = true;
+
+      let originalTextCheckContentReply = $(`#${self.idTab} .original_text_check_content_reply`).html();
+
+      let params = self.formData;
+      params.original_text_check_content_reply = originalTextCheckContentReply;
+      params.language = UserSetting.language_active;
+
+      OpenAIManager.checkContentReplyByOriginalText(params,
+        async (resultCheck) => {
+          let wrapErrorPanel = document.createElement('div');
+          wrapErrorPanel.className = 'wrap-error-panel'
+          $('.wrap-original-text-check-content-reply').append(wrapErrorPanel);
+
+          let textareaEl = document.body.querySelector('.original_text_check_content_reply');
+          wrapErrorPanel.style.height = textareaEl.offsetHeight;
+
+          const { result } = resultCheck;
+
+          let listWordWrong = await result.map(item => item.word_wrong);
+          let badWordsIndexOf = MyUtils.getIndicesOfWrongWords(originalTextCheckContentReply, listWordWrong);
+
+          for (let i = 0; i < result.length; i++) {
+            const errorItem = result[i];
+            errorItem.length = errorItem.word_wrong.length;
+
+            for (let j = 0; (badWordsIndexOf[errorItem.word_wrong] && j < badWordsIndexOf[errorItem.word_wrong].length); j++) {
+              errorItem.offset = badWordsIndexOf[errorItem.word_wrong][j];
+
+              let Ke = MyUtils.se(textareaEl, errorItem.offset, errorItem.offset + errorItem.length), Ct = textareaEl.getBoundingClientRect(), ut = [];
+
+              for (let i = 0; i < Ke.length; i++) {
+                let posHightLight = Ke[i];
+
+                let wrapHight = document.createElement('div');
+                wrapHight.className = 'wrap-highlight'
+
+                let itemHightLight = document.createElement('div');
+                itemHightLight.className = 'highlight-item'
+                itemHightLight.style.left = posHightLight.left - Ct.left;
+                itemHightLight.style.top = posHightLight.top - Ct.top;
+                itemHightLight.style.height = posHightLight.height;
+                itemHightLight.style.width = posHightLight.width;
+
+                wrapHight.append(itemHightLight);
+                wrapErrorPanel.append(wrapHight);
+              }
+            }
+
+          }
+        }
+      )
+    },
+
     // Event handler
     afterRender: () => {
       const self = TabCheckContentReplyManager;
 
+      self.loadFormConfig();
       self.loadVersionGPTConfig();
     },
 
@@ -3485,6 +3745,68 @@
         $(`#${self.idTab} #version_gpt .content img`).attr('src', record.icon);
       }
     },
+
+    /**
+     * On submit find problem content
+     * 
+     * @param {event} event 
+     */
+    onSubmitCheckContentReply: (event) => {
+      const self = TabCheckContentReplyManager;
+      if (self.is_loading) return;
+
+      let messValidate = self.isValidateToCallGPT();
+      if (messValidate) {
+        self.showAlert('error', messValidate);
+        return;
+      }
+
+      // process add generate write
+      self.processAddCheckContentReply();
+      self.updateHeightTabContainer();
+
+      const containerEl = document.getElementById(WrapperManager.idEl);
+      const resultEl = document.body.querySelector(`#${self.idTab} #check-content-reply-result`);
+
+      $(resultEl).removeClass('hidden');
+      $(resultEl).addClass('is-loading');
+      $(containerEl).animate({
+        scrollTop: $(resultEl).offset().top + containerEl.scrollTop
+      }, 250, 'swing', () => {
+        $(containerEl).addClass('is-loading');
+      });
+    },
+
+    /**
+     * On click copy content result
+     * 
+     * @param {event} event 
+     */
+    onClickCopyContentResult: (event) => {
+      const self = TabCheckContentReplyManager;
+      if (self.is_loading) return;
+
+      $(event.target).addClass('done');
+      navigator.clipboard.writeText(self.generate_result_list[self.result_active].check_content_reply_result);
+
+      setTimeout(() => {
+        $(event.target).removeClass('done');
+      }, 1000);
+    },
+
+    /**
+     * On click paste selection to text original
+     * 
+     * @param {Event} event 
+     */
+    onClickPasteSelection: (event) => {
+      const self = TabCheckContentReplyManager;
+
+      self.setOriginalText(self.originalTextTemp);
+
+      self.originalTextTemp = null;
+      $(`#${self.idTab} .paste-selection`).removeClass('show');
+    },
   };
 
   /**
@@ -3525,28 +3847,6 @@
                 <div class="paste-selection">
                   ${content_paste_icon}
                   ${MyLang.getMsg('TXT_PASTE_SELECTION')}
-                </div>
-              </div>
-
-              <div class="d-flex" style="margin-top: 15px">
-                <div class="wrap-time-in" style="margin-right: 15px">
-                  <div>
-                    Suggest in
-                  </div>
-                  <select name="suggest-in">
-                    <option value="today">Today</option>
-                    <option value="week">Week</option>
-                    <option value="month">Month</option>
-                  </select>
-                </div>
-
-                <div class="wrap-time-busy">
-                  <div>
-                    Time you busy
-                  </div>
-
-                  <button class="add-time-busy-btn">+</button>
-
                 </div>
               </div>
 
@@ -3859,14 +4159,6 @@
           cls: `#${self.idTab} .paste-selection`,
           click: self.onClickPasteSelection
         },
-        {
-          cls: `#${self.idTab} .form-config .add-time-busy-btn`,
-          click: self.onClickAddTimeBusy
-        },
-        {
-          cls: `#${self.idTab} .form-config .remove-time-busy-btn`,
-          click: self.onClickRemoveTimeBusy
-        },
       ];
 
       for (let i = 0; i < listClsAndEvent.length; i++) {
@@ -3987,25 +4279,10 @@
 
       self.is_loading = true;
 
-      let suggestIn = $(`#${self.idTab} select[name="suggest-in"]`).val();
       let originalTextSuggestMeeting = $(`#${self.idTab} textarea.original_text_to_suggest_meeting`).val();
 
-      let listBusy = [];
-      let listBusyEl = $('.wrap-time-busy .wrap-item');
-      for (let i = 0; i < listBusyEl.length; i++) {
-        const itemEl = listBusyEl[i];
-        
-        listBusy.push({
-          start: $(itemEl).find('.busy-start').val(),
-          end: $(itemEl).find('.busy-end').val(),
-        })
-      }
-      console.log(listBusy);
-
       let params = self.formData;
-      params.suggest_in = suggestIn;
       params.original_text_suggest_meeting = originalTextSuggestMeeting;
-      params.my_busy = listBusy;
       params.language = UserSetting.language_active;
 
       $(`#${self.idTab} #suggest-meeting-result .result-footer`).addClass('hidden');
@@ -4237,48 +4514,6 @@
 
       self.originalTextTemp = null;
       $(`#${self.idTab} .paste-selection`).removeClass('show');
-    },
-
-    /**
-     * onClickAddTimeBusy
-     * 
-     * @param {Event} event 
-     */
-    onClickAddTimeBusy: (event) => {
-      const self = TabSuggestMeetingManager;
-
-      // Get today's date and time
-      const today = new Date();
-      // Format the date and time to 'YYYY-MM-DDTHH:MM'
-      const formattedDateTime = today.toISOString().slice(0, 16);
-
-      let idItem = MyUtils.randomId();
-
-      let wrapEl = document.createElement('div');
-      wrapEl.className = 'wrap-item';
-      $(wrapEl).attr('id-item', idItem);
-      wrapEl.style.marginBottom = 5;
-      wrapEl.innerHTML = `
-        <input min=${formattedDateTime} class="busy-start" type="datetime-local" title="start"/>
-        <input min=${formattedDateTime} class="busy-end" type="datetime-local" title="end" style="margin-top: 2px"/>
-        <button class="remove-time-busy-btn" key-item="${idItem}">-</button>
-      `
-
-      $(wrapEl).insertBefore(event.target);
-    },
-
-    /**
-     * onClickAddTimeBusy
-     * 
-     * @param {Event} event 
-     */
-    onClickRemoveTimeBusy: (event) => {
-      const self = TabSuggestMeetingManager;
-      let idItem = $(event.target).attr('key-item');
-      if (!idItem) return;
-
-      console.log(idItem);
-      $(`#${self.idTab} .form-config .wrap-time-busy .wrap-item[id-item="${idItem}"]`).remove();
     },
   };
 

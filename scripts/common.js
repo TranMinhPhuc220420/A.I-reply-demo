@@ -87,6 +87,7 @@ const MAX_LENGTH_ORIGINAL_TEXT_REPLY = 8000;
 const MAX_LENGTH_GENERAL_CONTENT_REPLY = 4000;
 const MAX_LENGTH_ORIGINAL_TEXT_SUMMARY = 16000;
 const MAX_LENGTH_ORIGINAL_TEXT_CHECK_PROBLEM = 16000;
+const MAX_LENGTH_ORIGINAL_TEXT_CHECK_CONTENT_REPLY = 16000;
 
 const GROUP_PROMPT_LABEL_BG_COLOR = "#2196F3";
 const GROUP_PROMPT_LABEL_TEXT_COLOR = "#ffffff";
@@ -826,6 +827,48 @@ const MyUtils = {
         style.appendChild(document.createTextNode(css));
       }
     });
+  },
+
+  se: (i, Ae, Ue) => {
+    let ze = new Range, Je = i.firstChild, Qe = i.childNodes, Ke = 0;
+    let Ct = {
+      node: Je,
+      start: 0
+    }
+    let ut = {
+      node: Je,
+      end: 0
+    };
+
+    for (let Vt of Qe) {
+      let tt = Ke + (Vt.textContent?.length || 0) || Ke;
+      tt >= Ae && Ke <= Ae && (Ct.node = Vt,
+        Ct.start = Ae - Ke),
+        tt >= Ue && Ke <= Ue && (ut.node = Vt,
+          ut.end = Ue - Ke),
+        Ke += Vt.textContent?.length || 0
+    }
+
+    return ze.setStart(Ct.node, Ct.start), ze.setEnd(ut.node, ut.end), [...ze.getClientRects()]
+  },
+
+  getIndicesOfWrongWords: (text, words) => {
+    const indices = {};
+
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+
+      let startIndex = 0;
+      while ((startIndex = text.indexOf(word, startIndex)) !== -1) {
+        if (!indices[word]) {
+          indices[word] = [];
+        }
+        indices[word].push(startIndex);
+        startIndex += word.length;
+      }
+    }
+
+    return indices;
   }
 };
 
@@ -952,7 +995,7 @@ const _StorageManager = {
   removeTextSummarySidePanel: () => {
     chrome.storage.local.remove('text_summary_side_panel');
   },
-  
+
   setTextAllThreadSummarySidePanel: (text) => {
     chrome.storage.local.set({ text_all_thread_summary_side_panel: text });
   },
@@ -976,7 +1019,7 @@ const _StorageManager = {
   removeTextFindProblemSidePanel: () => {
     chrome.storage.local.remove('text_find_problem_side_panel');
   },
-  
+
   setTextAllThreadFindProblemSidePanel: (text) => {
     chrome.storage.local.set({ text_all_thread_find_problem_side_panel: text });
   },
@@ -999,6 +1042,18 @@ const _StorageManager = {
   },
   removeTextSuggestMeetingSidePanel: () => {
     chrome.storage.local.remove('text_suggest_meeting_side_panel');
+  },
+
+  setTextCheckContentReplySidePanel: (text) => {
+    chrome.storage.local.set({ text_content_check_reply_side_panel: text });
+  },
+  getTextCheckContentReplySidePanel: (callback) => {
+    chrome.storage.local.get('text_content_check_reply_side_panel', payload => {
+      callback(payload.text_suggest_meeting_side_panel)
+    });
+  },
+  removeTextCheckContentReplySidePanel: () => {
+    chrome.storage.local.remove('text_content_check_reply_side_panel');
   },
 };
 
@@ -2021,16 +2076,7 @@ ${general_content_reply}
     prompt += `${original_text_suggest_meeting}\n`
     prompt += `"""\n`
 
-    for (let i = 0; i < my_busy.length; i++) {
-      const busyItem = my_busy[i];
-
-      if (i == 0) {
-        prompt += `\nI'm busy:\n`
-      }
-        prompt += ` ${busyItem.start} - ${busyItem.end}\n`
-      
-    }
-    
+    prompt += `Now is ${Date()}\n`
     prompt += `\nTemplate answer:\n`
     prompt += `
   1.<Name of day of the week> (MM-dd-YYYY)
@@ -2045,9 +2091,8 @@ ${general_content_reply}
     ...
 \n`
 
-    
-    prompt += `Now is ${Date()}\n`
-    prompt += `Based on the above content, find all the appropriate time of the ${suggest_in} to create a meeting and list the most suitable suggestions.\n`
+
+    prompt += `Based on the above content, find every suitable time to hold a meeting.\n`
     prompt += `Output in ${language}.`
     messages.push({ role: 'user', content: prompt })
 
@@ -2089,73 +2134,142 @@ ${general_content_reply}
   },
 
 
-  // _suggestMeetingByOriginalTextRequest: async (params, callback, retry) => {
-  //   const self = OpenAIManager;
+  _checkGrammarByOriginalTextRequest: async (params, callback, retry) => {
+    const self = OpenAIManager;
 
-  //   if (typeof retry == 'undefined') retry = 0;
-  //   if (retry > 3) {
-  //     callback(false);
-  //     return false;
-  //   }
+    if (typeof retry == 'undefined') retry = 0;
+    if (retry > 1) {
+      callback({ result: [] });
+      return false;
+    }
 
-  //   const {
-  //     gpt_ai_key, gpt_version,
+    const {
+      gpt_ai_key, gpt_version,
 
-  //     original_text_suggest_meeting, suggest_in, language
-  //   } = params;
+      original_text_check_content_reply, language
+    } = params;
 
-  //   let prompt, prompt_system;
+    let prompt, prompt_system;
 
-  //   prompt_system = '';
-  //   prompt_system += `You are a helpful assistant.`;
-  //   // prompt_system = `You are a helpful assistant designed to output JSON.`;
+    prompt_system = '';
+    prompt_system = `You are a helpful assistant designed to output JSON.`;
 
-  //   const messages = [
-  //     { role: "system", content: prompt_system },
-  //   ];
+    const messages = [
+      { role: "system", content: prompt_system },
+    ];
 
-  //   prompt = ``
-  //   prompt += `Content:\n`
-  //   prompt += `"""\n`
-  //   prompt += `${original_text_suggest_meeting}\n`
-  //   prompt += `"""\n`
+    prompt = ``
+    prompt += `\nContent:\n"""\n${original_text_check_content_reply}\n"""\n\n`
 
-    
-  //   prompt += `Now is ${Date()}\n`
-  //   // prompt += `I'm busy today but tomorrow I'm free\n`
-  //   // prompt += `Based on the above content, find all suitable times of the week to create a meeting and list the most suitable suggestions.\n`
-  //   prompt += `Based on the above content, find all ${suggest_in} to create a meeting and list the most suitable suggestions.\n`
-  //   // prompt += `JSON Format: {most_suggest: [{time:<HH:MM>, date_name: <string> date:<mm/dd/yyyy>}], all_suggest: [{time:<HH:MM>, date_name: <string> date:<mm/dd/yyyy>}] }.\n`
-  //   // prompt += `Output in ${language} but key of json always follows the format.`
-  //   prompt += `Output in ${language}.`
-  //   messages.push({ role: 'user', content: prompt })
+    prompt += `JSON format: result=[{word_wrong:<string: does not automatically lower or upper case>, better:<array>, description:<string>, type:<string: type error grammar|spelling|other. Out in English>},...].\n`
+    prompt += `Help me check grammar and get all word wrong in content.\n`
+    // prompt += `Output in ${language}.`
+    messages.push({ role: 'user', content: prompt })
 
-  //   try {
+    try {
 
-  //     const response = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, false, null)
-  //     const contentRes = response.choices[0].message.content;
+      const response = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, false, null, false, { "type": "json_object" })
+      const contentRes = response.choices[0].message.content;
+      const dataJson = JSON.parse(contentRes);
+      // console.log(dataJson);
 
-  //     //Save log summary chat
-  //     let question = MyUtils.getContentByRoleInMessage('user', messages);
-  //     self.saveLog(question, contentRes, 'email');
+      //Save log summary chat
+      let question = MyUtils.getContentByRoleInMessage('user', messages);
+      self.saveLog(question, contentRes, 'email');
 
-  //     callback(contentRes);
+      if (dataJson.result) {
+        callback(dataJson);
 
-  //   } catch (error) {
-  //     retry++;
-  //     self._suggestMeetingByOriginalTextRequest(params, callback, retry);
-  //   }
-  // },
+      } else {
+        retry++;
+        self._checkGrammarByOriginalTextRequest(params, callback, retry);
+      }
 
-  // suggestMeetingByOriginalText: function (params, callback, retry) {
-  //   const self = OpenAIManager;
+    } catch (error) {
+      retry++;
+      self._checkGrammarByOriginalTextRequest(params, callback, retry);
+    }
+  },
 
-  //   // Get open ai KEY
-  //   self.getOpenAIKey((gptAiKey) => {
-  //     params.gpt_ai_key = gptAiKey;
+  checkGrammarReplyByOriginalText: function (params, callback, retry) {
+    const self = OpenAIManager;
 
-  //     // Call request get data to show popup in mail
-  //     self._suggestMeetingByOriginalTextRequest(params, callback, retry);
-  //   })
-  // },
+    // Get open ai KEY
+    self.getOpenAIKey((gptAiKey) => {
+      params.gpt_ai_key = gptAiKey;
+
+      // Call request get data to show popup in mail
+      self._checkGrammarByOriginalTextRequest(params, callback, retry);
+    })
+  },
+
+
+  _checkContentReplyByOriginalTextRequest: async (params, callback, retry) => {
+    const self = OpenAIManager;
+
+    if (typeof retry == 'undefined') retry = 0;
+    if (retry > 1) {
+      callback({ result: [] });
+      return false;
+    }
+
+    const {
+      gpt_ai_key, gpt_version,
+
+      original_text_check_content_reply, language
+    } = params;
+
+    let prompt, prompt_system;
+
+    prompt_system = '';
+    prompt_system = `You are a helpful assistant designed to output JSON.`;
+
+    const messages = [
+      { role: "system", content: prompt_system },
+    ];
+
+    prompt = ``
+    prompt += `\nContent:\n"""\n${original_text_check_content_reply}\n"""\n\n`
+
+    prompt += `JSON format: result=[{word_wrong:<string: does not automatically lower or upper case>, better:<array>, description:<string>, type:<string: type error grammar|spelling|other. Out in English>},...].\n`
+    prompt += `Help me check grammar and get all word wrong in content.\n`
+    // prompt += `Output in ${language}.`
+    messages.push({ role: 'user', content: prompt })
+
+    try {
+
+      const response = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, false, null, false, { "type": "json_object" })
+      const contentRes = response.choices[0].message.content;
+      const dataJson = JSON.parse(contentRes);
+      // console.log(dataJson);
+
+      //Save log summary chat
+      let question = MyUtils.getContentByRoleInMessage('user', messages);
+      self.saveLog(question, contentRes, 'email');
+
+      if (dataJson.result) {
+        callback(dataJson);
+
+      } else {
+        retry++;
+        self._checkContentReplyByOriginalTextRequest(params, callback, retry);
+      }
+
+    } catch (error) {
+      retry++;
+      self._checkContentReplyByOriginalTextRequest(params, callback, retry);
+    }
+  },
+
+  checkContentReplyByOriginalText: function (params, callback, retry) {
+    const self = OpenAIManager;
+
+    // Get open ai KEY
+    self.getOpenAIKey((gptAiKey) => {
+      params.gpt_ai_key = gptAiKey;
+
+      // Call request get data to show popup in mail
+      self._checkContentReplyByOriginalTextRequest(params, callback, retry);
+    })
+  },
 };
