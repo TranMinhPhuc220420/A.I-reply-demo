@@ -554,7 +554,7 @@ body {
 
     .sidebar {
       position: absolute;
-      z-index: 9;
+      z-index: 15;
       background-color: var(--background-gray-color);
       display: none;
       border-radius: 10px;
@@ -2510,44 +2510,61 @@ body {
         .result-item {
           display: none;
 
-          .title {
-            display: inline-block;
-            font-size: 15px;
-            margin-bottom: 5px;
-            padding: 0 0 5px 0;
-            color: var(--base-text-color);
-            position: relative;
-
-            &::after {
-              content: "";
-              position: absolute;
-              width: 150px;
-              height: 1px;
-              background-color: var(--base-text-gray-color);
-              bottom: 0;
-              left: 0;
-            }
-
-            .bold {
-              font-weight: 500;
-            }
-          }
-
           &.active {
             display: block;
           }
 
           .wrap-content {
             font-size: 0.9rem;
-
-            &.is-loading::after {
-              content: "|";
-              font-weight: bold;
+            
+            .title {
+              padding: 0 0 2px 5px;
               color: var(--base-text-color);
-              animation: space_loading_gpt 0.4s linear infinite;
-              margin-left: 5px;
-              padding: 0 0.5px;
-              background: var(--background-black-color);
+              position: relative;
+
+              &.improved-title {
+                font-weight: 600;
+                font-size: 18px;
+              }
+
+              &.reason-title {
+                font-weight: 600;
+                font-size: 16px;
+              }
+            }
+
+            .improved-content {
+              padding: 5px;
+              background-color: rgba(0, 0, 0, .03);
+              border-radius: 5px;
+            }
+
+            .reason-content {
+              padding: 5px;
+
+              .reason-list {
+                padding: 0 0 0 15px;
+
+                li {
+                  list-style: auto;
+                }
+              }
+            }
+
+            &.wrap-content-reason {
+              margin-top: 20px;
+            }
+
+            .improved-content, .reason-content {
+              &.is-loading::after {
+                content: "|";
+                font-weight: bold;
+                color: var(--base-text-color);
+                animation: space_loading_gpt 0.4s linear infinite;
+                margin-left: 5px;
+                padding: 0 0.5px;
+                background: var(--background-black-color);
+              }
             }
           }
         }

@@ -193,15 +193,21 @@
     },
 
     /**
-     * Fix height for session result
+     * updateUIResultPanel
      * 
      */
-    fixHeightResult: () => {
+    updateUIResultPanel: () => {
       const self = TabWriteManager;
 
-      const tabContainerEl = document.getElementById(`write_tab`);
-      const resultEl = document.body.querySelector(`#${self.idTab} #result`);
-      $(resultEl).css('height', tabContainerEl.offsetHeight + 'px');
+      const containerEl = document.getElementById(WrapperManager.idEl);
+      const formConfigEl = document.body.querySelector(`#${self.idTab} .form-config`);
+
+      $((`#${self.idTab} #result`)).css('marginTop', (containerEl.offsetHeight - formConfigEl.offsetHeight) + 'px');
+
+      let itemActiveEl = $(`#${self.idTab} #result .result-generate .result-item.active`);
+      if (itemActiveEl.length > 0) {
+        $(`#${self.idTab} #result .result-generate`).css('height', `${itemActiveEl[0].offsetHeight}px`)
+      }
     },
 
     /**
@@ -883,7 +889,7 @@
           self.generate_result_list[indexActive].body = contentRes;
 
           $(itemActiveEl).removeClass('is-loading');
-          $(`#${WrapperManager.idEl}`).removeClass('is-loading');
+          // $(`#${WrapperManager.idEl}`).removeClass('is-loading');
           $('#write_tab #result .result-footer').removeClass('hidden');
 
           MyUtils.debugLog("Done!");
@@ -1216,7 +1222,7 @@
       $(containerEl).animate({
         scrollTop: $(resultEl).offset().top + containerEl.scrollTop
       }, 250, 'swing', () => {
-        $(containerEl).addClass('is-loading');
+        // $(containerEl).addClass('is-loading');
       });
     },
 
@@ -1575,15 +1581,21 @@
     },
 
     /**
-     * Fix height for session result
+     * updateUIResultPanel
      * 
      */
-    fixHeightResult: () => {
+    updateUIResultPanel: () => {
       const self = TabSummaryManager;
 
-      const tabContainerEl = document.getElementById(self.idTab);
-      const resultEl = document.body.querySelector(`#${self.idTab} #summary-result`);
-      $(resultEl).css('height', tabContainerEl.offsetHeight + 'px');
+      const containerEl = document.getElementById(WrapperManager.idEl);
+      const formConfigEl = document.body.querySelector(`#${self.idTab} .form-config`);
+
+      $((`#${self.idTab} #summary-result`)).css('marginTop', (containerEl.offsetHeight - formConfigEl.offsetHeight) + 'px');
+
+      let itemActiveEl = $(`#${self.idTab} #summary-result .result-summary .result-item.active`);
+      if (itemActiveEl.length > 0) {
+        $(`#${self.idTab} #summary-result .result-summary`).css('height', `${itemActiveEl[0].offsetHeight}px`)
+      }
     },
 
     /**
@@ -2073,7 +2085,7 @@
           self.generate_result_list[indexActive].summary_text_result = contentRes;
 
           $(itemActiveEl).removeClass('is-loading');
-          $(`#${WrapperManager.idEl}`).removeClass('is-loading');
+          // $(`#${WrapperManager.idEl}`).removeClass('is-loading');
           $(`#${self.idTab} #summary-result .result-footer`).removeClass('hidden');
 
           MyUtils.debugLog("Done!");
@@ -2270,7 +2282,7 @@
       $(containerEl).animate({
         scrollTop: $(resultEl).offset().top + containerEl.scrollTop
       }, 250, 'swing', () => {
-        $(containerEl).addClass('is-loading');
+        // $(containerEl).addClass('is-loading');
       });
     },
 
@@ -2467,15 +2479,21 @@
     },
 
     /**
-     * Fix height for session result
-     * 
-     */
-    fixHeightResult: () => {
+    * updateUIResultPanel
+    * 
+    */
+    updateUIResultPanel: () => {
       const self = TabFindProblemManager;
 
-      const tabContainerEl = document.getElementById(self.idTab);
-      const resultEl = document.body.querySelector(`#${self.idTab} #find-problem-result`);
-      $(resultEl).css('height', tabContainerEl.offsetHeight + 'px');
+      const containerEl = document.getElementById(WrapperManager.idEl);
+      const formConfigEl = document.body.querySelector(`#${self.idTab} .form-config`);
+
+      $((`#${self.idTab} #find-problem-result`)).css('marginTop', (containerEl.offsetHeight - formConfigEl.offsetHeight) + 'px');
+
+      let itemActiveEl = $(`#${self.idTab} #find-problem-result .result-find-problem .result-item.active`);
+      if (itemActiveEl.length > 0) {
+        $(`#${self.idTab} #find-problem-result .result-find-problem`).css('height', `${itemActiveEl[0].offsetHeight}px`)
+      }
     },
 
     /**
@@ -2948,7 +2966,7 @@
           self.generate_result_list[indexActive].find_problem_text_result = contentRes;
 
           $(itemActiveEl).removeClass('is-loading');
-          $(`#${WrapperManager.idEl}`).removeClass('is-loading');
+          // $(`#${WrapperManager.idEl}`).removeClass('is-loading');
           $(`#${self.idTab} #find-problem-result .result-footer`).removeClass('hidden');
 
           MyUtils.debugLog("Done!");
@@ -3142,7 +3160,7 @@
       $(containerEl).animate({
         scrollTop: $(resultEl).offset().top + containerEl.scrollTop
       }, 250, 'swing', () => {
-        $(containerEl).addClass('is-loading');
+        // $(containerEl).addClass('is-loading');
       });
     },
 
@@ -3303,28 +3321,21 @@
     },
 
     /**
-     * Fix height for session result
+     * updateUIResultPanel
      * 
      */
-    fixHeightResult: () => {
-      const self = TabCheckContentReplyManager;
-
-      const tabContainerEl = document.getElementById(self.idTab);
-      const resultEl = document.body.querySelector(`#${self.idTab} #check-content-reply-result`);
-      $(resultEl).css('height', tabContainerEl.offsetHeight + 'px');
-    },
-
-    /**
-     * updateHeightTabContainer
-     * 
-     */
-    updateHeightTabContainer: () => {
+    updateUIResultPanel: () => {
       const self = TabCheckContentReplyManager;
 
       const containerEl = document.getElementById(WrapperManager.idEl);
       const formConfigEl = document.body.querySelector(`#${self.idTab} .form-config`);
-      const resultEl = document.body.querySelector(`#${self.idTab} #check-content-reply-result`);
-      $(resultEl).css('marginTop', (containerEl.offsetHeight - formConfigEl.offsetHeight) + 'px');
+
+      $((`#${self.idTab} #check-content-reply-result`)).css('marginTop', (containerEl.offsetHeight - formConfigEl.offsetHeight) + 'px');
+
+      let itemActiveEl = $(`#${self.idTab} #check-content-reply-result .result-check-content-reply .result-item.active`);
+      if (itemActiveEl.length > 0) {
+        $(`#${self.idTab} #check-content-reply-result .result-check-content-reply`).css('height', `${itemActiveEl[0].offsetHeight}px`)
+      }
     },
 
     /**
@@ -3506,6 +3517,14 @@
           click: self.onClickItemOptionComboBox
         },
         {
+          cls: `#${self.idTab} #check-content-reply-result .result-title .right .prev`,
+          click: self.handlerNextOrPrevPagingResult
+        },
+        {
+          cls: `#${self.idTab} #check-content-reply-result .result-title .right .next`,
+          click: self.handlerNextOrPrevPagingResult
+        },
+        {
           cls: `#${self.idTab} .submit-check-content-reply`,
           click: self.onSubmitCheckContentReply
         },
@@ -3581,9 +3600,48 @@
         const item = result[i];
         let isActive = (i == self.result_active)
 
-        let textEl = document.createElement('div');
-        textEl.classList = ['wrap-content'];
-        textEl.innerHTML = item.check_content_reply_result.replaceAll('\n', '<br/>');
+        let wrapContentImproveEl = document.createElement('div');
+        wrapContentImproveEl.className = 'wrap-content wrap-content-improve'
+
+        let titleImprovedEl = document.createElement('div');
+        titleImprovedEl.classList = ['title improved-title'];
+        titleImprovedEl.innerHTML = 'Improved Text:'
+
+        let contentImproveEl = document.createElement('div');
+        contentImproveEl.classList = ['improved-content'];
+        contentImproveEl.innerHTML = item.improved.replaceAll('\n', '<br/>');
+
+        wrapContentImproveEl.append(titleImprovedEl)
+        wrapContentImproveEl.append(contentImproveEl)
+
+        let wrapContentReasonEl = document.createElement('div');
+        wrapContentReasonEl.className = 'wrap-content wrap-content-reason'
+
+        let titleReasonEl = document.createElement('div');
+        titleReasonEl.classList = ['title reason-title'];
+        titleReasonEl.innerHTML = 'Reason for the changes:'
+
+        let contentReasonEl = document.createElement('div');
+        contentReasonEl.classList = ['reason-content'];
+        if (typeof item.reasons == 'string') {
+          contentReasonEl.innerHTML = item.reasons.replaceAll('\n', '<br/>');
+        }
+        else {
+          let listReasonEl = document.createElement('ul');
+          listReasonEl.classList = ['reason-list'];
+          for (let i = 0; i < item.reasons.length; i++) {
+            const reasonItem = item.reasons[i];
+
+            let itemEl = document.createElement('li');
+            itemEl.innerHTML = reasonItem.replaceAll('\n', '<br/>');
+
+            listReasonEl.append(itemEl);
+          }
+          contentReasonEl.append(listReasonEl);
+        }
+
+        wrapContentReasonEl.append(titleReasonEl)
+        wrapContentReasonEl.append(contentReasonEl)
 
         let resultDivEl = document.createElement('div');
         resultDivEl.classList = ['result-item'];
@@ -3593,10 +3651,33 @@
           resultDivEl.classList.add('active');
         }
 
-        resultDivEl.append(textEl);
+        resultDivEl.append(wrapContentImproveEl);
+        resultDivEl.append(wrapContentReasonEl);
 
         $(`#${self.idTab} #check-content-reply-result .result-check-content-reply`).append(resultDivEl);
       }
+
+      // let resultActiveEl = null;
+      // for (let i = 0; i < result.length; i++) {
+      //   const item = result[i];
+      //   let isActive = (i == self.result_active)
+
+      //   let textEl = document.createElement('div');
+      //   textEl.classList = ['wrap-content'];
+      //   textEl.innerHTML = item.check_content_reply_result.replaceAll('\n', '<br/>');
+
+      //   let resultDivEl = document.createElement('div');
+      //   resultDivEl.classList = ['result-item'];
+      //   resultDivEl.setAttribute('data-index', i);
+      //   if (isActive) {
+      //     resultActiveEl = resultDivEl
+      //     resultDivEl.classList.add('active');
+      //   }
+
+      //   resultDivEl.append(textEl);
+
+      //   $(`#${self.idTab} #check-content-reply-result .result-check-content-reply`).append(resultDivEl);
+      // }
 
       self.is_loading = false;
 
@@ -3635,6 +3716,34 @@
      * 
      */
     processAddCheckContentReply: () => {
+      // const self = TabCheckContentReplyManager;
+      // if (self.is_loading) return;
+
+      // self.is_loading = true;
+
+      // let originalTextCheckContentReply = $(`#${self.idTab} textarea.original_text_check_content_reply`).val();
+
+      // let params = self.formData;
+      // params.original_text_check_content_reply = originalTextCheckContentReply;
+      // params.language = UserSetting.language_active;
+
+      // $(`#${self.idTab} #check-content-reply-result .result-footer`).addClass('hidden');
+      // $(`#${self.idTab} #check-content-reply-result .result-title .left .icon`).attr('src', MyUtils.getPropGptByVersion('icon', self.formData.gpt_version));
+      // $(`#${self.idTab} #check-content-reply-result .result-title .left .name-gpt`).text(MyUtils.getPropGptByVersion('name', self.formData.gpt_version));
+
+      // OpenAIManager.checkContentReplyByOriginalText(params,
+      //   (res) => {
+      //     self.generate_result_list.push(res);
+      //     self.handlerShowCheckContentReplyResult();
+
+      //     const containerEl = document.getElementById(WrapperManager.idEl);
+      //     $(containerEl).removeClass('is-loading');
+
+      //     $(`#${self.idTab} #check-content-reply-result .result-footer`).removeClass('hidden');
+      //   }
+      // )
+      //  ===============================================================================================================================================================================================================
+
       const self = TabCheckContentReplyManager;
       if (self.is_loading) return;
 
@@ -3650,11 +3759,76 @@
       $(`#${self.idTab} #check-content-reply-result .result-title .left .icon`).attr('src', MyUtils.getPropGptByVersion('icon', self.formData.gpt_version));
       $(`#${self.idTab} #check-content-reply-result .result-title .left .name-gpt`).text(MyUtils.getPropGptByVersion('name', self.formData.gpt_version));
 
+      const result = self.generate_result_list;
+      let indexActive = (result.length);
+
+      // Setup - Add new item tab for this generate 
+      self.generate_result_list.push({ "improved": '', "reasons": '' });
+      self.handlerShowCheckContentReplyResult();
+
+      let itemActiveEl = null;
+      let keySplit = '{END}', keySplitNow = '';
+      let allText = '', improved = '', reasons = '';
+
       OpenAIManager.checkContentReplyByOriginalText(params,
-        (res) => {
-          console.log(res);
-        }
-      )
+        // Response text function callback
+        (textRes) => {
+          allText += textRes;
+          let textResToCheck = textRes.replace(/\n/g, '');
+
+          if (keySplitNow != keySplit && keySplit.indexOf(textResToCheck) == -1) {
+
+            // For process after
+            improved += textRes;
+
+            // For html
+            let innerHTML = $(itemActiveEl).find('.improved-content').html();
+            innerHTML += textRes.replaceAll('\n', '<br/>');
+            $(itemActiveEl).find('.improved-content').html(innerHTML);
+
+            self.generate_result_list[indexActive]["improved"] = improved;
+          } else {
+            if (keySplitNow == keySplit) {
+              // When improved is Done and this session for reasons
+              $(itemActiveEl).find('.improved-content').removeClass('is-loading');
+
+              // For process after
+              reasons += textRes;
+
+              // For html
+              let innerHTML = $(itemActiveEl).find('.wrap-content-reason .reason-content').html();
+              innerHTML += textRes.replaceAll('\n', '<br/>');
+              $(itemActiveEl).find('.wrap-content-reason .reason-content').html(innerHTML);
+
+              self.generate_result_list[indexActive]["reasons"] = reasons;
+            } else {
+              // This flag for know when session improved end to reasons start
+              keySplitNow += textResToCheck;
+            }
+          }
+
+          $(`#${self.idTab} #check-content-reply-result .result-check-content-reply`).css('height', `${itemActiveEl.offsetHeight}px`)
+        },
+        // On [DONE] function callback
+        (contentRes) => {
+          // self.generate_result_list[indexActive].check_content_reply_result = contentRes;
+
+          $(itemActiveEl).find('.wrap-content-reason .reason-content').removeClass('is-loading');
+          // $(`#${WrapperManager.idEl}`).removeClass('is-loading');
+          $(`#${self.idTab} #check-content-reply-result .result-footer`).removeClass('hidden');
+
+          MyUtils.debugLog("Done!");
+        },
+        // Call request success function callback
+        (success) => {
+          itemActiveEl = document.querySelector(`.result-check-content-reply .result-item[data-index="${indexActive}"]`);
+          $(itemActiveEl).find('.improved-content').addClass('is-loading');
+          $(itemActiveEl).find('.wrap-content-reason .reason-content').addClass('is-loading');
+
+          $(`#${self.idTab} #check-content-reply-result`).removeClass('is-loading');
+
+          MyUtils.debugLog('call request fetch success:' + success);
+        });
     },
 
     /**
@@ -3827,7 +4001,7 @@
 
       // process add generate write
       self.processAddCheckContentReply();
-      self.updateHeightTabContainer();
+      self.updateUIResultPanel();
 
       const containerEl = document.getElementById(WrapperManager.idEl);
       const resultEl = document.body.querySelector(`#${self.idTab} #check-content-reply-result`);
@@ -3837,7 +4011,7 @@
       $(containerEl).animate({
         scrollTop: $(resultEl).offset().top + containerEl.scrollTop
       }, 250, 'swing', () => {
-        $(containerEl).addClass('is-loading');
+        // $(containerEl).addClass('is-loading');
       });
     },
 
@@ -3851,7 +4025,7 @@
       if (self.is_loading) return;
 
       $(event.target).addClass('done');
-      navigator.clipboard.writeText(self.generate_result_list[self.result_active].check_content_reply_result);
+      navigator.clipboard.writeText(self.generate_result_list[self.result_active].improved);
 
       setTimeout(() => {
         $(event.target).removeClass('done');
@@ -3997,15 +4171,21 @@
     },
 
     /**
-     * Fix height for session result
+     * updateUIResultPanel
      * 
      */
-    fixHeightResult: () => {
+    updateUIResultPanel: () => {
       const self = TabSuggestMeetingManager;
 
-      const tabContainerEl = document.getElementById(self.idTab);
-      const resultEl = document.body.querySelector(`#${self.idTab} #suggest-meeting-result`);
-      $(resultEl).css('height', tabContainerEl.offsetHeight + 'px');
+      const containerEl = document.getElementById(WrapperManager.idEl);
+      const formConfigEl = document.body.querySelector(`#${self.idTab} .form-config`);
+
+      $((`#${self.idTab} #suggest-meeting-result`)).css('marginTop', (containerEl.offsetHeight - formConfigEl.offsetHeight) + 'px');
+
+      let itemActiveEl = $(`#${self.idTab} #suggest-meeting-result .result-suggest .result-item.active`);
+      if (itemActiveEl.length > 0) {
+        $(`#${self.idTab} #suggest-meeting-result .result-suggest`).css('height', `${itemActiveEl[0].offsetHeight}px`)
+      }
     },
 
     /**
@@ -4375,7 +4555,7 @@
           self.generate_result_list[indexActive].suggest_meeting_text_result = contentRes;
 
           $(itemActiveEl).removeClass('is-loading');
-          $(`#${WrapperManager.idEl}`).removeClass('is-loading');
+          // $(`#${WrapperManager.idEl}`).removeClass('is-loading');
           $(`#${self.idTab} #suggest-meeting-result .result-footer`).removeClass('hidden');
 
           MyUtils.debugLog("Done!");
@@ -4545,7 +4725,7 @@
       $(containerEl).animate({
         scrollTop: $(resultEl).offset().top + containerEl.scrollTop
       }, 250, 'swing', () => {
-        $(containerEl).addClass('is-loading');
+        // $(containerEl).addClass('is-loading');
       });
     },
 
@@ -4668,7 +4848,7 @@
       const heightTitleMain = document.body.querySelector('.gpt-layout main .title').offsetHeight;
       const heightFooterMain = document.body.querySelector('footer').offsetHeight;
 
-      $('main .wrap-content').css('height', `${heightMain - heightFooterMain}px`);
+      // $('main .wrap-content').css('height', `${heightMain - heightFooterMain}px`);
       $(`#${self.idEl}`).css('height', `${heightMain - (heightFooterMain + heightTitleMain)}px`);
     },
 
@@ -4792,9 +4972,11 @@
 
       // Resize event
       window.addEventListener("resize", (event) => {
-        self.fixHeightContainer();
-
-        // TabWriteManager.fixHeightResult();
+        TabWriteManager.updateUIResultPanel();
+        TabSummaryManager.updateUIResultPanel();
+        TabFindProblemManager.updateUIResultPanel();
+        TabCheckContentReplyManager.updateUIResultPanel();
+        TabSuggestMeetingManager.updateUIResultPanel();
       });
 
       $('.gpt-layout').click(event => {

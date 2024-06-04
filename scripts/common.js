@@ -482,6 +482,10 @@ const MyUtils = {
     return decoded;
   },
 
+  toUpperCaseFirst: (text) => {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  },
+
   /**
    * generateToken
    * 
@@ -1423,16 +1427,16 @@ const OpenAIManager = {
 
         for (const parsedLine of jsonObjects) {
           const { choices, is_stop } = parsedLine;
-          if (!choices) continue;
+          if (!choices || choices.length == 0) continue;
 
-          const { finish_reason } = choices[0];
-
-          if (finish_reason == 'stop' || is_stop) {
+          if (choices[0]['finish_reason'] == 'stop' || is_stop) {
             onDone ? onDone() : '';
             return;
           }
 
+          if (!choices[0].delta) continue;
           const { delta } = choices[0];
+          if (!delta.content) continue;
           const { content } = delta;
           // Update the UI with the new content
           if (content) {
@@ -2003,7 +2007,7 @@ ${general_content_reply}
     prompt += `"""\n`
     prompt += `${original_text_find_problem}\n`
     prompt += `"""\n`
-    prompt += `Find problem with the above content. Is there anything dangerous?\n`
+    prompt += `Find unusual points in the above paragraph.\n`
     prompt += `Output in ${language}.`
     messages.push({ role: 'user', content: prompt })
 
@@ -2204,12 +2208,88 @@ ${general_content_reply}
   },
 
 
-  _checkContentReplyByOriginalTextRequest: async (params, callback, retry) => {
+  // _checkContentReplyByOriginalTextRequest: async (params, callback, retry) => {
+  //   const self = OpenAIManager;
+
+  //   if (typeof retry == 'undefined') retry = 0;
+  //   if (retry > 1) {
+  //     callback({ result: {improved: '', reason: ''} });
+  //     return false;
+  //   }
+
+  //   // callback({ result: {improved: 'Thư viện cũ nằm ở rìa thị trấn, với các kệ sách đầy sách cổ và các quyển tập bụi. Không khí bên trong dày đặc với mùi giấy lão và bìa da cũ. Ánh sáng lọt qua cửa kính nhuộm màu, tạo ra những họa tiết đầy màu sắc trên sàn gỗ. Ở những góc yên tĩnh, sinh viên thì thầm và ghi chú, mê mải trong việc học tập. Tiếng đồng hồ quả lớn kêu bíp là âm thanh duy nhất phá vỡ im lặng. Đó là một nơi kiến thức và bí ẩn, nơi mà mỗi cuốn sách chứa một câu chuyện đang chờ đợi được khám phá.', reason: '1. Sử dụng từ ngữ phong phú hơn\n2. Đồng bộ hóa thời gian và không gian\n3. Sử dụng ngôn ngữ mô tả hấp dẫn hơn'} });
+  //   // return false;
+
+  //   const {
+  //     gpt_ai_key, gpt_version,
+
+  //     original_text_check_content_reply, language
+  //   } = params;
+
+  //   let prompt, prompt_system;
+
+  //   prompt_system = '';
+  //   prompt_system = `You are a helpful assistant designed to output JSON.`;
+  //   // prompt_system = `You are a helpful assistant.`;
+
+  //   const messages = [
+  //     { role: "system", content: prompt_system },
+  //   ];
+
+  //   prompt = ``
+  //   // prompt += `This is a paragraph with spelling and grammar errors in ${language}:\n"""\n${original_text_check_content_reply}\n"""\n\n`
+
+  //   prompt += `Please check the grammar of the following paragraph and provide any corrections needed\n\n${original_text_check_content_reply}\n\nThank you!.\n`
+  //   prompt += `json: {"result": {"improved": <string>, "reason": <array <string> > } }.\n`
+  //   // prompt += ` Improved paragraphs not remove "/\\n.\n`
+  //   // prompt += ` Details the reason for changing the words in the paragraph, output in ${language}.\n`
+
+  //   // prompt += `Output in ${language}.`
+  //   messages.push({ role: 'user', content: prompt })
+
+  //   try {
+
+  //     const response = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, false, null, false, { "type": "json_object" })
+  //     const contentRes = response.choices[0].message.content;
+  //     const dataJson = JSON.parse(contentRes);
+
+  //     //Save log summary chat
+  //     let question = MyUtils.getContentByRoleInMessage('user', messages);
+  //     self.saveLog(question, contentRes, 'email');
+
+  //     if (dataJson.result) {
+  //       callback(dataJson);
+
+  //     } else {
+  //       retry++;
+  //       self._checkContentReplyByOriginalTextRequest(params, callback, retry);
+  //     }
+
+  //   } catch (error) {
+  //     retry++;
+  //     self._checkContentReplyByOriginalTextRequest(params, callback, retry);
+  //   }
+  // },
+
+  // checkContentReplyByOriginalText: function (params, callback, retry) {
+  //   const self = OpenAIManager;
+
+  //   // Get open ai KEY
+  //   self.getOpenAIKey((gptAiKey) => {
+  //     params.gpt_ai_key = gptAiKey;
+
+  //     // Call request get data to show popup in mail
+  //     self._checkContentReplyByOriginalTextRequest(params, callback, retry);
+  //   })
+  // },
+
+
+  _checkContentReplyByOriginalTextRequest: async (params, responseText, onDone, callback, retry) => {
     const self = OpenAIManager;
 
     if (typeof retry == 'undefined') retry = 0;
-    if (retry > 1) {
-      callback({ result: [] });
+    if (retry > 3) {
+      callback(false);
       return false;
     }
 
@@ -2222,50 +2302,80 @@ ${general_content_reply}
     let prompt, prompt_system;
 
     prompt_system = '';
-    prompt_system = `You are a helpful assistant designed to output JSON.`;
-    prompt_system = `You are a helpful assistant.`;
+    prompt_system += `You are a helpful assistant.`;
 
     const messages = [
       { role: "system", content: prompt_system },
     ];
 
-    prompt = ``
-    prompt += `Content:\n"""\n${original_text_check_content_reply}\n"""\n\n`
+    prompt = `Please improve the following paragraph by correcting grammar, punctuation, and style. Important, the improved paragraph has the same language as the original paragraph, a list provide reasons in English for each improvement. Separate the improved paragraph and the reasons using the keyword "{END}":
 
-    prompt += `Please help me check the grammar and improve this content to perfection\n`
-    prompt += `Format json: {"result": {"improved": <string>, "reason": <string>}}.\n`
-    prompt += `Remember for json:\n`
-    prompt += ` Not remove metacharacters and automatic change language content\n`
-    prompt += ` Detail reason for the changes is list and output in ${language}\n`
-    // prompt += `Output in ${language}.`
+Original paragraph:
+The old libary stood at the edge of town, its shelves filled with anceint books and dusty volumes. The air inside was thick with the scent of aging paper and worn leather covers. Light filtered through stained glass windos, casting colorful patterns on the wooden floors. In the quiet corners, students whispered and scribbled notes, lost in their studies. The ticking of a grandfater clock was the only sound that broke the silence. It was a place of knowlege and mystery, where every book held a story waiting to be discoverd.
+
+Thank you!`
+    messages.push({ role: 'user', content: prompt })
+    prompt = `The old library stood at the edge of town, its shelves filled with ancient books and dusty volumes. The air inside was thick with the scent of aging paper and worn leather covers. Light filtered through stained glass windows, casting colorful patterns on the wooden floors. In the quiet corners, students whispered and scribbled notes, lost in their studies. The ticking of a grandfather clock was the only sound that broke the silence. It was a place of knowledge and mystery, where every book held a story waiting to be discovered.\n{END}\n1. Corrected spelling errors (libary -> library, anceint -> ancient, windos -> windows, knowlege -> knowledge, discoverd -> discovered).\n2. Improved consistency in punctuation and capitalization for better readability.`
+    messages.push({ role: 'assistant', content: prompt })
+
+
+    prompt = `Please improve the following paragraph by correcting grammar, punctuation, and style. Important, the improved paragraph has the same language as the original paragraph, a list provide reasons in Vietnamese for each improvement. Separate the improved paragraph and the reasons using the keyword "{END}":
+
+Original paragraph:
+Trong khu rừng nhỏ, ánh sáng mặt trười chiếu qua những tán cây xanh mướt. Tiếng chim hót líu lo và tiếng gió xào xạc tạo nên một bản nhạc tự nhên. Những bông hoa rực rỡ sắc màu nở rộ, thu hút đám bướm bay lượn quanh. Trên con đường mòn, cậu bé đang chơi đùa với chú chó nhỏ của mình. Cậu nhặt những viên đá và ném chúng xuống dòng suối trong veo. Một buổi sáng đẹp trời, mọi thứ đều như đang sống dậy, tràn đầy sự sống và niềm vui.
+
+Thank you!`
+    messages.push({ role: 'user', content: prompt })
+    prompt = `Trên khu rừng nhỏ, ánh sáng mặt trời chiếu qua những tán cây xanh mướt. Tiếng chim hót líu lo và tiếng gió xào xạc tạo nên một bản nhạc tự nhiên. Những bông hoa rực rỡ sắc màu nở rộ, thu hút đám bướm bay lượn quanh. Trên con đường mòn, cậu bé đang chơi đùa với chú chó nhỏ của mình. Cậu nhặt những viên đá và ném chúng xuống dòng suối trong veo. Một buổi sáng đẹp trời, mọi thứ đều như đang sống dậy, tràn đầy sự sống và niềm vui.\n{END}\n1. Sửa chữ "trười" thành "trời" để đúng về mặt chính tả.\n2. Sửa chữ "tự nhên" thành "tự nhiên" để phù hợp với ngữ cảnh.`
+    messages.push({ role: 'assistant', content: prompt })
+
+
+    prompt = `Please improve the following paragraph by correcting grammar, punctuation, and style. Important, the improved paragraph has the same language as the original paragraph, a list provide reasons in Japanese for each improvement. Separate the improved paragraph and the reasons using the keyword "{END}":
+
+Original paragraph:
+あさごはんは一日で一番大切な食事です。朝ご飯をしっかり食べると、午前中の活動に頑張れます。私は朝ご飯が好きです。朝ご飯はパン、卵、牛乳、ヨーグルト、フルーツなどを食べます。私はパンをバターとジャムを付けて食べます。卵は目玉焼き、スクランブルエッグ、ゆで卵などが好きです。牛乳はそのまま飲んだり、シリアルに入れたりします。ヨーグルトはプレーンヨーグルトが好きです。フルーツはバナナ、りんご、オレンジなどが好きです。皆さんも朝ご飯を忘れずに食べてくださいね。
+
+Thank you!`
+    messages.push({ role: 'user', content: prompt })
+    prompt = `あさごはんは一日で一番大切な食事です。朝ご飯をしっかり食べると、午前中の活動に頑張れます。私は朝ごはんが好きです。朝ごはんはパン、卵、牛乳、ヨーグルト、フルーツなどを食べます。私はパンをバターとジャムを付けて食べます。卵は目玉焼き、スクランブルエッグ、ゆで卵などが好きです。牛乳はそのまま飲んだり、シリアルに入れたりします。ヨーグルトはプレーンヨーグルトが好きです。フルーツはバナナ、りんご、オレンジなどが好きです。皆さんも朝ご飯を忘れずに食べてくださいね。\n{END}\n1. 段落全体で「朝ご飯」を「朝ごはん」に一貫して置き換えました。.\n2. 一貫した綴りのために「朝ご飯」を「朝ごはん」に置き換えました。\n3. 朝食アイテムのリストのスタイルを統一して、読みやすさを向上させました。`
+    messages.push({ role: 'assistant', content: prompt })
+
+
+    prompt = `Similar, please improve the following paragraph by correcting grammar, punctuation, and style. Important, the improved paragraph has the same language as the original paragraph, a list provide reasons in ${MyUtils.toUpperCaseFirst(language)} for each improvement. Separate the improved paragraph and the reasons using the keyword "{END}":
+
+Original paragraph:
+${original_text_check_content_reply}
+
+Thank you!
+`
     messages.push({ role: 'user', content: prompt })
 
     try {
+      const myFetch = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, true, true);
 
-      const response = await self.callGPTRequest(gpt_ai_key, messages, gpt_version, false, null, false, { "type": "json_object" })
-      const contentRes = response.choices[0].message.content;
-      const dataJson = JSON.parse(contentRes);
-      console.log(dataJson);
+      let answerStr = '';
+      self.processReadBodyStream(myFetch,
+        (charactersStr) => {
+          answerStr += charactersStr;
+          responseText(charactersStr);
+        },
+        () => {
+          //Save log summary chat
+          let question = MyUtils.getContentByRoleInMessage(false, messages);
+          self.saveLog(question, answerStr, 'email');
 
-      //Save log summary chat
-      let question = MyUtils.getContentByRoleInMessage('user', messages);
-      self.saveLog(question, contentRes, 'email');
+          onDone(answerStr);
+        })
 
-      if (dataJson) {
-        callback(dataJson);
-
-      } else {
-        retry++;
-        self._checkContentReplyByOriginalTextRequest(params, callback, retry);
-      }
+      callback(true);
 
     } catch (error) {
       retry++;
-      self._checkContentReplyByOriginalTextRequest(params, callback, retry);
+      self._checkContentReplyByOriginalTextRequest(params, responseText, onDone, callback, retry);
     }
   },
 
-  checkContentReplyByOriginalText: function (params, callback, retry) {
+  checkContentReplyByOriginalText: function (params, responseText, onDone, callback) {
     const self = OpenAIManager;
 
     // Get open ai KEY
@@ -2273,7 +2383,7 @@ ${general_content_reply}
       params.gpt_ai_key = gptAiKey;
 
       // Call request get data to show popup in mail
-      self._checkContentReplyByOriginalTextRequest(params, callback, retry);
+      self._checkContentReplyByOriginalTextRequest(params, responseText, onDone, callback);
     })
   },
 };
