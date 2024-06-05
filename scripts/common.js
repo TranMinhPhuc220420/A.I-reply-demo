@@ -113,6 +113,209 @@ const SET_TEXT_ORIGINAL_THREAD_TO_FIND_PROBLEM = 'SET_TEXT_ORIGINAL_THREAD_TO_FI
 const SET_TEXT_ORIGINAL_ALL_THREAD_TO_FIND_PROBLEM = 'SET_TEXT_ORIGINAL_ALL_THREAD_TO_FIND_PROBLEM';
 const SET_TEXT_ORIGINAL_TO_SUGGEST_MEETING = 'SET_TEXT_ORIGINAL_TO_SUGGEST_MEETING';
 
+const MESSAGE_TEMP_SUGGEST_MEETINGS = [
+  { role: "system", content: `You are a helpful assistant.` },
+  {
+    role: "user",
+    content: `Now is Wed Jun 05 2024 13:44:52 GMT+0700 (Indochina Time), please review the following text and find all suitable times for holding meetings during the today or week:
+"""
+Hello,
+
+I am writing to report on the possible meeting times we can arrange. Below are some options, please choose the most convenient time for you:
+
+1. Tuesday, June 10th, at 10:00 AM.
+2. Wednesday, June 18th, at 2:00 PM.
+3. Thursday, June 26th, at 9:00 AM.
+
+If there are any other times you'd like to propose, please let me know. We can discuss and adjust the schedule to accommodate both of our calendars.
+
+Looking forward to hearing from you soon.
+
+Best regards,
+[Your Name]
+"""
+
+Find all suitable times for holding meetings during the today or week. Ensure that there are at least three suitable times and the most suitable time.
+Output in english.`
+  },
+  {
+    role: "assistant", content: `Based on the current date and time you provided, here are some suitable meeting times for today and the upcoming week:
+
+**Today:**
+
+1. Wednesday, June 5th
+  - 3:30 PM to 4:30 PM
+  - 4:45 PM to 5:30 PM
+
+**Later this week:**
+
+1. Thursday, June 6th
+  - 10:00 AM to 11:00 AM
+  - 2:00 PM to 3:00 PM
+
+2. Friday, June 7th
+  - 9:00 AM to 10:00 AM
+  - 4:00 PM to 5:00 PM
+
+3. Saturday, June 8th
+  - 1:00 PM to 2:00 PM
+
+**Most suitable time for today:**
+  **Wednesday, June 5th - 3:30 PM to 4:30 PM**
+  This time slot allows for a timely discussion and does not conflict with any other scheduled meetings or appointments.
+
+These are some available time slots for holding a meeting. Feel free to choose a time that works best for you. Looking forward to your confirmation. Thank you.`
+  },
+//   {
+//     role: "user", content: `Now is Wed Jun 05 2024 13:48:36 GMT+0700 (Indochina Time), please review the following text and find all suitable times for holding meetings during the today or week:
+// """
+// Kính gửi Tổng giám đốc Nguyễn Văn A,
+
+// Chúng tôi xin gửi lời cảm ơn sâu sắc về việc đã thông báo vấn đề kỹ thuật đang gặp phải trong hệ thống của chúng tôi. Chúng tôi rất tiếc về sự bất tiện mà sự cố này đã gây ra và cam kết sẽ giải quyết nhanh chóng để mọi người có thể tiếp tục công việc một cách bình thường.
+
+// Về sự cố đã xảy ra:
+
+// - **Sự cố:** Chúng tôi đã xác định rằng máy chủ của chúng tôi gặp sự cố kỹ thuật, dự kiến sẽ được khắc phục trước 3 giờ chiều hôm nay.
+// - **Tác động:** Chúng tôi nhận thức rõ ràng sự cố này đã ảnh hưởng đến công việc hàng ngày của quý vị, và chúng tôi rất xin lỗi về điều này.
+// - **Tác vụ và biện pháp:** Đội ngũ kỹ thuật của chúng tôi đang tập trung vào việc ổn định hệ thống và khắc phục sự cố một cách nhanh chóng và chính xác. Chúng tôi đánh giá cao sự kiên nhẫn và sự đồng lòng từ phía quý vị trong thời gian này.
+
+// Chúng tôi rất hy vọng rằng sau khi sự cố được giải quyết, mọi người sẽ có thể tiếp tục công việc một cách bình thường và không bị gián đoạn nữa.
+
+// Trân trọng,
+
+// [Your Name]
+// Trưởng nhóm dự án
+// Công ty XYZ
+// """
+
+// Find all suitable times for holding meetings during the today or week. Ensure that there are at least three suitable times and the most suitable time.
+// Output in vietnamese.`
+//   },
+//   {
+//     role: "assistant", content: `Dựa trên thời gian hiện tại mà bạn cung cấp, dưới đây là các thời điểm phù hợp để tổ chức cuộc họp trong ngày hôm nay và tuần này:
+
+// **Trong ngày hôm nay**
+
+// 1. **Thứ Tư, ngày 5 tháng 6**
+//   - Từ 3:30 PM đến 4:30 PM
+//   - Từ 4:45 PM đến 5:30 PM
+//   - Từ 5:45 PM đến 6:30 PM
+
+// **Trong tuần này**
+
+// 1. **Thứ Năm, ngày 6 tháng 6**
+//   - Từ 10:00 AM đến 11:00 AM
+//   - Từ 2:00 PM đến 3:00 PM
+
+// 2. **Thứ Sáu, ngày 7 tháng 6**
+//   - Từ 9:00 AM đến 10:00 AM
+//   - Từ 4:00 PM đến 5:00 PM
+
+// 3. **Thứ Bảy, ngày 8 tháng 6**
+//   - Từ 1:00 PM đến 2:00 PM
+
+// **Thời gian phù hợp nhất:**
+//   ** 1. Thứ Tư (05-06-2024) - 3:30 PM đến 4:30 PM
+//   Vì đây là thời gian mà sự cố máy chủ dự kiến sẽ được khắc phục trước 3 giờ chiều.
+
+// Các thời điểm trên đều phù hợp để tổ chức cuộc họp. Rất mong nhận được hồi âm từ phía bạn. Xin cảm ơn.`
+//   },
+  {
+    role: "user", content: `Now is Wed Jun 05 2024 13:48:36 GMT+0700 (Indochina Time), please review the following text and find all suitable times for holding meetings during the today or week:
+"""
+こんにちは、
+
+お知らせいたしますが、当社が提案する会議の可能な開催日時を報告いたします。以下はいくつかの選択肢ですので、あなたにとって最も便利な時間を選んでください：
+
+1. 6月10日（火曜日）午前10時。
+2. 6月18日（水曜日）午後2時。
+3. 6月26日（木曜日）午前9時。
+
+他にご提案いただきたい時間がございましたら、お知らせください。お互いのスケジュールに合わせてスケジュールを調整いたします。
+
+早急にご連絡いただけることを楽しみにしております。
+
+よろしくお願いいたします。
+
+[あなたの名前]
+"""
+
+Find all suitable times for holding meetings during the today or week. Ensure that there are at least three suitable times and the most suitable time.
+Output in Japanese.`
+  },
+  {
+    role: "assistant", content: `提供いただいたテキストをもとに、本日または今後の1週間で会議を開催するための適切な時間を探しました。
+
+**本日中に開催可能な時間：**
+
+1. **水曜日、6月5日**
+  - 3:30 PM から 4:30 PM
+  - 4:45 PM から 5:30 PM
+
+**今週中に開催可能な時間：**
+
+1. **木曜日、6月6日**
+  - 10:00 AM から 11:00 AM
+  - 2:00 PM から 3:00 PM
+
+2. **金曜日、6月7日**
+  - 9:00 AM から 10:00 AM
+  - 4:00 PM から 5:00 PM
+
+3. **土曜日、6月8日**
+  - 1:00 PM から 2:00 PM
+
+**本日の中で最も適した時間：**
+  **水曜日、6月5日 - 3:30 PM から 4:30 PM**
+  この時間帯では議題について適切に話し合え、既定の予定または他の会議と重なることがありません。
+
+以上が、本日および今後の1週間で開催可能な会議の適切な時間帯です。お好みの時間をお選びいただくか、提案があれば適用します。ご確認をお待ちしております。ありがとうございます。`
+  },
+];
+
+const MESSAGE_TEMP_CHECK_CONTENT_REPLY = [
+  { role: "system", content: `You are a helpful assistant.` },
+  {
+    role: "user",
+    content: `Please improve the following paragraph by correcting grammar, punctuation, and style. Important, the improved paragraph has the same language as the original paragraph, a list provide reasons in English for each improvement. Separate the improved paragraph and the reasons using the keyword "{END}":
+
+Original paragraph:
+The old library stood at the edge of town, its shelves filled with ancient books and dusty volumes. The air inside was thick with the scent of aging paper and worn leather covers. Light filtered through stained glass windows, casting colorful patterns on the wooden floors. In the quiet corners, students whispered and scribbled notes, lost in their studies. The ticking of a grandfather clock was the only sound that broke the silence. It was a place of knowledge and mystery, where every book held a story waiting to be discovered.
+
+Thank you!`
+  },
+  {
+    role: "assistant",
+    content: `The old library stood at the edge of town, its shelves filled with ancient books and dusty volumes. The air inside was thick with the scent of aging paper and worn leather covers. Light filtered through stained glass windows, casting colorful patterns on the wooden floors. In the quiet corners, students whispered and scribbled notes, lost in their studies. The ticking of a grandfather clock was the only sound that broke the silence. It was a place of knowledge and mystery, where every book held a story waiting to be discovered.\n{END}\nNo more editing needed.`
+  },
+  {
+    role: "user",
+    content: `Please improve the following paragraph by correcting grammar, punctuation, and style. Important, the improved paragraph has the same language as the original paragraph, a list provide reasons in English for each improvement. Separate the improved paragraph and the reasons using the keyword "{END}":
+
+Original paragraph:
+あさごはんは一日で一番大切な食事です。朝ご飯をしっかり食べると、午前中の活動に頑張れます。私は朝ご飯が好きです。朝ご飯はパン、卵、牛乳、ヨーグルト、フルーツなどを食べます。私はパンをバターとジャムを付けて食べます。卵は目玉焼き、スクランブルエッグ、ゆで卵などが好きです。牛乳はそのまま飲んだり、シリアルに入れたりします。ヨーグルトはプレーンヨーグルトが好きです。フルーツはバナナ、りんご、オレンジなどが好きです。皆さんも朝ご飯を忘れずに食べてくださいね。
+
+Thank you!`
+  },
+  {
+    role: "assistant",
+    content: `あさごはんは一日で一番大切な食事です。朝ご飯をしっかり食べると、午前中の活動に頑張れます。私は朝ごはんが好きです。朝ごはんはパン、卵、牛乳、ヨーグルト、フルーツなどを食べます。私はパンをバターとジャムを付けて食べます。卵は目玉焼き、スクランブルエッグ、ゆで卵などが好きです。牛乳はそのまま飲んだり、シリアルに入れたりします。ヨーグルトはプレーンヨーグルトが好きです。フルーツはバナナ、りんご、オレンジなどが好きです。皆さんも朝ご飯を忘れずに食べてくださいね。\n{END}\n1. 段落全体で「朝ご飯」を「朝ごはん」に一貫して置き換えました。.\n2. 一貫した綴りのために「朝ご飯」を「朝ごはん」に置き換えました。\n3. 朝食アイテムのリストのスタイルを統一して、読みやすさを向上させました。`
+  },
+  {
+    role: "user",
+    content: `Please improve the following paragraph by correcting grammar, punctuation, and style. Important, the improved paragraph has the same language as the original paragraph, a list provide reasons in English for each improvement. Separate the improved paragraph and the reasons using the keyword "{END}":
+
+Original paragraph:
+むかしむかし、小さなむらにリサという女の子がいました。リサは本を読むことが大好きで、よく図書館で長い時間を過ごしました。ある日、他の本と違う、古くてほこりっぽい本を見つけました。それを開くと、リサはそれが彼女の夢を叶える魔法の本だと気づきました。わくわくしながら、リサは毎日その本を読んで、すぐに周りで変な現象が起こりはじめました。花が彼女の歩いたところに咲き、動物たちが彼女の言葉を理解しているようでした。これはリサにとって素晴らしい冒険の始まりでした。
+
+Thank you!`
+  },
+  {
+    role: "assistant",
+    content: `むかしむかし、小さなむらにリサという女の子がいました。リサは本を読むことが大好きで、よく図書館で長い時間を過ごしました。ある日、他の本と違う、古くてほこりっぽい本を見つけました。それを開くと、リサはそれが彼女の夢を叶える魔法の本だと気づきました。わくわくしながら、リサは毎日その本を読んで、すぐに周りで変な現象が起こりはじめました。花が彼女の歩いたところに咲き、動物たちが彼女の言葉を理解しているようでした。これはリサにとって素晴らしい冒険の始まりでした。\n{END}\n編集なし`
+  },
+];
+
 const UserSetting = {
   language_active: 'japanese'
 };
@@ -873,6 +1076,15 @@ const MyUtils = {
     }
 
     return indices;
+  },
+
+  replaceAsterisksWithDivs: (input) => {
+    return input
+      // Replace double asterisks with <div class="text-bold-2"> and </div>
+      .replace(/\*\*(.*?)\*\*/g, '<span class="text-bold-2">$1</span>')
+      // Replace single asterisks with <div class="text-bold"> and </div>
+      .replace(/\*(.*?)\*/g, '<span class="text-bold">$1</span>')
+      .replaceAll('\n', '<br/>');
   }
 };
 
@@ -1167,7 +1379,7 @@ const SateraitoRequest = {
         }
       }).catch(function (error) {
         // There was an error
-        console.error(error);
+        MyUtils.debugLog(error);
         callback({ code: 500, msg: error.message, data: {} })
       });
     } catch (err) {
@@ -1409,7 +1621,7 @@ const OpenAIManager = {
           let cleanedDataString = item.replace('data: ', '');
 
           if (cleanedDataString.toLowerCase().indexOf("[done]") >= 0) {
-            jsonObjects.push({ is_stop: true, choices: {} });
+            jsonObjects.push({ is_stop: true, choices: [] });
           }
           else if (cleanedDataString.trim() != "") {
             try {
@@ -1426,6 +1638,12 @@ const OpenAIManager = {
         }
 
         for (const parsedLine of jsonObjects) {
+          if (parsedLine.error) {
+            responseText(` ${parsedLine.error.type}`);
+            onDone ? onDone() : '';
+            return;
+          }
+
           const { choices, is_stop } = parsedLine;
           if (!choices || choices.length == 0) continue;
 
@@ -2003,12 +2221,10 @@ ${general_content_reply}
     ];
 
     prompt = ``
-    prompt += `Content:\n`
-    prompt += `"""\n`
-    prompt += `${original_text_find_problem}\n`
-    prompt += `"""\n`
-    prompt += `Find unusual points in the above paragraph.\n`
-    prompt += `Output in ${language}.`
+    prompt += `Please review the following text and identify if there are any issues, dangers, or problems:\n\n`
+    prompt += `${original_text_find_problem}\n\n`
+    prompt += `List and briefly explain in detail any issues, dangers, or problems you find. Do not suggest improvements or corrections, just identify the issues.\n`
+    prompt += `Output in ${MyUtils.toUpperCaseFirst(language)}.`
     messages.push({ role: 'user', content: prompt })
 
     try {
@@ -2064,39 +2280,13 @@ ${general_content_reply}
       original_text_suggest_meeting, suggest_in, my_busy, language
     } = params;
 
-    let prompt, prompt_system;
+    const messages = [...MESSAGE_TEMP_SUGGEST_MEETINGS];
 
-    prompt_system = '';
-    prompt_system += `You are a helpful assistant.`;
-    // prompt_system = `You are a helpful assistant designed to output JSON.`;
+    let prompt = ``
+    prompt += `Now is ${Date()}, please review the following text and find all suitable times for holding meetings during the today or week:\n`
+    prompt += `"""\n${original_text_suggest_meeting}\n"""\n\n`
 
-    const messages = [
-      { role: "system", content: prompt_system },
-    ];
-
-    prompt = ``
-    prompt += `Content:\n`
-    prompt += `"""\n`
-    prompt += `${original_text_suggest_meeting}\n`
-    prompt += `"""\n`
-
-    prompt += `Now is ${Date()}\n`
-    prompt += `\nTemplate answer:\n`
-    prompt += `
-  1.<Name of day of the week> (MM-dd-YYYY)
-  - Morning start - end or start - end
-  - Afternoon start - end or start - end
-  ...
-
-  The most:
-    1.<Name of day of the week> (MM-dd-YYYY)
-    - start - end
-    Because
-    ...
-\n`
-
-
-    prompt += `Based on the above content, find every suitable time to hold a meeting.\n`
+    prompt += `Find all suitable times for holding meetings during the today or week. Ensure that there are at least three suitable times and the most suitable time.\n`
     prompt += `Output in ${language}.`
     messages.push({ role: 'user', content: prompt })
 
@@ -2111,8 +2301,8 @@ ${general_content_reply}
         },
         () => {
           //Save log summary chat
-          let question = MyUtils.getContentByRoleInMessage(false, messages);
-          self.saveLog(question, answerStr, 'email');
+          // let question = MyUtils.getContentByRoleInMessage(false, messages);
+          self.saveLog(prompt, answerStr, 'email');
 
           onDone(answerStr);
         })
@@ -2299,49 +2489,9 @@ ${general_content_reply}
       original_text_check_content_reply, language
     } = params;
 
-    let prompt, prompt_system;
+    const messages = [...MESSAGE_TEMP_CHECK_CONTENT_REPLY];
 
-    prompt_system = '';
-    prompt_system += `You are a helpful assistant.`;
-
-    const messages = [
-      { role: "system", content: prompt_system },
-    ];
-
-    prompt = `Please improve the following paragraph by correcting grammar, punctuation, and style. Important, the improved paragraph has the same language as the original paragraph, a list provide reasons in English for each improvement. Separate the improved paragraph and the reasons using the keyword "{END}":
-
-Original paragraph:
-The old libary stood at the edge of town, its shelves filled with anceint books and dusty volumes. The air inside was thick with the scent of aging paper and worn leather covers. Light filtered through stained glass windos, casting colorful patterns on the wooden floors. In the quiet corners, students whispered and scribbled notes, lost in their studies. The ticking of a grandfater clock was the only sound that broke the silence. It was a place of knowlege and mystery, where every book held a story waiting to be discoverd.
-
-Thank you!`
-    messages.push({ role: 'user', content: prompt })
-    prompt = `The old library stood at the edge of town, its shelves filled with ancient books and dusty volumes. The air inside was thick with the scent of aging paper and worn leather covers. Light filtered through stained glass windows, casting colorful patterns on the wooden floors. In the quiet corners, students whispered and scribbled notes, lost in their studies. The ticking of a grandfather clock was the only sound that broke the silence. It was a place of knowledge and mystery, where every book held a story waiting to be discovered.\n{END}\n1. Corrected spelling errors (libary -> library, anceint -> ancient, windos -> windows, knowlege -> knowledge, discoverd -> discovered).\n2. Improved consistency in punctuation and capitalization for better readability.`
-    messages.push({ role: 'assistant', content: prompt })
-
-
-    prompt = `Please improve the following paragraph by correcting grammar, punctuation, and style. Important, the improved paragraph has the same language as the original paragraph, a list provide reasons in Vietnamese for each improvement. Separate the improved paragraph and the reasons using the keyword "{END}":
-
-Original paragraph:
-Trong khu rừng nhỏ, ánh sáng mặt trười chiếu qua những tán cây xanh mướt. Tiếng chim hót líu lo và tiếng gió xào xạc tạo nên một bản nhạc tự nhên. Những bông hoa rực rỡ sắc màu nở rộ, thu hút đám bướm bay lượn quanh. Trên con đường mòn, cậu bé đang chơi đùa với chú chó nhỏ của mình. Cậu nhặt những viên đá và ném chúng xuống dòng suối trong veo. Một buổi sáng đẹp trời, mọi thứ đều như đang sống dậy, tràn đầy sự sống và niềm vui.
-
-Thank you!`
-    messages.push({ role: 'user', content: prompt })
-    prompt = `Trên khu rừng nhỏ, ánh sáng mặt trời chiếu qua những tán cây xanh mướt. Tiếng chim hót líu lo và tiếng gió xào xạc tạo nên một bản nhạc tự nhiên. Những bông hoa rực rỡ sắc màu nở rộ, thu hút đám bướm bay lượn quanh. Trên con đường mòn, cậu bé đang chơi đùa với chú chó nhỏ của mình. Cậu nhặt những viên đá và ném chúng xuống dòng suối trong veo. Một buổi sáng đẹp trời, mọi thứ đều như đang sống dậy, tràn đầy sự sống và niềm vui.\n{END}\n1. Sửa chữ "trười" thành "trời" để đúng về mặt chính tả.\n2. Sửa chữ "tự nhên" thành "tự nhiên" để phù hợp với ngữ cảnh.`
-    messages.push({ role: 'assistant', content: prompt })
-
-
-    prompt = `Please improve the following paragraph by correcting grammar, punctuation, and style. Important, the improved paragraph has the same language as the original paragraph, a list provide reasons in Japanese for each improvement. Separate the improved paragraph and the reasons using the keyword "{END}":
-
-Original paragraph:
-あさごはんは一日で一番大切な食事です。朝ご飯をしっかり食べると、午前中の活動に頑張れます。私は朝ご飯が好きです。朝ご飯はパン、卵、牛乳、ヨーグルト、フルーツなどを食べます。私はパンをバターとジャムを付けて食べます。卵は目玉焼き、スクランブルエッグ、ゆで卵などが好きです。牛乳はそのまま飲んだり、シリアルに入れたりします。ヨーグルトはプレーンヨーグルトが好きです。フルーツはバナナ、りんご、オレンジなどが好きです。皆さんも朝ご飯を忘れずに食べてくださいね。
-
-Thank you!`
-    messages.push({ role: 'user', content: prompt })
-    prompt = `あさごはんは一日で一番大切な食事です。朝ご飯をしっかり食べると、午前中の活動に頑張れます。私は朝ごはんが好きです。朝ごはんはパン、卵、牛乳、ヨーグルト、フルーツなどを食べます。私はパンをバターとジャムを付けて食べます。卵は目玉焼き、スクランブルエッグ、ゆで卵などが好きです。牛乳はそのまま飲んだり、シリアルに入れたりします。ヨーグルトはプレーンヨーグルトが好きです。フルーツはバナナ、りんご、オレンジなどが好きです。皆さんも朝ご飯を忘れずに食べてくださいね。\n{END}\n1. 段落全体で「朝ご飯」を「朝ごはん」に一貫して置き換えました。.\n2. 一貫した綴りのために「朝ご飯」を「朝ごはん」に置き換えました。\n3. 朝食アイテムのリストのスタイルを統一して、読みやすさを向上させました。`
-    messages.push({ role: 'assistant', content: prompt })
-
-
-    prompt = `Similar, please improve the following paragraph by correcting grammar, punctuation, and style. Important, the improved paragraph has the same language as the original paragraph, a list provide reasons in ${MyUtils.toUpperCaseFirst(language)} for each improvement. Separate the improved paragraph and the reasons using the keyword "{END}":
+    let prompt = `Please improve the following paragraph by correcting grammar, punctuation, and style. Important, the improved paragraph has the same language as the original paragraph, a list provide reasons in ${MyUtils.toUpperCaseFirst(language)} for each improvement. Separate the improved paragraph and the reasons using the keyword "{END}":
 
 Original paragraph:
 ${original_text_check_content_reply}
@@ -2361,8 +2511,8 @@ Thank you!
         },
         () => {
           //Save log summary chat
-          let question = MyUtils.getContentByRoleInMessage(false, messages);
-          self.saveLog(question, answerStr, 'email');
+          // let question = MyUtils.getContentByRoleInMessage(false, messages);
+          self.saveLog(prompt, answerStr, 'email');
 
           onDone(answerStr);
         })

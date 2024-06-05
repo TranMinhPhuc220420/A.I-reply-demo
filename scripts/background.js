@@ -88,6 +88,33 @@ let DEBUG_MODE = true;
     updateSecondEmail();
   })
 
+  // chrome.runtime.onInstalled.addListener(async () => {
+  //   chrome.contextMenus.create({
+  //     id: 'test_1',
+  //     title: chrome.i18n.getMessage('txt_summary'),
+  //     type: 'normal',
+  //     contexts: ['selection']
+  //   });
+  //   chrome.contextMenus.create({
+  //     id: 'test_2',
+  //     title: chrome.i18n.getMessage('txt_find_the_problem'),
+  //     type: 'normal',
+  //     contexts: ['selection']
+  //   });
+  //   chrome.contextMenus.create({
+  //     id: 'test_3',
+  //     title: chrome.i18n.getMessage('txt_check_content_reply'),
+  //     type: 'normal',
+  //     contexts: ['selection']
+  //   });
+  //   chrome.contextMenus.create({
+  //     id: 'test_4',
+  //     title: chrome.i18n.getMessage('txt_suggest_meeting'),
+  //     type: 'normal',
+  //     contexts: ['selection']
+  //   });
+  // });
+
   chrome.runtime.onMessage.addListener(onRequest);
   chrome.runtime.onInstalled.addListener(initializeApp)
   chrome.storage.onChanged.addListener(storageOnChanged);

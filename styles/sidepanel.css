@@ -259,6 +259,12 @@ body ul li {
   height: 18px;
   transition: 0.25s all;
 }
+.gpt-layout .text-bold {
+  font-weight: 600;
+}
+.gpt-layout .text-bold-2 {
+  font-weight: 600;
+}
 .gpt-layout .popover-cbx {
   position: absolute;
   display: none;
@@ -1780,8 +1786,6 @@ body ul li {
   font-style: normal;
   font-weight: 400;
   white-space: pre-wrap;
-  position: relative;
-  z-index: 10;
 }
 .gpt-layout #check_content_reply_tab .form-config .wrap-original-text-check-content-reply .wrap-error-panel {
   position: absolute;

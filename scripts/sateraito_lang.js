@@ -4,6 +4,8 @@ const MyLang = {
     "TXT_EXTENSION_DESCRIPTION": chrome.i18n.getMessage('extension_description'),
 
     "TXT_AI_REPLY": chrome.i18n.getMessage('txt_ai_reply'),
+    "TXT_IMPROVED": chrome.i18n.getMessage('txt_improved'),
+    "TXT_REASON_FOR_THE_CHANGES": chrome.i18n.getMessage('txt_reason_for_the_changes'),
     "TXT_RESULT": chrome.i18n.getMessage('txt_result'),
     "TXT_AUTO": chrome.i18n.getMessage('txt_auto'),
     "TXT_INSERT": chrome.i18n.getMessage('txt_insert'),
@@ -104,13 +106,26 @@ const MyLang = {
     "DES_ERROR_GENERAL_CONTENT_REPLY_MAX_LENGTH_TOKEN": chrome.i18n.getMessage('des_error_empty_general_content_reply_max_length_token'),
     "DES_ERROR_ORIGINAL_TEXT_SUMMARY": chrome.i18n.getMessage('des_error_empty_original_text_summary'),
     "DES_ERROR_ORIGINAL_TEXT_SUMMARY_MAX_LENGTH_TOKEN": chrome.i18n.getMessage('des_error_original_text_summary_max_length_token'),
+    "DES_ERROR_ORIGINAL_TEXT_CHECK_PROBLEM": chrome.i18n.getMessage('des_error_empty_original_text_find_problem'),
+    "DES_ERROR_ORIGINAL_TEXT_CHECK_PROBLEM_MAX_LENGTH_TOKEN": chrome.i18n.getMessage('des_error_original_text_find_problem_max_length_token'),
+    "DES_ERROR_ORIGINAL_TEXT_TO_CHECK_CONTENT_REPLY": chrome.i18n.getMessage('des_error_empty_original_text_check_content_reply'),
+    "DES_ERROR_ORIGINAL_TEXT_CHECK_CONTENT_REPLY_MAX_LENGTH_TOKEN": chrome.i18n.getMessage('des_error_original_text_check_content_reply_max_length_token'),
+    "DES_ERROR_ORIGINAL_TEXT_TO_SUGGEST_MEETING": chrome.i18n.getMessage('des_error_empty_original_text_get_suggest_meeting'),
+    "DES_ERROR_ORIGINAL_TEXT_SUGGEST_MEETING_MAX_LENGTH_TOKEN": chrome.i18n.getMessage('des_error_original_text_get_suggest_meeting_max_length_token'),
     "DES_ERROR_GEMINI_NOT_RELEASED": chrome.i18n.getMessage('des_error_gemini_not_released'),
     "DES_ERROR_GPT4_NOT_RELEASED": chrome.i18n.getMessage('des_error_gpt4_not_released'),
+
+    "TXT_SUMMARY_THREAD_MAIL": chrome.i18n.getMessage('txt_summary_thread_mail'),
+    "TXT_SUMMARY_ALL_THREAD_MAIL": chrome.i18n.getMessage('txt_summary_all_thread_mail'),
+    "TXT_FIND_PROBLEM_THREAD_MAIL": chrome.i18n.getMessage('txt_find_problem_thread_mail'),
+    "TXT_FIND_PROBLEM_ALL_THREAD_MAIL": chrome.i18n.getMessage('txt_find_problem_all_thread_mail'),
+    "TXT_SUGGEST_MEETING_BY_THREAD_MAIL": chrome.i18n.getMessage('txt_suggest_meeting_by_thread_mail'),
 
     // 
     "TXT_SUMMARY_ONE_THREAD": chrome.i18n.getMessage('txt_summary_one_thread'),
     "TXT_SUMMARY_ALL_THREAD": chrome.i18n.getMessage('txt_summary_all_thread'),
     "TXT_LENGTH_SUMMARY_SETTING": chrome.i18n.getMessage('txt_length_summary_setting'),
+    
   },
 
   /**

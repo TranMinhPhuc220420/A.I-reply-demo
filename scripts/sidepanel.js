@@ -998,6 +998,8 @@
           TabWriteManager.setActiveTab('reply_tab');
         }
       }
+
+      $(`#${WrapperManager.idEl}`).scrollTop(0);
     },
 
     /**
@@ -1127,6 +1129,11 @@
       self.setActiveTab(self.getIdTabActive());
 
       self.resetEvent();
+
+      WrapperManager.fixHeightContainer();
+      $(`#tab_container`).scrollTop(0);
+
+      MyUtils.debugLog(`Active: ${self.idTab}`);      
     },
 
     /**
@@ -1744,6 +1751,8 @@
           }
         }
       }
+
+      $(`#${WrapperManager.idEl}`).scrollTop(0);
     },
 
     /**
@@ -2163,6 +2172,9 @@
 
       self.resetEvent();
       self.setFocusOriginalText();
+
+      WrapperManager.fixHeightContainer();
+      $(`#tab_container`).scrollTop(0);
 
       MyUtils.debugLog(`Active: ${self.idTab}`);
     },
@@ -2642,6 +2654,8 @@
           }
         }
       }
+
+      $(`#${WrapperManager.idEl}`).scrollTop(0);
     },
 
     /**
@@ -2952,12 +2966,13 @@
       self.handlerShowFindProblemResult();
 
       let itemActiveEl = null;
+      let allTextRes = '';
       OpenAIManager.findProblemOriginalText(params,
         // Response text function callback
         (textRes) => {
-          let innerHTML = itemActiveEl.innerHTML;
-          innerHTML += textRes.replaceAll('\n', '<br/>');
-          $(itemActiveEl).html(innerHTML);
+          allTextRes += textRes;
+          
+          $(itemActiveEl).html(MyUtils.replaceAsterisksWithDivs(allTextRes));
 
           $(`#${self.idTab} #find-problem-result .result-find-problem`).css('height', `${itemActiveEl.offsetHeight}px`)
         },
@@ -3041,6 +3056,9 @@
 
       self.resetEvent();
       self.setFocusOriginalText();
+
+      WrapperManager.fixHeightContainer();
+      $(`#tab_container`).scrollTop(0);
 
       MyUtils.debugLog(`Active: ${self.idTab}`);
     },
@@ -3235,6 +3253,12 @@
 
               <div class="wrap-original-text-check-content-reply">
                 <textarea class="original_text_check_content_reply" maxlength="${MAX_LENGTH_ORIGINAL_TEXT_CHECK_CONTENT_REPLY}" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_CHECK_CONTENT_REPLY')}"></textarea>
+
+                <div class="paste-selection">
+                  ${content_paste_icon}
+                  ${MyLang.getMsg('TXT_PASTE_SELECTION')}
+                </div>
+
                 <!-- <div class="original_text_check_content_reply input-div" placeholder="${MyLang.getMsg('TXT_PLACEHOLDER_ORIGINAL_TEXT_CHECK_CONTENT_REPLY')}" contenteditable="plaintext-only" spellcheck="false" dir="ltr"></div> -->
               </div>
 
@@ -3369,7 +3393,7 @@
       if (self.is_loading) return;
 
       let originalTextReplyEl = document.body.querySelector(`#${self.idTab} .original_text_check_content_reply`);
-      $(originalTextReplyEl).html(originalText);
+      $(originalTextReplyEl).val(originalText);
       self.original_text_check_content_reply = originalText;
 
       self.setFocusOriginalText();
@@ -3410,6 +3434,8 @@
           pasteSelectionEl.addClass('show');
         }
       }
+
+      $(`#${WrapperManager.idEl}`).scrollTop(0);
     },
 
     setFocusOriginalText: () => {
@@ -3605,7 +3631,7 @@
 
         let titleImprovedEl = document.createElement('div');
         titleImprovedEl.classList = ['title improved-title'];
-        titleImprovedEl.innerHTML = 'Improved Text:'
+        titleImprovedEl.innerHTML = MyLang.getMsg('TXT_IMPROVED');
 
         let contentImproveEl = document.createElement('div');
         contentImproveEl.classList = ['improved-content'];
@@ -3619,7 +3645,7 @@
 
         let titleReasonEl = document.createElement('div');
         titleReasonEl.classList = ['title reason-title'];
-        titleReasonEl.innerHTML = 'Reason for the changes:'
+        titleReasonEl.innerHTML = MyLang.getMsg('TXT_REASON_FOR_THE_CHANGES');
 
         let contentReasonEl = document.createElement('div');
         contentReasonEl.classList = ['reason-content'];
@@ -3893,6 +3919,28 @@
       )
     },
 
+    /**
+     * Handler on storage changed
+     * 
+     * @param {object} payload 
+     * @param {string} type 
+     */
+    handlerOnStorageOnChanged: (payload, type) => {
+      const self = TabCheckContentReplyManager;
+    },
+
+    handlerOnTextSelectedInPage: (textSelection) => {
+      const self = TabCheckContentReplyManager;
+
+      self.checkAndSetOriginalText(textSelection);
+    },
+
+    checkOnStorageChangedNeedToActiveTab: (payload, type) => {
+      const self = TabCheckContentReplyManager;
+
+      return false;
+    },
+
     // Event handler
     afterRender: () => {
       const self = TabCheckContentReplyManager;
@@ -3907,6 +3955,9 @@
 
       self.resetEvent();
       self.setFocusOriginalText();
+
+      WrapperManager.fixHeightContainer();
+      $(`#tab_container`).scrollTop(0);
 
       MyUtils.debugLog(`Active: ${self.idTab}`);
     },
@@ -4273,6 +4324,8 @@
           pasteSelectionEl.addClass('show');
         }
       }
+
+      $(`#${WrapperManager.idEl}`).scrollTop(0);
     },
 
     setFocusOriginalText: () => {
@@ -4541,12 +4594,13 @@
       self.handlerShowSuggestMeetingResult();
 
       let itemActiveEl = null;
+      let allTextRes = '';
       OpenAIManager.suggestMeetingByOriginalText(params,
         // Response text function callback
         (textRes) => {
-          let innerHTML = itemActiveEl.innerHTML;
-          innerHTML += textRes.replaceAll('\n', '<br/>');
-          $(itemActiveEl).html(innerHTML);
+          allTextRes += textRes;
+
+          $(itemActiveEl).html(MyUtils.replaceAsterisksWithDivs(allTextRes));
 
           $(`#${self.idTab} #suggest-meeting-result .result-suggest`).css('height', `${itemActiveEl.offsetHeight}px`)
         },
@@ -4621,6 +4675,9 @@
 
       self.resetEvent();
       self.setFocusOriginalText();
+
+      WrapperManager.fixHeightContainer();
+      $(`#tab_container`).scrollTop(0);
 
       MyUtils.debugLog(`Active: ${self.idTab}`);
     },
@@ -4778,9 +4835,6 @@
       const self = WrapperManager;
 
       self.initTab();
-      self.setActiveTab();
-
-      self.fixHeightContainer();
     },
 
     // UI
@@ -4824,7 +4878,13 @@
      */
     getActiveTab: () => {
       const self = WrapperManager;
-      return document.querySelector(`#${self.idEl} .tab-item[item-of="${self.idEl}"].active`).id;
+      
+      let tabActiveEl = document.querySelector(`#${self.idEl} .tab-item[item-of="${self.idEl}"].active`);
+      if (tabActiveEl) {
+        return tabActiveEl.id;
+      } else {
+        return LIST_TAB[0].id;
+      }
     },
 
     setEmailFooter: (userEmail) => {
@@ -4931,7 +4991,13 @@
 
     callActionImportFromPageSend: () => {
       const self = WrapperManager;
-      if (!self.action_name_after_render_important) return;
+      if (!self.action_name_after_render_important) {
+        setTimeout(() => {
+          self.setActiveTab();
+          self.fixHeightContainer();
+        }, 10);
+        return;
+      }
 
       switch (self.action_name_after_render_important) {
         case SET_TEXT_ORIGINAL_THREAD_TO_SUMMARY:
@@ -5079,6 +5145,10 @@
           TabFindProblemManager.handlerOnTextSelectedInPage(textSelection);
           break;
 
+        case TabCheckContentReplyManager.idTab:
+          TabCheckContentReplyManager.handlerOnTextSelectedInPage(textSelection);
+          break;
+
         case TabSuggestMeetingManager.idTab:
           TabSuggestMeetingManager.handlerOnTextSelectedInPage(textSelection);
           break;
@@ -5099,6 +5169,13 @@
       _StorageManager.triggerClearSidePanel(null, () => {
         TabWriteManager.clearForm();
       });
+    }
+    if ('action_name_page_to_side_panel' in payload) {
+      if (typeof(payload.action_name_page_to_side_panel.newValue) != 'undefined') {
+        WrapperManager.action_name_after_render_important = payload.action_name_page_to_side_panel.newValue;
+
+        _StorageManager.removeActionInSidePanel();
+      }
     }
   }
 

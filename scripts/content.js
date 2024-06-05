@@ -51,7 +51,7 @@ document.addEventListener("RW759_connectExtension", function (e) {
   const MENU_ACTION_DATA = [
     {
       icon: '<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><g><path d="M0,0h24v24H0V0z" fill="none"></path></g><g><g><path d="M15,3H5C3.9,3,3.01,3.9,3.01,5L3,19c0,1.1,0.89,2,1.99,2H19c1.1,0,2-0.9,2-2V9L15,3z M8,17c-0.55,0-1-0.45-1-1s0.45-1,1-1 s1,0.45,1,1S8.55,17,8,17z M8,13c-0.55,0-1-0.45-1-1s0.45-1,1-1s1,0.45,1,1S8.55,13,8,13z M8,9C7.45,9,7,8.55,7,8s0.45-1,1-1 s1,0.45,1,1S8.55,9,8,9z M14,10V4.5l5.5,5.5H14z"></path></g></g></svg>',
-      display: "Summary mail",
+      display: MyLang.getMsg('TXT_SUMMARY_THREAD_MAIL'),
       action: () => {
         let contentMail = MailAIGenerate.getContentBodyMail(false);
         if (contentMail) {
@@ -63,7 +63,7 @@ document.addEventListener("RW759_connectExtension", function (e) {
     },
     {
       icon: '<svg xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" viewBox="0 0 24 24"><g><path d="M0,0h24v24H0V0z" fill="none"></path></g><g><g><path d="M15,3H5C3.9,3,3.01,3.9,3.01,5L3,19c0,1.1,0.89,2,1.99,2H19c1.1,0,2-0.9,2-2V9L15,3z M8,17c-0.55,0-1-0.45-1-1s0.45-1,1-1 s1,0.45,1,1S8.55,17,8,17z M8,13c-0.55,0-1-0.45-1-1s0.45-1,1-1s1,0.45,1,1S8.55,13,8,13z M8,9C7.45,9,7,8.55,7,8s0.45-1,1-1 s1,0.45,1,1S8.55,9,8,9z M14,10V4.5l5.5,5.5H14z"></path></g></g></svg>',
-      display: "Summary all mail",
+      display: MyLang.getMsg('TXT_SUMMARY_ALL_THREAD_MAIL'),
       action: () => {
         let contentMail = MailAIGenerate.getContentBodyMail();
         if (contentMail) {
@@ -75,7 +75,7 @@ document.addEventListener("RW759_connectExtension", function (e) {
     },
     {
       icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5c-.49 0-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-6 8h-4v-2h4v2zm0-4h-4v-2h4v2z"></path> </svg>',
-      display: "Problem in mail",
+      display: MyLang.getMsg('TXT_FIND_PROBLEM_THREAD_MAIL'),
       action: () => {
         let contentMail = MailAIGenerate.getContentBodyMail(false);
         if (contentMail) {
@@ -87,7 +87,7 @@ document.addEventListener("RW759_connectExtension", function (e) {
     },
     {
       icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5c-.49 0-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-6 8h-4v-2h4v2zm0-4h-4v-2h4v2z"></path> </svg>',
-      display: "Problem in all mail",
+      display: MyLang.getMsg('TXT_FIND_PROBLEM_ALL_THREAD_MAIL'),
       action: () => {
         let contentMail = MailAIGenerate.getContentBodyMail();
         if (contentMail) {
@@ -99,7 +99,7 @@ document.addEventListener("RW759_connectExtension", function (e) {
     },
     {
       icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"></path><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"></path></svg>',
-      display: "Suggest meeting",
+      display: MyLang.getMsg('TXT_SUGGEST_MEETING_BY_THREAD_MAIL'),
       action: () => {
         let contentMail = MailAIGenerate.getContentBodyMail(false);
         if (contentMail) {

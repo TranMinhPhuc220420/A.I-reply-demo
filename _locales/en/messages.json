@@ -11,6 +11,12 @@
   "txt_ai_reply": {
     "message": "AI Reply"
   },
+  "txt_improved": {
+    "message": "Improved Text"
+  },
+  "txt_reason_for_the_changes": {
+    "message": "Reason for the changes"
+  },
   "txt_result": {
     "message": "Result"
   },
@@ -296,6 +302,24 @@
   "des_error_original_text_summary_max_length_token": {
     "message": "Maximum characters for the original text you want to summarize"
   },
+  "des_error_empty_original_text_find_problem": {
+    "message": "Please enter the original text you want to find problem"
+  },
+  "des_error_original_text_find_problem_max_length_token": {
+    "message": "Maximum characters for the original text you want to find problem"
+  },
+  "des_error_empty_original_text_check_content_reply": {
+    "message": "Please enter the content reply you want to check"
+  },
+  "des_error_original_text_check_content_reply_max_length_token": {
+    "message": "Maximum characters for the content reply you want to check"
+  },
+  "des_error_empty_original_text_get_suggest_meeting": {
+    "message": "Please enter the original text you want to get suggest meeting"
+  },
+  "des_error_original_text_get_suggest_meeting_max_length_token": {
+    "message": "Maximum characters for the original text you want to get suggest meeting"
+  },
   
   "txt_summary_one_thread": {
     "message": "A thread"
@@ -305,5 +329,20 @@
   },
   "txt_length_summary_setting": {
     "message": "Summary length"
+  },
+  "txt_summary_thread_mail": {
+    "message": "Summary mail"
+  },
+  "txt_summary_all_thread_mail": {
+    "message": "Summary all mail"
+  },
+  "txt_find_problem_thread_mail": {
+    "message": "Problem mail"
+  },
+  "txt_find_problem_all_thread_mail": {
+    "message": "Problem all mail"
+  },
+  "txt_suggest_meeting_by_thread_mail": {
+    "message": "Suggest meeting"
   }
 }

@@ -316,6 +316,14 @@ body {
     }
   }
 
+  .text-bold {
+    font-weight: 600;
+  }
+
+  .text-bold-2 {
+    font-weight: 600;
+  }
+
   // .combobox {
   //   position: relative;
   // }
@@ -2294,8 +2302,8 @@ body {
           font-weight: 400;
           white-space: pre-wrap;
           
-          position: relative;
-          z-index: 10;
+          // position: relative;
+          // z-index: 10;
         }
 
         .wrap-error-panel {
